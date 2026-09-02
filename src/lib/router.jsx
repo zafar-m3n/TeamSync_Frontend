@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import LoginPage from '../pages/auth/LoginPage'
 import ProtectedRoute from '../routes/ProtectedRoute'
+import AppLayout from '../components/layout/AppLayout'
 import { moduleRoutes, buildRoleRoutes } from '../routes/routeConfig'
 import { useAuth } from '../store/AuthContext'
 
@@ -17,7 +18,7 @@ const roleRoutes = buildRoleRoutes(moduleRoutes).map(({ path, allowedRoles, elem
 
 const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
-  ...roleRoutes,
+  { element: <AppLayout />, children: roleRoutes },
   { path: '/', element: <RootRedirect /> },
   { path: '*', element: <Navigate to="/" replace /> },
 ])
