@@ -11,10 +11,13 @@ function RootRedirect() {
   return <Navigate to={`/${user.roleName.toLowerCase()}/dashboard`} replace />
 }
 
-const roleRoutes = buildRoleRoutes(moduleRoutes).map(({ path, allowedRoles, element }) => ({
-  path,
-  element: <ProtectedRoute allowedRoles={allowedRoles}>{element}</ProtectedRoute>,
-}))
+const roleRoutes = buildRoleRoutes(moduleRoutes).map(
+  ({ path, allowedRoles, element, navLabel }) => ({
+    path,
+    element: <ProtectedRoute allowedRoles={allowedRoles}>{element}</ProtectedRoute>,
+    handle: { title: navLabel },
+  }),
+)
 
 const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },

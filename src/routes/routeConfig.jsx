@@ -1,4 +1,5 @@
 import DashboardPage from '../pages/dashboard/DashboardPage'
+import DepartmentsShiftsPage from '../pages/departments-shifts/DepartmentsShiftsPage'
 import { SEEDED_ROLES } from '../lib/permissions'
 
 export const moduleRoutes = [
@@ -10,14 +11,23 @@ export const moduleRoutes = [
     navIcon: 'lucide:layout-dashboard',
     navOrder: 0,
   },
+  {
+    path: 'departments-shifts',
+    roles: ['HR', 'Admin'],
+    element: <DepartmentsShiftsPage />,
+    navLabel: 'Departments & Shifts',
+    navIcon: 'lucide:building-2',
+    navOrder: 1,
+  },
 ]
 
 export function buildRoleRoutes(routes) {
-  return routes.flatMap(({ path, roles, element }) =>
+  return routes.flatMap(({ path, roles, element, navLabel }) =>
     roles.map((role) => ({
       path: `/${role.toLowerCase()}/${path}`,
       allowedRoles: [role],
       element,
+      navLabel,
     })),
   )
 }

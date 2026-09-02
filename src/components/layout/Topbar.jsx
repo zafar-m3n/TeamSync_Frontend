@@ -1,4 +1,5 @@
 import { Icon } from '@iconify/react'
+import { useMatches } from 'react-router-dom'
 import { useAuth } from '../../store/AuthContext'
 import { useMyProfile } from '../../hooks/useMyProfile'
 import Dropdown from '../ui/Dropdown'
@@ -13,7 +14,10 @@ function getInitials(source) {
 export default function Topbar({ onOpenDrawer }) {
   const { user, logout } = useAuth()
   const { data: profile } = useMyProfile()
+  const matches = useMatches()
 
+  const pageTitle =
+    [...matches].reverse().find((m) => m.handle?.title)?.handle?.title ?? 'Dashboard'
   const displayName = profile?.fullName || user.email
   const initials = getInitials(profile?.fullName || user.email.split('@')[0])
 
@@ -28,7 +32,7 @@ export default function Topbar({ onOpenDrawer }) {
         >
           <Icon icon="lucide:menu" width="20" height="20" />
         </button>
-        <h1 className="font-display text-xl text-primary">Dashboard</h1>
+        <h1 className="font-display text-xl text-primary">{pageTitle}</h1>
       </div>
 
       <Dropdown
