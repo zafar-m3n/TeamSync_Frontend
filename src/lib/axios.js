@@ -9,7 +9,11 @@ const baseURL =
 const api = axios.create({ baseURL })
 
 api.interceptors.request.use((config) => {
-  config.headers.set('Content-Type', 'application/json')
+  // FormData must set its own multipart Content-Type (with boundary) — forcing
+  // application/json here would break document uploads.
+  if (!(config.data instanceof FormData)) {
+    config.headers.set('Content-Type', 'application/json')
+  }
   config.headers.set('Accept', 'application/json')
   config.headers.set('X-Request-Id', crypto.randomUUID())
 

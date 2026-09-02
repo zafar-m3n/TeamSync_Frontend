@@ -1,5 +1,5 @@
 import { Icon } from '@iconify/react'
-import { useMatches } from 'react-router-dom'
+import { Link, useMatches } from 'react-router-dom'
 import { useAuth } from '../../store/AuthContext'
 import { useMyProfile } from '../../hooks/useMyProfile'
 import Dropdown from '../ui/Dropdown'
@@ -20,6 +20,7 @@ export default function Topbar({ onOpenDrawer }) {
     [...matches].reverse().find((m) => m.handle?.title)?.handle?.title ?? 'Dashboard'
   const displayName = profile?.fullName || user.email
   const initials = getInitials(profile?.fullName || user.email.split('@')[0])
+  const myProfilePath = `/${user.roleName.toLowerCase()}/my-profile`
 
   return (
     <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-gray-200 bg-white px-4 sm:px-6">
@@ -35,32 +36,41 @@ export default function Topbar({ onOpenDrawer }) {
         <h1 className="font-display text-xl text-primary">{pageTitle}</h1>
       </div>
 
-      <Dropdown
-        trigger={
-          <span className="flex items-center gap-2 rounded-full py-1 pl-1 pr-2 transition-colors hover:bg-gray-100">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-semibold text-white">
-              {initials}
-            </span>
-            <span className="hidden max-w-[12rem] truncate text-sm font-medium text-text sm:block">
-              {displayName}
-            </span>
-            <Icon icon="lucide:chevron-down" width="16" height="16" className="text-gray-400" />
-          </span>
-        }
-      >
-        <div className="border-b border-gray-100 px-3 py-2">
-          <p className="truncate text-sm font-medium text-text">{displayName}</p>
-          <p className="mt-0.5 text-xs text-gray-500">{user.roleName}</p>
-        </div>
-        <button
-          type="button"
-          onClick={logout}
-          className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-red-600 transition-colors hover:bg-gray-50 focus:bg-gray-50 focus:outline-none"
+      <div className="flex items-center gap-1">
+        <Link
+          to={myProfilePath}
+          className="flex items-center gap-2 rounded-full py-1 pl-1 pr-2 transition-colors hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
         >
-          <Icon icon="lucide:log-out" width="16" height="16" />
-          Log out
-        </button>
-      </Dropdown>
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-semibold text-white">
+            {initials}
+          </span>
+          <span className="hidden max-w-[12rem] truncate text-sm font-medium text-text sm:block">
+            {displayName}
+          </span>
+        </Link>
+
+        <Dropdown
+          trigger={
+            <span className="flex h-8 w-8 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100">
+              <span className="sr-only">Account menu</span>
+              <Icon icon="lucide:chevron-down" width="16" height="16" />
+            </span>
+          }
+        >
+          <div className="border-b border-gray-100 px-3 py-2">
+            <p className="truncate text-sm font-medium text-text">{displayName}</p>
+            <p className="mt-0.5 text-xs text-gray-500">{user.roleName}</p>
+          </div>
+          <button
+            type="button"
+            onClick={logout}
+            className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-red-600 transition-colors hover:bg-gray-50 focus:bg-gray-50 focus:outline-none"
+          >
+            <Icon icon="lucide:log-out" width="16" height="16" />
+            Log out
+          </button>
+        </Dropdown>
+      </div>
     </header>
   )
 }
