@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+@theme {
+  --color-accent: #059c99;
+  --color-primary: #0f2a27;
+  --color-text: #2b3b38;
+  --font-display: "Instrument Serif", serif;
+  --font-sans: "DM Sans", sans-serif;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--color-text);
+}
