@@ -15,6 +15,9 @@ import AllLeavePage from '../pages/leave/AllLeavePage'
 import MyGoalsPage from '../pages/goals/MyGoalsPage'
 import TeamGoalsPage from '../pages/goals/TeamGoalsPage'
 import AllGoalsPage from '../pages/goals/AllGoalsPage'
+import MyTrainingPage from '../pages/training/MyTrainingPage'
+import ManageTrainingPage from '../pages/training/ManageTrainingPage'
+import TrainingPage from '../pages/training/TrainingPage'
 import { SEEDED_ROLES } from '../lib/permissions'
 
 export const moduleRoutes = [
@@ -157,6 +160,30 @@ export const moduleRoutes = [
     navLabel: 'Goals',
     navIcon: 'lucide:target',
     navOrder: 7,
+  },
+  {
+    path: 'my-training',
+    roles: SEEDED_ROLES,
+    element: <MyTrainingPage />,
+    navLabel: 'My Training',
+    navIcon: 'lucide:graduation-cap',
+    navOrder: 8,
+  },
+  {
+    path: 'manage-training',
+    roles: ['Manager'],
+    element: <ManageTrainingPage />,
+    navLabel: 'Manage Training',
+    navIcon: 'lucide:graduation-cap',
+    navOrder: 9,
+  },
+  {
+    path: 'training',
+    roles: ['HR', 'Admin'],
+    element: <TrainingPage />,
+    navLabel: 'Training',
+    navIcon: 'lucide:graduation-cap',
+    navOrder: 8,
   },
   {
     path: 'my-profile',
