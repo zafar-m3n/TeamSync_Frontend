@@ -4,6 +4,8 @@ import EmployeeListPage from '../pages/employees/EmployeeListPage'
 import EmployeeFormPage from '../pages/employees/EmployeeFormPage'
 import EmployeeDetailPage from '../pages/employees/EmployeeDetailPage'
 import MyProfilePage from '../pages/employees/MyProfilePage'
+import UsersPage from '../pages/users/UsersPage'
+import RolesPermissionsPage from '../pages/roles-permissions/RolesPermissionsPage'
 import { SEEDED_ROLES } from '../lib/permissions'
 
 export const moduleRoutes = [
@@ -58,6 +60,22 @@ export const moduleRoutes = [
     path: 'my-team/:employeeId',
     roles: ['Manager'],
     element: <EmployeeDetailPage />,
+  },
+  {
+    path: 'users',
+    roles: ['HR', 'Admin'],
+    element: <UsersPage />,
+    navLabel: 'Users',
+    navIcon: 'lucide:user-cog',
+    navOrder: 3,
+  },
+  {
+    path: 'roles-permissions',
+    roles: ['Admin'],
+    element: <RolesPermissionsPage />,
+    navLabel: 'Roles & Permissions',
+    navIcon: 'lucide:shield-check',
+    navOrder: 4,
   },
   {
     path: 'my-profile',
