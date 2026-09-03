@@ -1,4 +1,3 @@
-import clsx from 'clsx'
 import { Icon } from '@iconify/react'
 
 function SortIcon({ active, direction }) {
