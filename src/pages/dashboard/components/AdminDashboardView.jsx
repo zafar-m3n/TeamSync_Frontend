@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom'
 import { format } from 'date-fns'
-import StatCard from '../../../components/ui/StatCard'
-import Table from '../../../components/ui/Table'
-import ActivityFeedItem from './ActivityFeedItem'
-import { useAuth } from '../../../store/AuthContext'
+import StatCard from '@/components/ui/StatCard'
+import Table from '@/components/ui/Table'
+import ActivityFeedItem from '@/pages/dashboard/components/ActivityFeedItem'
+import { useAuth } from '@/store/AuthContext'
 
 const HEADER_LINK =
   'rounded text-sm font-medium text-accent transition-colors hover:text-accent/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent'
@@ -44,7 +44,7 @@ export default function AdminDashboardView({ data }) {
     <div className="space-y-8">
       <section>
         <div className="mb-3 flex items-center justify-between gap-2">
-          <h2 className="font-display text-xl text-primary">Attendance today</h2>
+          <h2 className="text-xl text-primary">Attendance today</h2>
           <Link to={`${base}/attendance`} className={HEADER_LINK}>
             View all
           </Link>
@@ -63,7 +63,7 @@ export default function AdminDashboardView({ data }) {
 
       <section className="space-y-4">
         <div className="flex items-center justify-between gap-2">
-          <h2 className="font-display text-xl text-primary">Pending leave approvals</h2>
+          <h2 className="text-xl text-primary">Pending leave approvals</h2>
           <Link to={`${base}/leave`} className={HEADER_LINK}>
             View all
           </Link>
@@ -93,7 +93,7 @@ export default function AdminDashboardView({ data }) {
 
       <section>
         <div className="mb-3 flex items-center justify-between gap-2">
-          <h2 className="font-display text-xl text-primary">Employees by department</h2>
+          <h2 className="text-xl text-primary">Employees by department</h2>
           <Link to={`${base}/departments-shifts`} className={HEADER_LINK}>
             View all
           </Link>
@@ -112,7 +112,7 @@ export default function AdminDashboardView({ data }) {
       </section>
 
       <section>
-        <h2 className="mb-3 font-display text-xl text-primary">Recent activity</h2>
+        <h2 className="mb-3 text-xl text-primary">Recent activity</h2>
         {recentActivityFeed.length > 0 ? (
           <ul className="divide-y divide-gray-100 rounded-lg border border-gray-200 bg-white">
             {recentActivityFeed.map((item, i) => (

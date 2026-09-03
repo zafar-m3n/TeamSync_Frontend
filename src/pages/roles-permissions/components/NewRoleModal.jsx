@@ -1,11 +1,11 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import Modal from '../../../components/ui/Modal'
-import FormField from '../../../components/form/FormField'
-import Input from '../../../components/form/Input'
-import Button from '../../../components/ui/Button'
-import { useCreateRole } from '../../../hooks/useCreateRole'
+import Modal from '@/components/ui/Modal'
+import FormField from '@/components/form/FormField'
+import Input from '@/components/form/Input'
+import Button from '@/components/ui/Button'
+import { useCreateRole } from '@/hooks/useCreateRole'
 
 const schema = z.object({
   name: z.string().trim().min(1, 'Name is required'),

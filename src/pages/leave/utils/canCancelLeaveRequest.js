@@ -1,4 +1,4 @@
-import { hasPermission } from '../../../lib/permissions'
+import { hasPermission } from '@/lib/permissions'
 
 export const canCancelLeaveRequest = ({ request, currentUser, currentEmployeeId }) => {
   // getMyLeaveRequests doesn't include `employee` — on MyLeavePage every row is

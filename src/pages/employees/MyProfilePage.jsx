@@ -1,9 +1,9 @@
-import { useMyProfile } from '../../hooks/useMyProfile'
-import { useAuth } from '../../store/AuthContext'
-import { hasPermission } from '../../lib/permissions'
-import Spinner from '../../components/ui/Spinner'
-import Button from '../../components/ui/Button'
-import EmployeeDetailView from './components/EmployeeDetailView'
+import { useMyProfile } from '@/hooks/useMyProfile'
+import { useAuth } from '@/store/AuthContext'
+import { hasPermission } from '@/lib/permissions'
+import Spinner from '@/components/ui/Spinner'
+import Button from '@/components/ui/Button'
+import EmployeeDetailView from '@/pages/employees/components/EmployeeDetailView'
 
 export default function MyProfilePage() {
   const { user } = useAuth()

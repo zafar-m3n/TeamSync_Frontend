@@ -8,12 +8,12 @@ import { format } from 'date-fns'
 import { Icon } from '@iconify/react'
 import clsx from 'clsx'
 import 'react-day-picker/style.css'
-import Modal from '../../../components/ui/Modal'
-import FormField from '../../../components/form/FormField'
-import Button from '../../../components/ui/Button'
-import { useLeaveTypes } from '../../../hooks/useLeaveTypes'
-import { useSubmitLeaveRequest } from '../../../hooks/useLeaveRequestMutations'
-import { computeLeaveDays } from '../utils/computeLeaveDays'
+import Modal from '@/components/ui/Modal'
+import FormField from '@/components/form/FormField'
+import Button from '@/components/ui/Button'
+import { useLeaveTypes } from '@/hooks/useLeaveTypes'
+import { useSubmitLeaveRequest } from '@/hooks/useLeaveRequestMutations'
+import { computeLeaveDays } from '@/pages/leave/utils/computeLeaveDays'
 
 const schema = z
   .object({

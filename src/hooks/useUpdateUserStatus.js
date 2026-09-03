@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { updateUserStatus } from '../services/userService'
-import { toast } from './useToast'
+import { updateUserStatus } from '@/services/userService'
+import { toast } from '@/hooks/useToast'
 
 export function useUpdateUserStatus() {
   const qc = useQueryClient()

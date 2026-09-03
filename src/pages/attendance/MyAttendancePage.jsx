@@ -3,11 +3,11 @@ import { DayPicker } from 'react-day-picker'
 import { format } from 'date-fns'
 import { Icon } from '@iconify/react'
 import 'react-day-picker/style.css'
-import Table from '../../components/ui/Table'
-import TableSkeleton from '../../components/ui/TableSkeleton'
-import Button from '../../components/ui/Button'
-import { useMyAttendance } from '../../hooks/useMyAttendance'
-import AttendanceStatusBadge from './components/AttendanceStatusBadge'
+import Table from '@/components/ui/Table'
+import TableSkeleton from '@/components/ui/TableSkeleton'
+import Button from '@/components/ui/Button'
+import { useMyAttendance } from '@/hooks/useMyAttendance'
+import AttendanceStatusBadge from '@/pages/attendance/components/AttendanceStatusBadge'
 
 const LIMIT = 10
 

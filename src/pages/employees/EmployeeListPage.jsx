@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import Table from '../../components/ui/Table'
-import TableSkeleton from '../../components/ui/TableSkeleton'
-import Button from '../../components/ui/Button'
-import Input from '../../components/form/Input'
-import { useEmployees } from '../../hooks/useEmployees'
-import { useMyTeam } from '../../hooks/useMyTeam'
-import { useDepartments } from '../../hooks/useDepartments'
+import Table from '@/components/ui/Table'
+import TableSkeleton from '@/components/ui/TableSkeleton'
+import Button from '@/components/ui/Button'
+import Input from '@/components/form/Input'
+import { useEmployees } from '@/hooks/useEmployees'
+import { useMyTeam } from '@/hooks/useMyTeam'
+import { useDepartments } from '@/hooks/useDepartments'
 
 const LIMIT = 10
 

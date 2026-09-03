@@ -1,7 +1,7 @@
 import axios from 'axios'
-import * as token from './token'
-import router from './router'
-import { toast } from '../hooks/useToast'
+import * as token from '@/lib/token'
+import router from '@/lib/router'
+import { toast } from '@/hooks/useToast'
 
 const baseURL =
   import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1'

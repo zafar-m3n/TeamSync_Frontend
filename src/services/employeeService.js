@@ -1,4 +1,4 @@
-import api from '../lib/axios'
+import api from '@/lib/axios'
 
 export const getMyProfile = () => api.get('/employees/me')
 export const getEmployees = (params) => api.get('/employees', { params })

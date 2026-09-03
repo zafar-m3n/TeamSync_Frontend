@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import Tabs from '../../components/ui/Tabs'
-import RolesTab from './components/RolesTab'
-import PermissionsTab from './components/PermissionsTab'
+import Tabs from '@/components/ui/Tabs'
+import RolesTab from '@/pages/roles-permissions/components/RolesTab'
+import PermissionsTab from '@/pages/roles-permissions/components/PermissionsTab'
 
 const TABS = [
   { key: 'roles', label: 'Roles' },

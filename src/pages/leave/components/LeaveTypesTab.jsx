@@ -2,18 +2,18 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import Table from '../../../components/ui/Table'
-import TableSkeleton from '../../../components/ui/TableSkeleton'
-import Modal from '../../../components/ui/Modal'
-import Button from '../../../components/ui/Button'
-import FormField from '../../../components/form/FormField'
-import Input from '../../../components/form/Input'
+import Table from '@/components/ui/Table'
+import TableSkeleton from '@/components/ui/TableSkeleton'
+import Modal from '@/components/ui/Modal'
+import Button from '@/components/ui/Button'
+import FormField from '@/components/form/FormField'
+import Input from '@/components/form/Input'
 import {
   useLeaveTypes,
   useCreateLeaveType,
   useUpdateLeaveType,
   useDeleteLeaveType,
-} from '../../../hooks/useLeaveTypes'
+} from '@/hooks/useLeaveTypes'
 
 const columns = [
   { key: 'name', header: 'Name' },

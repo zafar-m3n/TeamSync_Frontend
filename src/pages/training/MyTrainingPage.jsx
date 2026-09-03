@@ -1,7 +1,7 @@
-import Table from '../../components/ui/Table'
-import TableSkeleton from '../../components/ui/TableSkeleton'
-import Button from '../../components/ui/Button'
-import { useAssignedTraining } from '../../hooks/useAssignedTraining'
+import Table from '@/components/ui/Table'
+import TableSkeleton from '@/components/ui/TableSkeleton'
+import Button from '@/components/ui/Button'
+import { useAssignedTraining } from '@/hooks/useAssignedTraining'
 
 const columns = [
   { key: 'title', header: 'Title' },

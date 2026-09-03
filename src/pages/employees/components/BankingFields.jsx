@@ -1,5 +1,5 @@
-import FormField from '../../../components/form/FormField'
-import Input from '../../../components/form/Input'
+import FormField from '@/components/form/FormField'
+import Input from '@/components/form/Input'
 
 // All banking fields are optional on the backend — no `required` flags here.
 export default function BankingFields({ register }) {

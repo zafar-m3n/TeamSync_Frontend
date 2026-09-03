@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { resetPassword } from '../services/userService'
-import { toast } from './useToast'
+import { resetPassword } from '@/services/userService'
+import { toast } from '@/hooks/useToast'
 
 export function useResetPassword() {
   const qc = useQueryClient()

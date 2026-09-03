@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import Table from '../../../components/ui/Table'
-import TableSkeleton from '../../../components/ui/TableSkeleton'
-import Button from '../../../components/ui/Button'
-import { useShifts } from '../../../hooks/useShifts'
-import ShiftFormModal from './ShiftFormModal'
+import Table from '@/components/ui/Table'
+import TableSkeleton from '@/components/ui/TableSkeleton'
+import Button from '@/components/ui/Button'
+import { useShifts } from '@/hooks/useShifts'
+import ShiftFormModal from '@/pages/departments-shifts/components/ShiftFormModal'
 
 const DAY_ORDER = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 

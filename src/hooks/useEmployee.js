@@ -5,8 +5,8 @@ import {
   assignShift,
   uploadDocument,
   deleteDocument,
-} from '../services/employeeService'
-import { toast } from './useToast'
+} from '@/services/employeeService'
+import { toast } from '@/hooks/useToast'
 
 export function useEmployee(id) {
   return useQuery({

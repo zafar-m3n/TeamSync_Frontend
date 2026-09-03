@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { getAllAttendance } from '../services/attendanceService'
+import { getAllAttendance } from '@/services/attendanceService'
 
 export function useAllAttendance(params) {
   return useQuery({

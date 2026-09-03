@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { createGoal } from '../services/goalService'
-import { toast } from './useToast'
+import { createGoal } from '@/services/goalService'
+import { toast } from '@/hooks/useToast'
 
 export function useCreateGoal() {
   const qc = useQueryClient()

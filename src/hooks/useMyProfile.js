@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { getMyProfile } from '../services/employeeService'
+import { getMyProfile } from '@/services/employeeService'
 
 export function useMyProfile() {
   return useQuery({

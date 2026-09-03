@@ -92,7 +92,7 @@ export default function Modal({ isOpen, onClose, title, children, footer }) {
       >
         <div className="flex items-start justify-between gap-4 border-b border-gray-200 px-5 py-4">
           {title && (
-            <h2 className="font-display text-xl leading-tight text-primary">
+            <h2 className="text-xl leading-tight text-primary">
               {title}
             </h2>
           )}

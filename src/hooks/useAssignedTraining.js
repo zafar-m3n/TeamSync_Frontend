@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { getAssignedTraining } from '../services/trainingDocumentService'
+import { getAssignedTraining } from '@/services/trainingDocumentService'
 
 export function useAssignedTraining() {
   return useQuery({

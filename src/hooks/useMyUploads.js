@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { getMyUploads } from '../services/trainingDocumentService'
+import { getMyUploads } from '@/services/trainingDocumentService'
 
 export function useMyUploads(params) {
   return useQuery({

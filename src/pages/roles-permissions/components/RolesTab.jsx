@@ -1,10 +1,10 @@
 import { useState } from 'react'
-import Table from '../../../components/ui/Table'
-import TableSkeleton from '../../../components/ui/TableSkeleton'
-import Badge from '../../../components/ui/Badge'
-import Button from '../../../components/ui/Button'
-import { useRoles } from '../../../hooks/useRoles'
-import NewRoleModal from './NewRoleModal'
+import Table from '@/components/ui/Table'
+import TableSkeleton from '@/components/ui/TableSkeleton'
+import Badge from '@/components/ui/Badge'
+import Button from '@/components/ui/Button'
+import { useRoles } from '@/hooks/useRoles'
+import NewRoleModal from '@/pages/roles-permissions/components/NewRoleModal'
 
 const columns = [
   { key: 'name', header: 'Name' },

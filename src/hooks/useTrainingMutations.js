@@ -1,10 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { uploadDocument } from '../services/trainingDocumentService'
+import { uploadDocument } from '@/services/trainingDocumentService'
 import {
   createAssignment,
   removeAssignment,
-} from '../services/trainingAssignmentService'
-import { toast } from './useToast'
+} from '@/services/trainingAssignmentService'
+import { toast } from '@/hooks/useToast'
 
 export function useUploadDocument() {
   const qc = useQueryClient()

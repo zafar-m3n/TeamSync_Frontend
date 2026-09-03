@@ -1,4 +1,4 @@
-import { decodeToken } from '../utils/jwt'
+import { decodeToken } from '@/utils/jwt'
 
 const TOKEN_KEY = 'teamsync.token'
 const USER_KEY = 'teamsync.user'

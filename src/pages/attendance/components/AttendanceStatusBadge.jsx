@@ -1,5 +1,5 @@
 import { Icon } from '@iconify/react'
-import Badge from '../../../components/ui/Badge'
+import Badge from '@/components/ui/Badge'
 
 const TONE = {
   Present: 'success',

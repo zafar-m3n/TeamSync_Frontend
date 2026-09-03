@@ -1,4 +1,4 @@
-import api from '../lib/axios'
+import api from '@/lib/axios'
 
 export const getMyLeaveRequests = (params) => api.get('/leave-requests/me', { params })
 export const getTeamLeaveRequests = (params) =>

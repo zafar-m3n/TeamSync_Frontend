@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { getTeamGoals } from '../services/goalService'
+import { getTeamGoals } from '@/services/goalService'
 
 export function useTeamGoals(params) {
   return useQuery({

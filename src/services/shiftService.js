@@ -1,4 +1,4 @@
-import api from '../lib/axios'
+import api from '@/lib/axios'
 
 export const getShifts = () => api.get('/shifts')
 export const getShift = (id) => api.get(`/shifts/${id}`)

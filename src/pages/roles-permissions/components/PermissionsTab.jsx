@@ -1,10 +1,10 @@
 import { Fragment, useMemo, useState } from 'react'
 import clsx from 'clsx'
-import Spinner from '../../../components/ui/Spinner'
-import Button from '../../../components/ui/Button'
-import { useRoles } from '../../../hooks/useRoles'
-import { usePermissions } from '../../../hooks/usePermissions'
-import { useBulkUpdatePermissions } from '../../../hooks/useBulkUpdatePermissions'
+import Spinner from '@/components/ui/Spinner'
+import Button from '@/components/ui/Button'
+import { useRoles } from '@/hooks/useRoles'
+import { usePermissions } from '@/hooks/usePermissions'
+import { useBulkUpdatePermissions } from '@/hooks/useBulkUpdatePermissions'
 
 const ACTION_LABELS = {
   create: 'Create',

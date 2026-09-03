@@ -4,8 +4,8 @@ import {
   createLeaveType,
   updateLeaveType,
   deleteLeaveType,
-} from '../services/leaveTypeService'
-import { toast } from './useToast'
+} from '@/services/leaveTypeService'
+import { toast } from '@/hooks/useToast'
 
 export function useLeaveTypes() {
   return useQuery({

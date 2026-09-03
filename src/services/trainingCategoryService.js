@@ -1,4 +1,4 @@
-import api from '../lib/axios'
+import api from '@/lib/axios'
 
 export const getTrainingCategories = () => api.get('/training-categories')
 export const createTrainingCategory = (data) => api.post('/training-categories', data)

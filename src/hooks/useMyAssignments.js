@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { getMyAssignments } from '../services/trainingAssignmentService'
+import { getMyAssignments } from '@/services/trainingAssignmentService'
 
 export function useMyAssignments(params) {
   return useQuery({

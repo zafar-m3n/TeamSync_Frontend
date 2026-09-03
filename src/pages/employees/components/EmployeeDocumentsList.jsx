@@ -1,10 +1,10 @@
 import { useRef, useState } from 'react'
 import { format } from 'date-fns'
-import Table from '../../../components/ui/Table'
-import Button from '../../../components/ui/Button'
-import Modal from '../../../components/ui/Modal'
-import { toast } from '../../../hooks/useToast'
-import { useUploadDocument, useDeleteDocument } from '../../../hooks/useEmployee'
+import Table from '@/components/ui/Table'
+import Button from '@/components/ui/Button'
+import Modal from '@/components/ui/Modal'
+import { toast } from '@/hooks/useToast'
+import { useUploadDocument, useDeleteDocument } from '@/hooks/useEmployee'
 
 const ALLOWED_TYPES = [
   'application/pdf',

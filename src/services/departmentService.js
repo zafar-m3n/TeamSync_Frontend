@@ -1,4 +1,4 @@
-import api from '../lib/axios'
+import api from '@/lib/axios'
 
 export const getDepartments = (params) => api.get('/departments', { params })
 export const getDepartment = (id) => api.get(`/departments/${id}`)

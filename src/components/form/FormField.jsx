@@ -19,11 +19,11 @@ export default function FormField({ label, error, required = false, children }) 
       {label && (
         <label
           htmlFor={children?.props?.id ?? autoId}
-          className="flex items-center gap-2 text-sm font-medium text-text"
+          className="flex items-center gap-0.5 text-sm font-medium text-text"
         >
           <span>{label}</span>
           {required && (
-            <span className="text-xs font-normal text-gray-500">Required</span>
+            <span className="text-xs font-normal text-gray-500">*</span>
           )}
         </label>
       )}

@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { getShift, createShift, updateShift } from '../services/shiftService'
-import { toast } from './useToast'
+import { getShift, createShift, updateShift } from '@/services/shiftService'
+import { toast } from '@/hooks/useToast'
 
 export function useShift(id) {
   return useQuery({

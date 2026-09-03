@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { createRole } from '../services/roleService'
-import { toast } from './useToast'
+import { createRole } from '@/services/roleService'
+import { toast } from '@/hooks/useToast'
 
 export function useCreateRole() {
   const qc = useQueryClient()

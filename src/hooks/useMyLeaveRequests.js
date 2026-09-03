@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { getMyLeaveRequests } from '../services/leaveRequestService'
+import { getMyLeaveRequests } from '@/services/leaveRequestService'
 
 export function useMyLeaveRequests(params) {
   return useQuery({

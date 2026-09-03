@@ -6,11 +6,11 @@ import {
   useMemo,
   useState,
 } from 'react'
-import api from '../lib/axios'
-import router from '../lib/router'
-import * as token from '../lib/token'
-import { toast } from '../hooks/useToast'
-import Spinner from '../components/ui/Spinner'
+import api from '@/lib/axios'
+import router from '@/lib/router'
+import * as token from '@/lib/token'
+import { toast } from '@/hooks/useToast'
+import Spinner from '@/components/ui/Spinner'
 
 const AuthContext = createContext(null)
 

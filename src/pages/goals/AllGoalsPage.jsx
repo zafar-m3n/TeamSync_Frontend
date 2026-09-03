@@ -2,12 +2,12 @@ import { useEffect, useMemo, useState } from 'react'
 import Select from 'react-select'
 import { format } from 'date-fns'
 import clsx from 'clsx'
-import Table from '../../components/ui/Table'
-import TableSkeleton from '../../components/ui/TableSkeleton'
-import Button from '../../components/ui/Button'
-import ProgressBar from '../../components/ui/ProgressBar'
-import { useEmployees } from '../../hooks/useEmployees'
-import { useAllGoals } from '../../hooks/useAllGoals'
+import Table from '@/components/ui/Table'
+import TableSkeleton from '@/components/ui/TableSkeleton'
+import Button from '@/components/ui/Button'
+import ProgressBar from '@/components/ui/ProgressBar'
+import { useEmployees } from '@/hooks/useEmployees'
+import { useAllGoals } from '@/hooks/useAllGoals'
 
 const LIMIT = 10
 const CURRENT_YEAR = new Date().getFullYear()

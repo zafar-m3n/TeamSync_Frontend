@@ -4,8 +4,8 @@ import {
   createTrainingCategory,
   updateTrainingCategory,
   deleteTrainingCategory,
-} from '../services/trainingCategoryService'
-import { toast } from './useToast'
+} from '@/services/trainingCategoryService'
+import { toast } from '@/hooks/useToast'
 
 export function useTrainingCategories() {
   return useQuery({

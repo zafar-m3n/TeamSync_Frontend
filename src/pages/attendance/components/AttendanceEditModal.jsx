@@ -3,11 +3,11 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import Select from 'react-select'
 import clsx from 'clsx'
-import Modal from '../../../components/ui/Modal'
-import FormField from '../../../components/form/FormField'
-import Input from '../../../components/form/Input'
-import Button from '../../../components/ui/Button'
-import { useUpdateAttendance } from '../../../hooks/useUpdateAttendance'
+import Modal from '@/components/ui/Modal'
+import FormField from '@/components/form/FormField'
+import Input from '@/components/form/Input'
+import Button from '@/components/ui/Button'
+import { useUpdateAttendance } from '@/hooks/useUpdateAttendance'
 
 const STATUS_OPTIONS = ['Present', 'Late', 'Half-day', 'Absent'].map((s) => ({
   value: s,

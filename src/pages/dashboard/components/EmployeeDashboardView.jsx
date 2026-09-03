@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom'
 import { format } from 'date-fns'
-import StatCard from '../../../components/ui/StatCard'
-import Table from '../../../components/ui/Table'
-import { useAuth } from '../../../store/AuthContext'
+import StatCard from '@/components/ui/StatCard'
+import Table from '@/components/ui/Table'
+import { useAuth } from '@/store/AuthContext'
 
 const CARD_LINK =
   'block rounded-lg transition-shadow hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2'
@@ -86,7 +86,7 @@ export default function EmployeeDashboardView({ data }) {
 
       <section>
         <div className="mb-3 flex items-center justify-between gap-2">
-          <h2 className="font-display text-xl text-primary">This month&rsquo;s goals</h2>
+          <h2 className="text-xl text-primary">This month&rsquo;s goals</h2>
           <Link to={`${base}/my-goals`} className={HEADER_LINK}>
             View all
           </Link>

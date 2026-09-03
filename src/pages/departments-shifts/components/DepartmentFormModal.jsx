@@ -3,12 +3,12 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import Select from 'react-select'
 import clsx from 'clsx'
-import Modal from '../../../components/ui/Modal'
-import FormField from '../../../components/form/FormField'
-import Input from '../../../components/form/Input'
-import Button from '../../../components/ui/Button'
-import { useCreateDepartment, useUpdateDepartment } from '../../../hooks/useDepartments'
-import { useEmployees } from '../../../hooks/useEmployees'
+import Modal from '@/components/ui/Modal'
+import FormField from '@/components/form/FormField'
+import Input from '@/components/form/Input'
+import Button from '@/components/ui/Button'
+import { useCreateDepartment, useUpdateDepartment } from '@/hooks/useDepartments'
+import { useEmployees } from '@/hooks/useEmployees'
 
 const schema = z.object({
   name: z

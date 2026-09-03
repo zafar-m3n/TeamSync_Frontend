@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { format } from 'date-fns'
-import ShiftAssignControl from './ShiftAssignControl'
-import EmployeeDocumentsList from './EmployeeDocumentsList'
+import ShiftAssignControl from '@/pages/employees/components/ShiftAssignControl'
+import EmployeeDocumentsList from '@/pages/employees/components/EmployeeDocumentsList'
 
 function fmtDate(value) {
   if (!value) return '—'
@@ -21,7 +21,7 @@ function Field({ label, value }) {
 function Section({ title, children }) {
   return (
     <section className="rounded-lg border border-gray-200 bg-white p-5">
-      <h2 className="mb-4 font-display text-lg text-primary">{title}</h2>
+      <h2 className="mb-4 text-lg text-primary">{title}</h2>
       {children}
     </section>
   )
@@ -36,7 +36,7 @@ export default function EmployeeDetailView({ data, canEdit, editHref, heading })
   if (!isFull) {
     return (
       <div className="mx-auto max-w-xl space-y-4">
-        <h1 className="font-display text-2xl text-primary">
+        <h1 className="text-2xl text-primary">
           {heading || data?.fullName || 'Employee'}
         </h1>
         <div className="rounded-lg border border-gray-200 bg-white p-5">
@@ -56,7 +56,7 @@ export default function EmployeeDetailView({ data, canEdit, editHref, heading })
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
-        <h1 className="font-display text-2xl text-primary">
+        <h1 className="text-2xl text-primary">
           {heading || data.fullName}
         </h1>
         {canEdit && editHref && (

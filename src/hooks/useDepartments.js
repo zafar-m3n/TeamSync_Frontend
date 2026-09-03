@@ -4,8 +4,8 @@ import {
   createDepartment,
   updateDepartment,
   deleteDepartment,
-} from '../services/departmentService'
-import { toast } from './useToast'
+} from '@/services/departmentService'
+import { toast } from '@/hooks/useToast'
 
 export function useDepartments(params) {
   return useQuery({

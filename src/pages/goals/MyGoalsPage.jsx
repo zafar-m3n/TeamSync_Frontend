@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react'
 import { format } from 'date-fns'
-import Table from '../../components/ui/Table'
-import TableSkeleton from '../../components/ui/TableSkeleton'
-import Button from '../../components/ui/Button'
-import ProgressBar from '../../components/ui/ProgressBar'
-import { useMyGoals } from '../../hooks/useMyGoals'
+import Table from '@/components/ui/Table'
+import TableSkeleton from '@/components/ui/TableSkeleton'
+import Button from '@/components/ui/Button'
+import ProgressBar from '@/components/ui/ProgressBar'
+import { useMyGoals } from '@/hooks/useMyGoals'
 
 const LIMIT = 10
 

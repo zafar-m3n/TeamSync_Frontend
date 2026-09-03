@@ -1,4 +1,4 @@
-import api from '../lib/axios'
+import api from '@/lib/axios'
 
 export const getMyAttendance = (params) => api.get('/attendance/me', { params })
 export const getTeamAttendance = (date) =>

@@ -1,4 +1,4 @@
-import api from '../lib/axios'
+import api from '@/lib/axios'
 
 export const getUsers = (params) => api.get('/users', { params })
 export const updateUserStatus = (id, isActive) =>

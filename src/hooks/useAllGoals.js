@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { getAllGoals } from '../services/goalService'
+import { getAllGoals } from '@/services/goalService'
 
 export function useAllGoals(params) {
   return useQuery({

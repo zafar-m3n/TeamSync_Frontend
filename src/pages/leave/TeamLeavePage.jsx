@@ -1,21 +1,21 @@
 import { useMemo, useState } from 'react'
 import { format } from 'date-fns'
-import Table from '../../components/ui/Table'
-import TableSkeleton from '../../components/ui/TableSkeleton'
-import Button from '../../components/ui/Button'
-import Modal from '../../components/ui/Modal'
-import { useAuth } from '../../store/AuthContext'
-import { useMyProfile } from '../../hooks/useMyProfile'
-import { useTeamLeaveRequests } from '../../hooks/useTeamLeaveRequests'
+import Table from '@/components/ui/Table'
+import TableSkeleton from '@/components/ui/TableSkeleton'
+import Button from '@/components/ui/Button'
+import Modal from '@/components/ui/Modal'
+import { useAuth } from '@/store/AuthContext'
+import { useMyProfile } from '@/hooks/useMyProfile'
+import { useTeamLeaveRequests } from '@/hooks/useTeamLeaveRequests'
 import {
   useRejectLeaveRequest,
   useCancelLeaveRequest,
-} from '../../hooks/useLeaveRequestMutations'
-import { computeLeaveDays } from './utils/computeLeaveDays'
-import { canCancelLeaveRequest } from './utils/canCancelLeaveRequest'
-import LeaveStatusBadge from './components/LeaveStatusBadge'
-import LeaveBalanceChip from './components/LeaveBalanceChip'
-import ApproveLeaveModal from './components/ApproveLeaveModal'
+} from '@/hooks/useLeaveRequestMutations'
+import { computeLeaveDays } from '@/pages/leave/utils/computeLeaveDays'
+import { canCancelLeaveRequest } from '@/pages/leave/utils/canCancelLeaveRequest'
+import LeaveStatusBadge from '@/pages/leave/components/LeaveStatusBadge'
+import LeaveBalanceChip from '@/pages/leave/components/LeaveBalanceChip'
+import ApproveLeaveModal from '@/pages/leave/components/ApproveLeaveModal'
 
 const STATUSES = ['Pending', 'Approved', 'Rejected', 'Cancelled']
 

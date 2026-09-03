@@ -1,10 +1,10 @@
-import { useEffect, useRef } from 'react'
-import { NavLink } from 'react-router-dom'
-import { Icon } from '@iconify/react'
-import clsx from 'clsx'
-import { useAuth } from '../../store/AuthContext'
-import { moduleRoutes, buildNavItems } from '../../routes/routeConfig'
-import logo from '../../assets/logo.png'
+import { useEffect, useRef } from "react";
+import { NavLink } from "react-router-dom";
+import { Icon } from "@iconify/react";
+import clsx from "clsx";
+import { useAuth } from "@/store/AuthContext";
+import { moduleRoutes, buildNavItems } from "@/routes/routeConfig";
+import logo from "@/assets/logo.png";
 
 function NavItems({ items, onNavigate }) {
   return (
@@ -17,10 +17,10 @@ function NavItems({ items, onNavigate }) {
           onClick={onNavigate}
           className={({ isActive }) =>
             clsx(
-              'flex items-center gap-3 rounded-md border-l-2 px-3 py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+              "flex items-center gap-3 rounded-md border-l-2 px-3 py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent",
               isActive
-                ? 'border-accent bg-accent/10 text-primary'
-                : 'border-transparent text-gray-600 hover:bg-gray-100 hover:text-text',
+                ? "border-accent bg-accent/10 text-primary"
+                : "border-transparent text-gray-600 hover:bg-gray-100 hover:text-text",
             )
           }
         >
@@ -29,36 +29,36 @@ function NavItems({ items, onNavigate }) {
         </NavLink>
       ))}
     </nav>
-  )
+  );
 }
 
 function Logo() {
   return (
-    <div className="flex h-16 items-center border-b border-gray-200 px-5">
-      <img src={logo} alt="TeamSync" className="h-8 w-auto" />
+    <div className="flex h-16 items-center border-b border-gray-200">
+      <img src={logo} alt="TeamSync" className="h-12 md:h-16 w-auto" />
     </div>
-  )
+  );
 }
 
 export default function Sidebar({ isOpen, onClose }) {
-  const { user } = useAuth()
-  const navItems = buildNavItems(moduleRoutes, user.roleName)
-  const drawerRef = useRef(null)
+  const { user } = useAuth();
+  const navItems = buildNavItems(moduleRoutes, user.roleName);
+  const drawerRef = useRef(null);
 
   useEffect(() => {
-    if (!isOpen) return
+    if (!isOpen) return;
     const onKeyDown = (event) => {
-      if (event.key === 'Escape') onClose()
-    }
-    document.addEventListener('keydown', onKeyDown)
-    const prevOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    drawerRef.current?.querySelector('a')?.focus()
+      if (event.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKeyDown);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    drawerRef.current?.querySelector("a")?.focus();
     return () => {
-      document.removeEventListener('keydown', onKeyDown)
-      document.body.style.overflow = prevOverflow
-    }
-  }, [isOpen, onClose])
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [isOpen, onClose]);
 
   return (
     <>
@@ -67,22 +67,19 @@ export default function Sidebar({ isOpen, onClose }) {
         <NavItems items={navItems} />
       </aside>
 
-      <div
-        className={clsx('fixed inset-0 z-40 lg:hidden', !isOpen && 'pointer-events-none')}
-        aria-hidden={!isOpen}
-      >
+      <div className={clsx("fixed inset-0 z-40 lg:hidden", !isOpen && "pointer-events-none")} aria-hidden={!isOpen}>
         <div
           className={clsx(
-            'absolute inset-0 bg-black/40 transition-opacity duration-200',
-            isOpen ? 'opacity-100' : 'opacity-0',
+            "absolute inset-0 bg-black/40 transition-opacity duration-200",
+            isOpen ? "opacity-100" : "opacity-0",
           )}
           onClick={onClose}
         />
         <aside
           ref={drawerRef}
           className={clsx(
-            'absolute inset-y-0 left-0 flex w-64 flex-col bg-white shadow-xl transition-transform duration-200',
-            isOpen ? 'translate-x-0' : '-translate-x-full',
+            "absolute inset-y-0 left-0 flex w-64 flex-col bg-white shadow-xl transition-transform duration-200",
+            isOpen ? "translate-x-0" : "-translate-x-full",
           )}
         >
           <Logo />
@@ -90,5 +87,5 @@ export default function Sidebar({ isOpen, onClose }) {
         </aside>
       </div>
     </>
-  )
+  );
 }

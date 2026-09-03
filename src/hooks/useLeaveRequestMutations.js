@@ -4,8 +4,8 @@ import {
   approveLeaveRequest,
   rejectLeaveRequest,
   cancelLeaveRequest,
-} from '../services/leaveRequestService'
-import { toast } from './useToast'
+} from '@/services/leaveRequestService'
+import { toast } from '@/hooks/useToast'
 
 export function useSubmitLeaveRequest() {
   const qc = useQueryClient()

@@ -8,7 +8,7 @@ import {
 import gsap from 'gsap'
 import { Icon } from '@iconify/react'
 import clsx from 'clsx'
-import { ToastContext, registerToast } from '../../hooks/useToast'
+import { ToastContext, registerToast } from '@/hooks/useToast'
 
 const AUTO_DISMISS_MS = 4000
 

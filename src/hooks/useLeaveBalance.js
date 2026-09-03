@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { getLeaveBalance, setLeaveQuota } from '../services/leaveBalanceService'
-import { toast } from './useToast'
+import { getLeaveBalance, setLeaveQuota } from '@/services/leaveBalanceService'
+import { toast } from '@/hooks/useToast'
 
 export function useLeaveBalance(employeeId, year, enabled = true) {
   return useQuery({

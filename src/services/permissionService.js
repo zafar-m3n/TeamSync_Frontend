@@ -1,4 +1,4 @@
-import api from '../lib/axios'
+import api from '@/lib/axios'
 
 export const getPermissions = () => api.get('/permissions')
 export const bulkUpdatePermissions = (updates) =>

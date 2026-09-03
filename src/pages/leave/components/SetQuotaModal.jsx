@@ -1,11 +1,11 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import Modal from '../../../components/ui/Modal'
-import FormField from '../../../components/form/FormField'
-import Input from '../../../components/form/Input'
-import Button from '../../../components/ui/Button'
-import { useSetLeaveQuota } from '../../../hooks/useLeaveBalance'
+import Modal from '@/components/ui/Modal'
+import FormField from '@/components/form/FormField'
+import Input from '@/components/form/Input'
+import Button from '@/components/ui/Button'
+import { useSetLeaveQuota } from '@/hooks/useLeaveBalance'
 
 const schema = z.object({
   totalDays: z.coerce.number().min(0, 'Cannot be negative'),

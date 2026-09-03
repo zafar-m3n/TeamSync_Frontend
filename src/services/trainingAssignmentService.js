@@ -1,4 +1,4 @@
-import api from '../lib/axios'
+import api from '@/lib/axios'
 
 export const getMyAssignments = (params) =>
   api.get('/training-assignments/mine', { params })

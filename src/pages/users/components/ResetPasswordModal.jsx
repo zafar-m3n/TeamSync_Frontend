@@ -1,11 +1,11 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import Modal from '../../../components/ui/Modal'
-import FormField from '../../../components/form/FormField'
-import Input from '../../../components/form/Input'
-import Button from '../../../components/ui/Button'
-import { useResetPassword } from '../../../hooks/useResetPassword'
+import Modal from '@/components/ui/Modal'
+import FormField from '@/components/form/FormField'
+import Input from '@/components/form/Input'
+import Button from '@/components/ui/Button'
+import { useResetPassword } from '@/hooks/useResetPassword'
 
 const schema = z
   .object({

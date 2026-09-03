@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { formatDistanceToNow } from 'date-fns'
 import { Icon } from '@iconify/react'
-import Badge from '../../../components/ui/Badge'
+import Badge from '@/components/ui/Badge'
 
 const TYPES = {
   employee_created: { icon: 'lucide:user-plus', tone: 'success', label: 'New employee' },

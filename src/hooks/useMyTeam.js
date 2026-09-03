@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { getMyTeam } from '../services/employeeService'
+import { getMyTeam } from '@/services/employeeService'
 
 export function useMyTeam() {
   return useQuery({

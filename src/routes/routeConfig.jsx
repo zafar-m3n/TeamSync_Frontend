@@ -1,24 +1,24 @@
-import DashboardPage from '../pages/dashboard/DashboardPage'
-import DepartmentsShiftsPage from '../pages/departments-shifts/DepartmentsShiftsPage'
-import EmployeeListPage from '../pages/employees/EmployeeListPage'
-import EmployeeFormPage from '../pages/employees/EmployeeFormPage'
-import EmployeeDetailPage from '../pages/employees/EmployeeDetailPage'
-import MyProfilePage from '../pages/employees/MyProfilePage'
-import UsersPage from '../pages/users/UsersPage'
-import RolesPermissionsPage from '../pages/roles-permissions/RolesPermissionsPage'
-import MyAttendancePage from '../pages/attendance/MyAttendancePage'
-import TeamAttendancePage from '../pages/attendance/TeamAttendancePage'
-import AllAttendancePage from '../pages/attendance/AllAttendancePage'
-import MyLeavePage from '../pages/leave/MyLeavePage'
-import TeamLeavePage from '../pages/leave/TeamLeavePage'
-import AllLeavePage from '../pages/leave/AllLeavePage'
-import MyGoalsPage from '../pages/goals/MyGoalsPage'
-import TeamGoalsPage from '../pages/goals/TeamGoalsPage'
-import AllGoalsPage from '../pages/goals/AllGoalsPage'
-import MyTrainingPage from '../pages/training/MyTrainingPage'
-import ManageTrainingPage from '../pages/training/ManageTrainingPage'
-import TrainingPage from '../pages/training/TrainingPage'
-import { SEEDED_ROLES } from '../lib/permissions'
+import DashboardPage from '@/pages/dashboard/DashboardPage'
+import DepartmentsShiftsPage from '@/pages/departments-shifts/DepartmentsShiftsPage'
+import EmployeeListPage from '@/pages/employees/EmployeeListPage'
+import EmployeeFormPage from '@/pages/employees/EmployeeFormPage'
+import EmployeeDetailPage from '@/pages/employees/EmployeeDetailPage'
+import MyProfilePage from '@/pages/employees/MyProfilePage'
+import UsersPage from '@/pages/users/UsersPage'
+import RolesPermissionsPage from '@/pages/roles-permissions/RolesPermissionsPage'
+import MyAttendancePage from '@/pages/attendance/MyAttendancePage'
+import TeamAttendancePage from '@/pages/attendance/TeamAttendancePage'
+import AllAttendancePage from '@/pages/attendance/AllAttendancePage'
+import MyLeavePage from '@/pages/leave/MyLeavePage'
+import TeamLeavePage from '@/pages/leave/TeamLeavePage'
+import AllLeavePage from '@/pages/leave/AllLeavePage'
+import MyGoalsPage from '@/pages/goals/MyGoalsPage'
+import TeamGoalsPage from '@/pages/goals/TeamGoalsPage'
+import AllGoalsPage from '@/pages/goals/AllGoalsPage'
+import MyTrainingPage from '@/pages/training/MyTrainingPage'
+import ManageTrainingPage from '@/pages/training/ManageTrainingPage'
+import TrainingPage from '@/pages/training/TrainingPage'
+import { SEEDED_ROLES } from '@/lib/permissions'
 
 export const moduleRoutes = [
   {
@@ -91,7 +91,7 @@ export const moduleRoutes = [
   },
   {
     path: 'my-attendance',
-    roles: SEEDED_ROLES,
+    roles: ['HR', 'Manager', 'Employee'],
     element: <MyAttendancePage />,
     navLabel: 'My Attendance',
     navIcon: 'lucide:calendar-check',
@@ -115,7 +115,7 @@ export const moduleRoutes = [
   },
   {
     path: 'my-leave',
-    roles: SEEDED_ROLES,
+    roles: ['HR', 'Manager', 'Employee'],
     element: <MyLeavePage />,
     navLabel: 'My Leave',
     navIcon: 'lucide:calendar-days',
@@ -139,7 +139,7 @@ export const moduleRoutes = [
   },
   {
     path: 'my-goals',
-    roles: SEEDED_ROLES,
+    roles: ['HR', 'Manager', 'Employee'],
     element: <MyGoalsPage />,
     navLabel: 'My Goals',
     navIcon: 'lucide:target',
@@ -163,7 +163,7 @@ export const moduleRoutes = [
   },
   {
     path: 'my-training',
-    roles: SEEDED_ROLES,
+    roles: ['HR', 'Manager', 'Employee'],
     element: <MyTrainingPage />,
     navLabel: 'My Training',
     navIcon: 'lucide:graduation-cap',

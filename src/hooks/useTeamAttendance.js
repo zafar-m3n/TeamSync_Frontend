@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { getTeamAttendance } from '../services/attendanceService'
+import { getTeamAttendance } from '@/services/attendanceService'
 
 export function useTeamAttendance(date) {
   return useQuery({

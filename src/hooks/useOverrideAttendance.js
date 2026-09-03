@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { overrideAttendance } from '../services/attendanceService'
-import { toast } from './useToast'
+import { overrideAttendance } from '@/services/attendanceService'
+import { toast } from '@/hooks/useToast'
 
 export function useOverrideAttendance() {
   const qc = useQueryClient()

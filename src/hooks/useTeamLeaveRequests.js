@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { getTeamLeaveRequests } from '../services/leaveRequestService'
+import { getTeamLeaveRequests } from '@/services/leaveRequestService'
 
 export function useTeamLeaveRequests(params) {
   return useQuery({

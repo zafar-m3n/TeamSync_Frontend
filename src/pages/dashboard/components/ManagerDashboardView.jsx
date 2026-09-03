@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom'
 import { format } from 'date-fns'
-import Badge from '../../../components/ui/Badge'
-import Table from '../../../components/ui/Table'
-import { useAuth } from '../../../store/AuthContext'
+import Badge from '@/components/ui/Badge'
+import Table from '@/components/ui/Table'
+import { useAuth } from '@/store/AuthContext'
 
 const HEADER_LINK =
   'rounded text-sm font-medium text-accent transition-colors hover:text-accent/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent'
@@ -57,7 +57,7 @@ export default function ManagerDashboardView({ data }) {
     <div className="space-y-8">
       <section>
         <div className="mb-3 flex items-center justify-between gap-2">
-          <h2 className="font-display text-xl text-primary">Team attendance today</h2>
+          <h2 className="text-xl text-primary">Team attendance today</h2>
           <Link to={`${base}/team-attendance`} className={HEADER_LINK}>
             View all
           </Link>
@@ -83,7 +83,7 @@ export default function ManagerDashboardView({ data }) {
       <section>
         <div className="mb-3 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <h2 className="font-display text-xl text-primary">Pending leave approvals</h2>
+            <h2 className="text-xl text-primary">Pending leave approvals</h2>
             <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
               {pendingLeaveApprovals.length}
             </span>
@@ -110,7 +110,7 @@ export default function ManagerDashboardView({ data }) {
 
       <section>
         <div className="mb-3 flex items-center justify-between gap-2">
-          <h2 className="font-display text-xl text-primary">Team goal progress</h2>
+          <h2 className="text-xl text-primary">Team goal progress</h2>
           <Link to={`${base}/team-goals`} className={HEADER_LINK}>
             View all
           </Link>

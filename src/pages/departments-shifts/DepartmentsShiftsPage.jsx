@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import Tabs from '../../components/ui/Tabs'
-import DepartmentsTab from './components/DepartmentsTab'
-import ShiftsTab from './components/ShiftsTab'
+import Tabs from '@/components/ui/Tabs'
+import DepartmentsTab from '@/pages/departments-shifts/components/DepartmentsTab'
+import ShiftsTab from '@/pages/departments-shifts/components/ShiftsTab'
 
 const TABS = [
   { key: 'departments', label: 'Departments' },

@@ -1,10 +1,10 @@
-import { useAuth } from '../../store/AuthContext'
-import { useDashboard } from '../../hooks/useDashboard'
-import Spinner from '../../components/ui/Spinner'
-import Button from '../../components/ui/Button'
-import EmployeeDashboardView from './components/EmployeeDashboardView'
-import ManagerDashboardView from './components/ManagerDashboardView'
-import AdminDashboardView from './components/AdminDashboardView'
+import { useAuth } from '@/store/AuthContext'
+import { useDashboard } from '@/hooks/useDashboard'
+import Spinner from '@/components/ui/Spinner'
+import Button from '@/components/ui/Button'
+import EmployeeDashboardView from '@/pages/dashboard/components/EmployeeDashboardView'
+import ManagerDashboardView from '@/pages/dashboard/components/ManagerDashboardView'
+import AdminDashboardView from '@/pages/dashboard/components/AdminDashboardView'
 
 export default function DashboardPage() {
   const { user } = useAuth()

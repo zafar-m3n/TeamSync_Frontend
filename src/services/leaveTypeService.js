@@ -1,4 +1,4 @@
-import api from '../lib/axios'
+import api from '@/lib/axios'
 
 export const getLeaveTypes = () => api.get('/leave-types')
 export const createLeaveType = (data) => api.post('/leave-types', data)

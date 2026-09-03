@@ -1,4 +1,4 @@
-import api from '../lib/axios'
+import api from '@/lib/axios'
 
 export const getMyGoals = (params) => api.get('/goals/me', { params })
 export const getTeamGoals = (params) => api.get('/goals/team', { params })

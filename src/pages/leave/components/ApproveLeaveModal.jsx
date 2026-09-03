@@ -1,8 +1,8 @@
-import Modal from '../../../components/ui/Modal'
-import Button from '../../../components/ui/Button'
-import { useLeaveBalance } from '../../../hooks/useLeaveBalance'
-import { useApproveLeaveRequest } from '../../../hooks/useLeaveRequestMutations'
-import { computeLeaveDays } from '../utils/computeLeaveDays'
+import Modal from '@/components/ui/Modal'
+import Button from '@/components/ui/Button'
+import { useLeaveBalance } from '@/hooks/useLeaveBalance'
+import { useApproveLeaveRequest } from '@/hooks/useLeaveRequestMutations'
+import { computeLeaveDays } from '@/pages/leave/utils/computeLeaveDays'
 
 export default function ApproveLeaveModal({ request, onClose }) {
   const year = new Date(request.startDate).getFullYear()

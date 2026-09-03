@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react'
 import { format } from 'date-fns'
-import Table from '../../components/ui/Table'
-import TableSkeleton from '../../components/ui/TableSkeleton'
-import Button from '../../components/ui/Button'
-import ProgressBar from '../../components/ui/ProgressBar'
-import { useTeamGoals } from '../../hooks/useTeamGoals'
-import GoalFormModal from './components/GoalFormModal'
-import RecordActualModal from './components/RecordActualModal'
+import Table from '@/components/ui/Table'
+import TableSkeleton from '@/components/ui/TableSkeleton'
+import Button from '@/components/ui/Button'
+import ProgressBar from '@/components/ui/ProgressBar'
+import { useTeamGoals } from '@/hooks/useTeamGoals'
+import GoalFormModal from '@/pages/goals/components/GoalFormModal'
+import RecordActualModal from '@/pages/goals/components/RecordActualModal'
 
 const LIMIT = 10
 

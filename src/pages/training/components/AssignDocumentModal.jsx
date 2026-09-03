@@ -1,13 +1,13 @@
 import { Controller, useForm } from 'react-hook-form'
 import Select from 'react-select'
 import clsx from 'clsx'
-import Modal from '../../../components/ui/Modal'
-import FormField from '../../../components/form/FormField'
-import Button from '../../../components/ui/Button'
-import { useMyTeam } from '../../../hooks/useMyTeam'
-import { useMyProfile } from '../../../hooks/useMyProfile'
-import { useDepartments } from '../../../hooks/useDepartments'
-import { useCreateAssignment } from '../../../hooks/useTrainingMutations'
+import Modal from '@/components/ui/Modal'
+import FormField from '@/components/form/FormField'
+import Button from '@/components/ui/Button'
+import { useMyTeam } from '@/hooks/useMyTeam'
+import { useMyProfile } from '@/hooks/useMyProfile'
+import { useDepartments } from '@/hooks/useDepartments'
+import { useCreateAssignment } from '@/hooks/useTrainingMutations'
 
 const rsClassNames = {
   control: ({ isFocused, isDisabled }) =>

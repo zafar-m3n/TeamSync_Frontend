@@ -9,18 +9,18 @@ import { format } from 'date-fns'
 import { Icon } from '@iconify/react'
 import clsx from 'clsx'
 import 'react-day-picker/style.css'
-import FormField from '../../components/form/FormField'
-import Input from '../../components/form/Input'
-import Button from '../../components/ui/Button'
-import Spinner from '../../components/ui/Spinner'
-import { useAuth } from '../../store/AuthContext'
-import { toast } from '../../hooks/useToast'
-import { useRoles } from '../../hooks/useRoles'
-import { useDepartments } from '../../hooks/useDepartments'
-import { useEmployees, useCreateEmployee } from '../../hooks/useEmployees'
-import { useEmployee, useUpdateEmployee } from '../../hooks/useEmployee'
-import ContactFields from './components/ContactFields'
-import BankingFields from './components/BankingFields'
+import FormField from '@/components/form/FormField'
+import Input from '@/components/form/Input'
+import Button from '@/components/ui/Button'
+import Spinner from '@/components/ui/Spinner'
+import { useAuth } from '@/store/AuthContext'
+import { toast } from '@/hooks/useToast'
+import { useRoles } from '@/hooks/useRoles'
+import { useDepartments } from '@/hooks/useDepartments'
+import { useEmployees, useCreateEmployee } from '@/hooks/useEmployees'
+import { useEmployee, useUpdateEmployee } from '@/hooks/useEmployee'
+import ContactFields from '@/pages/employees/components/ContactFields'
+import BankingFields from '@/pages/employees/components/BankingFields'
 
 const EMPLOYMENT_TYPES = ['Full-time', 'Part-time', 'Contract', 'Intern', 'Probation']
 
@@ -262,7 +262,7 @@ function useDebouncedValue(value, delay) {
 function SectionHeading({ children, hint }) {
   return (
     <div className="border-b border-gray-200 pb-2">
-      <h2 className="font-display text-lg text-primary">{children}</h2>
+      <h2 className="text-lg text-primary">{children}</h2>
       {hint && <p className="text-xs text-gray-500">{hint}</p>}
     </div>
   )
@@ -412,7 +412,7 @@ export default function EmployeeFormPage({ mode }) {
 
   return (
     <div className="mx-auto max-w-3xl space-y-8 pb-16">
-      <h1 className="font-display text-2xl text-primary">
+      <h1 className="text-2xl text-primary">
         {isEdit ? 'Edit Employee' : 'New Employee'}
       </h1>
 

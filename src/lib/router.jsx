@@ -1,10 +1,10 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
-import LoginPage from '../pages/auth/LoginPage'
-import NotFoundPage from '../pages/NotFoundPage'
-import ProtectedRoute from '../routes/ProtectedRoute'
-import AppLayout from '../components/layout/AppLayout'
-import { moduleRoutes, buildRoleRoutes } from '../routes/routeConfig'
-import { useAuth } from '../store/AuthContext'
+import LoginPage from '@/pages/auth/LoginPage'
+import NotFoundPage from '@/pages/NotFoundPage'
+import ProtectedRoute from '@/routes/ProtectedRoute'
+import AppLayout from '@/components/layout/AppLayout'
+import { moduleRoutes, buildRoleRoutes } from '@/routes/routeConfig'
+import { useAuth } from '@/store/AuthContext'
 
 function RootRedirect() {
   const { user } = useAuth()

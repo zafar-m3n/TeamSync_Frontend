@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
-import Table from '../../../components/ui/Table'
-import TableSkeleton from '../../../components/ui/TableSkeleton'
-import Modal from '../../../components/ui/Modal'
-import Button from '../../../components/ui/Button'
-import Input from '../../../components/form/Input'
-import { useDepartments, useDeleteDepartment } from '../../../hooks/useDepartments'
-import DepartmentFormModal from './DepartmentFormModal'
+import Table from '@/components/ui/Table'
+import TableSkeleton from '@/components/ui/TableSkeleton'
+import Modal from '@/components/ui/Modal'
+import Button from '@/components/ui/Button'
+import Input from '@/components/form/Input'
+import { useDepartments, useDeleteDepartment } from '@/hooks/useDepartments'
+import DepartmentFormModal from '@/pages/departments-shifts/components/DepartmentFormModal'
 
 const LIMIT = 10
 

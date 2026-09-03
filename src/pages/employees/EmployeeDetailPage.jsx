@@ -1,10 +1,10 @@
 import { useParams } from 'react-router-dom'
-import { useEmployee } from '../../hooks/useEmployee'
-import { useAuth } from '../../store/AuthContext'
-import { hasPermission } from '../../lib/permissions'
-import Spinner from '../../components/ui/Spinner'
-import Button from '../../components/ui/Button'
-import EmployeeDetailView from './components/EmployeeDetailView'
+import { useEmployee } from '@/hooks/useEmployee'
+import { useAuth } from '@/store/AuthContext'
+import { hasPermission } from '@/lib/permissions'
+import Spinner from '@/components/ui/Spinner'
+import Button from '@/components/ui/Button'
+import EmployeeDetailView from '@/pages/employees/components/EmployeeDetailView'
 
 export default function EmployeeDetailPage() {
   const { employeeId } = useParams()

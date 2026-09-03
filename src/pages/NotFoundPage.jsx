@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { useAuth } from '../store/AuthContext'
+import { useAuth } from '@/store/AuthContext'
 
 export default function NotFoundPage() {
   const { user } = useAuth()
@@ -7,7 +7,7 @@ export default function NotFoundPage() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-gray-50 px-4 text-center">
-      <h1 className="font-display text-4xl text-primary">Page not found</h1>
+      <h1 className="text-4xl text-primary">Page not found</h1>
       <p className="max-w-sm text-sm text-gray-500">
         We couldn&rsquo;t find that page. It may have moved, or the link might be out
         of date.

@@ -3,10 +3,10 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import Select from 'react-select'
 import clsx from 'clsx'
-import Modal from '../../../components/ui/Modal'
-import FormField from '../../../components/form/FormField'
-import Button from '../../../components/ui/Button'
-import { useOverrideAttendance } from '../../../hooks/useOverrideAttendance'
+import Modal from '@/components/ui/Modal'
+import FormField from '@/components/form/FormField'
+import Button from '@/components/ui/Button'
+import { useOverrideAttendance } from '@/hooks/useOverrideAttendance'
 
 // Absent is intentionally excluded — this endpoint can only move a record
 // out of Absent, never back into it.

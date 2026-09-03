@@ -1,5 +1,5 @@
-import { useShifts } from '../../../hooks/useShifts'
-import { useAssignShift } from '../../../hooks/useEmployee'
+import { useShifts } from '@/hooks/useShifts'
+import { useAssignShift } from '@/hooks/useEmployee'
 
 export default function ShiftAssignControl({ employeeId, currentShiftId }) {
   const { data: shifts = [], isLoading } = useShifts()

@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { Icon } from '@iconify/react'
-import { useAuth } from '../../../store/AuthContext'
-import { hasPermission } from '../../../lib/permissions'
-import { useLeaveBalance } from '../../../hooks/useLeaveBalance'
-import SetQuotaModal from './SetQuotaModal'
+import { useAuth } from '@/store/AuthContext'
+import { hasPermission } from '@/lib/permissions'
+import { useLeaveBalance } from '@/hooks/useLeaveBalance'
+import SetQuotaModal from '@/pages/leave/components/SetQuotaModal'
 
 export default function LeaveBalanceChip({ employeeId, year }) {
   const { user } = useAuth()

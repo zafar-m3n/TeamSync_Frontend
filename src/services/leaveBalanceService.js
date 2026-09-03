@@ -1,4 +1,4 @@
-import api from '../lib/axios'
+import api from '@/lib/axios'
 
 export const getLeaveBalance = (employeeId, year) =>
   api.get(
