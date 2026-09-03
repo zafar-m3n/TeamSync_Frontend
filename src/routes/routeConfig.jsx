@@ -6,6 +6,9 @@ import EmployeeDetailPage from '../pages/employees/EmployeeDetailPage'
 import MyProfilePage from '../pages/employees/MyProfilePage'
 import UsersPage from '../pages/users/UsersPage'
 import RolesPermissionsPage from '../pages/roles-permissions/RolesPermissionsPage'
+import MyAttendancePage from '../pages/attendance/MyAttendancePage'
+import TeamAttendancePage from '../pages/attendance/TeamAttendancePage'
+import AllAttendancePage from '../pages/attendance/AllAttendancePage'
 import { SEEDED_ROLES } from '../lib/permissions'
 
 export const moduleRoutes = [
@@ -76,6 +79,30 @@ export const moduleRoutes = [
     navLabel: 'Roles & Permissions',
     navIcon: 'lucide:shield-check',
     navOrder: 4,
+  },
+  {
+    path: 'my-attendance',
+    roles: SEEDED_ROLES,
+    element: <MyAttendancePage />,
+    navLabel: 'My Attendance',
+    navIcon: 'lucide:calendar-check',
+    navOrder: 5,
+  },
+  {
+    path: 'team-attendance',
+    roles: ['Manager'],
+    element: <TeamAttendancePage />,
+    navLabel: 'Team Attendance',
+    navIcon: 'lucide:calendar-check',
+    navOrder: 5,
+  },
+  {
+    path: 'attendance',
+    roles: ['HR', 'Admin'],
+    element: <AllAttendancePage />,
+    navLabel: 'Attendance',
+    navIcon: 'lucide:calendar-check',
+    navOrder: 5,
   },
   {
     path: 'my-profile',
