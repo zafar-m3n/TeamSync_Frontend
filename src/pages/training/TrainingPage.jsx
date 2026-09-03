@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import Select from 'react-select'
 import { format } from 'date-fns'
-import clsx from 'clsx'
+import Select from '@/components/ui/Select'
 import Tabs from '@/components/ui/Tabs'
 import Table from '@/components/ui/Table'
 import TableSkeleton from '@/components/ui/TableSkeleton'
@@ -22,35 +21,6 @@ const TABS = [
   { key: 'assignments', label: 'Assignments' },
   { key: 'categories', label: 'Categories' },
 ]
-
-const rsClassNames = {
-  control: ({ isFocused }) =>
-    clsx(
-      'flex min-h-[38px] items-center rounded-md border bg-white pl-2 pr-1 text-sm transition-colors',
-      isFocused ? 'border-accent ring-2 ring-accent' : 'border-gray-300',
-    ),
-  valueContainer: () => 'px-1 py-1',
-  placeholder: () => 'text-gray-400',
-  singleValue: () => 'text-text',
-  input: () => 'text-sm text-text',
-  dropdownIndicator: () => 'px-1.5 text-gray-400',
-  clearIndicator: () => 'px-1.5 text-gray-400 hover:text-text',
-  indicatorSeparator: () => 'mx-1 w-px self-stretch bg-gray-200',
-  menu: () => 'mt-1 overflow-hidden rounded-md border border-gray-200 bg-white shadow-lg',
-  menuList: () => 'py-1',
-  option: ({ isFocused, isSelected }) =>
-    clsx(
-      'cursor-pointer px-3 py-2 text-sm',
-      isSelected
-        ? 'bg-accent text-white'
-        : isFocused
-          ? 'bg-gray-100 text-text'
-          : 'text-text',
-    ),
-  noOptionsMessage: () => 'px-3 py-2 text-sm text-gray-400',
-}
-
-const portalStyles = { menuPortal: (base) => ({ ...base, zIndex: 60 }) }
 
 function fmtDate(value) {
   if (!value) return '—'
@@ -134,11 +104,7 @@ function DocumentsTab() {
       <div className="w-64">
         <label className="mb-1 block text-xs font-medium text-gray-500">Category</label>
         <Select
-          unstyled
           isClearable
-          classNames={rsClassNames}
-          menuPortalTarget={document.body}
-          styles={portalStyles}
           options={categoryOptions}
           value={category}
           onChange={(opt) => setCategory(opt ?? null)}
@@ -253,11 +219,7 @@ function AssignmentsTab() {
         <div>
           <label className="mb-1 block text-xs font-medium text-gray-500">Document</label>
           <Select
-            unstyled
             isClearable
-            classNames={rsClassNames}
-            menuPortalTarget={document.body}
-            styles={portalStyles}
             options={documentOptions}
             value={document_}
             onChange={(opt) => setDocument(opt ?? null)}
@@ -267,11 +229,7 @@ function AssignmentsTab() {
         <div>
           <label className="mb-1 block text-xs font-medium text-gray-500">Employee</label>
           <Select
-            unstyled
             isClearable
-            classNames={rsClassNames}
-            menuPortalTarget={document.body}
-            styles={portalStyles}
             options={employeeOptions}
             filterOption={() => true}
             onInputChange={(v) => setEmployeeQuery(v)}
@@ -283,11 +241,7 @@ function AssignmentsTab() {
         <div>
           <label className="mb-1 block text-xs font-medium text-gray-500">Department</label>
           <Select
-            unstyled
             isClearable
-            classNames={rsClassNames}
-            menuPortalTarget={document.body}
-            styles={portalStyles}
             options={departmentOptions}
             value={dept}
             onChange={(opt) => setDept(opt ?? null)}

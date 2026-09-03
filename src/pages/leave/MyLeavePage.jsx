@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { format } from 'date-fns'
+import Select from '@/components/ui/Select'
 import Table from '@/components/ui/Table'
 import TableSkeleton from '@/components/ui/TableSkeleton'
 import Button from '@/components/ui/Button'
@@ -19,6 +20,11 @@ const LIMIT = 10
 const STATUSES = ['Pending', 'Approved', 'Rejected', 'Cancelled']
 const CURRENT_YEAR = new Date().getFullYear()
 const YEARS = [CURRENT_YEAR + 1, CURRENT_YEAR, CURRENT_YEAR - 1, CURRENT_YEAR - 2]
+const YEAR_OPTIONS = YEARS.map((y) => ({ value: y, label: String(y) }))
+const STATUS_OPTIONS = [
+  { value: 'all', label: 'All' },
+  ...STATUSES.map((s) => ({ value: s, label: s })),
+]
 
 const columns = [
   { key: 'leaveType', header: 'Leave Type' },
@@ -74,17 +80,13 @@ export default function MyLeavePage() {
       <div className="flex flex-wrap items-center gap-3">
         <div>
           <label className="mb-1 block text-xs font-medium text-gray-500">Year</label>
-          <select
-            value={year}
-            onChange={(e) => setYear(Number(e.target.value))}
-            className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent"
-          >
-            {YEARS.map((y) => (
-              <option key={y} value={y}>
-                {y}
-              </option>
-            ))}
-          </select>
+          <div className="w-40">
+            <Select
+              options={YEAR_OPTIONS}
+              value={YEAR_OPTIONS.find((o) => o.value === year) ?? null}
+              onChange={(opt) => setYear(opt.value)}
+            />
+          </div>
         </div>
         <Button variant="accent" className="ml-auto" onClick={() => setShowForm(true)}>
           Request Leave
@@ -100,18 +102,13 @@ export default function MyLeavePage() {
       <div className="space-y-4">
         <div>
           <label className="mb-1 block text-xs font-medium text-gray-500">Status</label>
-          <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent"
-          >
-            <option value="all">All</option>
-            {STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
+          <div className="w-40">
+            <Select
+              options={STATUS_OPTIONS}
+              value={STATUS_OPTIONS.find((o) => o.value === status) ?? null}
+              onChange={(opt) => setStatus(opt.value)}
+            />
+          </div>
         </div>
 
         {isLoading ? (

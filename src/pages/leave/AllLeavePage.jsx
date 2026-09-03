@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import Select from 'react-select'
 import { DayPicker } from 'react-day-picker'
 import { format } from 'date-fns'
 import { Icon } from '@iconify/react'
-import clsx from 'clsx'
 import 'react-day-picker/style.css'
+import Select from '@/components/ui/Select'
 import Tabs from '@/components/ui/Tabs'
 import Table from '@/components/ui/Table'
 import TableSkeleton from '@/components/ui/TableSkeleton'
@@ -45,33 +44,6 @@ const columns = [
   { key: 'balance', header: 'Balance' },
   { key: 'actions', header: 'Actions' },
 ]
-
-const rsClassNames = {
-  control: ({ isFocused }) =>
-    clsx(
-      'flex min-h-[38px] items-center rounded-md border bg-white pl-2 pr-1 text-sm transition-colors',
-      isFocused ? 'border-accent ring-2 ring-accent' : 'border-gray-300',
-    ),
-  valueContainer: () => 'px-1 py-1',
-  placeholder: () => 'text-gray-400',
-  singleValue: () => 'text-text',
-  input: () => 'text-sm text-text',
-  dropdownIndicator: () => 'px-1.5 text-gray-400',
-  clearIndicator: () => 'px-1.5 text-gray-400 hover:text-text',
-  indicatorSeparator: () => 'mx-1 w-px self-stretch bg-gray-200',
-  menu: () => 'mt-1 overflow-hidden rounded-md border border-gray-200 bg-white shadow-lg',
-  menuList: () => 'py-1',
-  option: ({ isFocused, isSelected }) =>
-    clsx(
-      'cursor-pointer px-3 py-2 text-sm',
-      isSelected
-        ? 'bg-accent text-white'
-        : isFocused
-          ? 'bg-gray-100 text-text'
-          : 'text-text',
-    ),
-  noOptionsMessage: () => 'px-3 py-2 text-sm text-gray-400',
-}
 
 function toYmd(d) {
   const p = (n) => String(n).padStart(2, '0')
@@ -226,11 +198,7 @@ function RequestsTab() {
         <div>
           <label className="mb-1 block text-xs font-medium text-gray-500">Employee</label>
           <Select
-            unstyled
             isClearable
-            classNames={rsClassNames}
-            menuPortalTarget={document.body}
-            styles={{ menuPortal: (base) => ({ ...base, zIndex: 60 }) }}
             options={employeeOptions}
             filterOption={() => true}
             onInputChange={(v) => setEmployeeQuery(v)}
@@ -242,11 +210,7 @@ function RequestsTab() {
         <div>
           <label className="mb-1 block text-xs font-medium text-gray-500">Status</label>
           <Select
-            unstyled
             isClearable
-            classNames={rsClassNames}
-            menuPortalTarget={document.body}
-            styles={{ menuPortal: (base) => ({ ...base, zIndex: 60 }) }}
             options={STATUS_OPTIONS}
             value={status}
             onChange={(opt) => setStatus(opt ?? null)}

@@ -1,8 +1,7 @@
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import Select from 'react-select'
-import clsx from 'clsx'
+import Select from '@/components/ui/Select'
 import Modal from '@/components/ui/Modal'
 import FormField from '@/components/form/FormField'
 import Button from '@/components/ui/Button'
@@ -18,31 +17,6 @@ const STATUS_OPTIONS = ['Present', 'Late', 'Half-day'].map((s) => ({
 const schema = z.object({
   status: z.enum(['Present', 'Late', 'Half-day'], { message: 'Choose a status' }),
 })
-
-const rsClassNames = {
-  control: ({ isFocused }) =>
-    clsx(
-      'flex min-h-[38px] items-center rounded-md border bg-white pl-2 pr-1 text-sm transition-colors',
-      isFocused ? 'border-accent ring-2 ring-accent' : 'border-gray-300',
-    ),
-  valueContainer: () => 'px-1 py-1',
-  placeholder: () => 'text-gray-400',
-  singleValue: () => 'text-text',
-  input: () => 'text-sm text-text',
-  dropdownIndicator: () => 'px-1.5 text-gray-400',
-  indicatorSeparator: () => 'mx-1 w-px self-stretch bg-gray-200',
-  menu: () => 'mt-1 overflow-hidden rounded-md border border-gray-200 bg-white shadow-lg',
-  menuList: () => 'py-1',
-  option: ({ isFocused, isSelected }) =>
-    clsx(
-      'cursor-pointer px-3 py-2 text-sm',
-      isSelected
-        ? 'bg-accent text-white'
-        : isFocused
-          ? 'bg-gray-100 text-text'
-          : 'text-text',
-    ),
-}
 
 export default function OverrideAttendanceModal({ record, onClose }) {
   const mutation = useOverrideAttendance()
@@ -100,10 +74,6 @@ export default function OverrideAttendanceModal({ record, onClose }) {
             name="status"
             render={({ field }) => (
               <Select
-                unstyled
-                classNames={rsClassNames}
-                menuPortalTarget={document.body}
-                styles={{ menuPortal: (base) => ({ ...base, zIndex: 60 }) }}
                 options={STATUS_OPTIONS}
                 placeholder="Select a status…"
                 value={STATUS_OPTIONS.find((o) => o.value === field.value) ?? null}

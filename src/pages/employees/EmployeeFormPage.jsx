@@ -3,12 +3,11 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import Select from 'react-select'
 import { DayPicker } from 'react-day-picker'
 import { format } from 'date-fns'
 import { Icon } from '@iconify/react'
-import clsx from 'clsx'
 import 'react-day-picker/style.css'
+import Select from '@/components/ui/Select'
 import FormField from '@/components/form/FormField'
 import Input from '@/components/form/Input'
 import Button from '@/components/ui/Button'
@@ -210,46 +209,6 @@ function DateField({ id, value, onChange }) {
   )
 }
 
-const rsClassNames = {
-  control: ({ isFocused }) =>
-    clsx(
-      'flex min-h-[38px] items-center rounded-md border bg-white pl-2 pr-1 text-sm transition-colors',
-      isFocused ? 'border-accent ring-2 ring-accent' : 'border-gray-300',
-    ),
-  valueContainer: () => 'flex flex-wrap gap-1 py-1',
-  placeholder: () => 'text-gray-400',
-  singleValue: () => 'text-text',
-  input: () => 'text-sm text-text',
-  indicatorsContainer: () => 'flex items-center',
-  dropdownIndicator: () => 'px-1.5 text-gray-400',
-  clearIndicator: () => 'px-1.5 text-gray-400 hover:text-text',
-  indicatorSeparator: () => 'mx-1 w-px self-stretch bg-gray-200',
-  menu: () => 'mt-1 overflow-hidden rounded-md border border-gray-200 bg-white shadow-lg',
-  menuList: () => 'py-1',
-  option: ({ isFocused, isSelected }) =>
-    clsx(
-      'cursor-pointer px-3 py-2 text-sm',
-      isSelected
-        ? 'bg-accent text-white'
-        : isFocused
-          ? 'bg-gray-100 text-text'
-          : 'text-text',
-    ),
-  noOptionsMessage: () => 'px-3 py-2 text-sm text-gray-400',
-}
-
-function RSelect(props) {
-  return (
-    <Select
-      unstyled
-      classNames={rsClassNames}
-      menuPortalTarget={document.body}
-      styles={{ menuPortal: (base) => ({ ...base, zIndex: 60 }) }}
-      {...props}
-    />
-  )
-}
-
 function useDebouncedValue(value, delay) {
   const [debounced, setDebounced] = useState(value)
   useEffect(() => {
@@ -442,7 +401,7 @@ export default function EmployeeFormPage({ mode }) {
                 control={control}
                 name="roleId"
                 render={({ field }) => (
-                  <RSelect
+                  <Select
                     options={roleOptions}
                     placeholder="Select a role…"
                     value={roleOptions.find((o) => o.value === field.value) ?? null}
@@ -500,7 +459,7 @@ export default function EmployeeFormPage({ mode }) {
                 control={control}
                 name="departmentId"
                 render={({ field }) => (
-                  <RSelect
+                  <Select
                     isClearable
                     options={departmentOptions}
                     placeholder="Select a department…"
@@ -534,7 +493,7 @@ export default function EmployeeFormPage({ mode }) {
                 control={control}
                 name="employmentType"
                 render={({ field }) => (
-                  <RSelect
+                  <Select
                     isClearable
                     options={employmentOptions}
                     placeholder="Select a type…"
@@ -552,7 +511,7 @@ export default function EmployeeFormPage({ mode }) {
                 control={control}
                 name="managerId"
                 render={({ field }) => (
-                  <RSelect
+                  <Select
                     isClearable
                     options={managerOptions}
                     placeholder="Search employees…"

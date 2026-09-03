@@ -1,28 +1,23 @@
+import Select from '@/components/ui/Select'
 import { useShifts } from '@/hooks/useShifts'
 import { useAssignShift } from '@/hooks/useEmployee'
 
 export default function ShiftAssignControl({ employeeId, currentShiftId }) {
   const { data: shifts = [], isLoading } = useShifts()
   const assign = useAssignShift()
+  const busy = isLoading || assign.isPending
+  const options = shifts.map((s) => ({ value: s.id, label: s.name }))
 
   return (
-    <select
-      value={currentShiftId ?? ''}
-      disabled={isLoading || assign.isPending}
-      onChange={(e) => {
-        const shiftId = Number(e.target.value)
-        if (shiftId) assign.mutate({ id: employeeId, shiftId })
+    <Select
+      isDisabled={busy}
+      isLoading={busy}
+      options={options}
+      placeholder="Select a shift…"
+      value={options.find((o) => o.value === currentShiftId) ?? null}
+      onChange={(opt) => {
+        if (opt?.value) assign.mutate({ id: employeeId, shiftId: opt.value })
       }}
-      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent disabled:opacity-50"
-    >
-      <option value="" disabled>
-        Select a shift…
-      </option>
-      {shifts.map((s) => (
-        <option key={s.id} value={s.id}>
-          {s.name}
-        </option>
-      ))}
-    </select>
+    />
   )
 }

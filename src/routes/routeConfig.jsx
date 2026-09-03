@@ -203,13 +203,20 @@ export function buildRoleRoutes(routes) {
   )
 }
 
+// Sidebar-only label overrides. The route's navLabel still drives the Topbar
+// page title; only the nav item text changes here.
+const SIDEBAR_LABEL_OVERRIDES = {
+  Goals: 'Performance Goals',
+  Training: 'Training Documents',
+}
+
 export function buildNavItems(routes, roleName) {
   return routes
     .filter((r) => r.navLabel && r.roles.includes(roleName))
     .sort((a, b) => a.navOrder - b.navOrder)
     .map((r) => ({
       path: `/${roleName.toLowerCase()}/${r.path}`,
-      label: r.navLabel,
+      label: SIDEBAR_LABEL_OVERRIDES[r.navLabel] ?? r.navLabel,
       icon: r.navIcon,
     }))
 }

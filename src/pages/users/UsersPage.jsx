@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
-import Select from 'react-select'
 import clsx from 'clsx'
+import Select from '@/components/ui/Select'
 import Table from '@/components/ui/Table'
 import TableSkeleton from '@/components/ui/TableSkeleton'
 import Badge from '@/components/ui/Badge'
@@ -20,32 +20,11 @@ const columns = [
   { key: 'actions', header: 'Actions' },
 ]
 
-const selectClassNames = {
-  control: ({ isFocused }) =>
-    clsx(
-      'flex min-h-[38px] items-center rounded-md border bg-white pl-2 pr-1 text-sm transition-colors',
-      isFocused ? 'border-accent ring-2 ring-accent' : 'border-gray-300',
-    ),
-  valueContainer: () => 'px-1 py-1',
-  placeholder: () => 'text-gray-400',
-  singleValue: () => 'text-text',
-  input: () => 'text-sm text-text',
-  dropdownIndicator: () => 'px-1.5 text-gray-400',
-  clearIndicator: () => 'px-1.5 text-gray-400 hover:text-text',
-  indicatorSeparator: () => 'mx-1 w-px self-stretch bg-gray-200',
-  menu: () => 'mt-1 overflow-hidden rounded-md border border-gray-200 bg-white shadow-lg',
-  menuList: () => 'py-1',
-  option: ({ isFocused, isSelected }) =>
-    clsx(
-      'cursor-pointer px-3 py-2 text-sm',
-      isSelected
-        ? 'bg-accent text-white'
-        : isFocused
-          ? 'bg-gray-100 text-text'
-          : 'text-text',
-    ),
-  noOptionsMessage: () => 'px-3 py-2 text-sm text-gray-400',
-}
+const STATUS_OPTIONS = [
+  { value: 'all', label: 'All' },
+  { value: 'active', label: 'Active' },
+  { value: 'inactive', label: 'Inactive' },
+]
 
 // Switch-style toggle. Small and generic — could move to components/ui/ later.
 function StatusToggle({ checked, disabled, onChange, label }) {
@@ -111,11 +90,7 @@ export default function UsersPage() {
         <div className="w-56">
           <label className="mb-1 block text-xs font-medium text-gray-500">Role</label>
           <Select
-            unstyled
             isClearable
-            classNames={selectClassNames}
-            menuPortalTarget={document.body}
-            styles={{ menuPortal: (base) => ({ ...base, zIndex: 60 }) }}
             options={roleOptions}
             placeholder="All roles"
             value={roleOptions.find((o) => o.value === roleId) ?? null}
@@ -127,18 +102,16 @@ export default function UsersPage() {
         </div>
         <div>
           <label className="mb-1 block text-xs font-medium text-gray-500">Status</label>
-          <select
-            value={status}
-            onChange={(e) => {
-              setStatus(e.target.value)
-              setPage(1)
-            }}
-            className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent"
-          >
-            <option value="all">All</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </select>
+          <div className="w-40">
+            <Select
+              options={STATUS_OPTIONS}
+              value={STATUS_OPTIONS.find((o) => o.value === status) ?? null}
+              onChange={(opt) => {
+                setStatus(opt.value)
+                setPage(1)
+              }}
+            />
+          </div>
         </div>
       </div>
 

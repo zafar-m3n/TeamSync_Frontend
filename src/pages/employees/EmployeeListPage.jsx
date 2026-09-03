@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import Select from '@/components/ui/Select'
 import Table from '@/components/ui/Table'
 import TableSkeleton from '@/components/ui/TableSkeleton'
 import Button from '@/components/ui/Button'
@@ -92,7 +93,10 @@ function AllList() {
 
   const { data, isLoading, isError, error, refetch } = useEmployees(params)
   const { data: deptData } = useDepartments({ page: 1, limit: 200 })
-  const departments = deptData?.rows ?? []
+  const departmentOptions = [
+    { value: '', label: 'All departments' },
+    ...(deptData?.rows ?? []).map((d) => ({ value: String(d.id), label: d.name })),
+  ]
 
   const rows = data?.rows ?? []
   const meta = data?.meta
@@ -108,18 +112,13 @@ function AllList() {
           onChange={(e) => setSearch(e.target.value)}
           className="max-w-xs"
         />
-        <select
-          value={departmentId}
-          onChange={(e) => setDepartmentId(e.target.value)}
-          className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent"
-        >
-          <option value="">All departments</option>
-          {departments.map((d) => (
-            <option key={d.id} value={d.id}>
-              {d.name}
-            </option>
-          ))}
-        </select>
+        <div className="w-56">
+          <Select
+            options={departmentOptions}
+            value={departmentOptions.find((o) => o.value === departmentId) ?? null}
+            onChange={(opt) => setDepartmentId(opt.value)}
+          />
+        </div>
         <Button
           variant="accent"
           className="ml-auto"

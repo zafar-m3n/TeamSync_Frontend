@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { format } from 'date-fns'
+import Select from '@/components/ui/Select'
 import Table from '@/components/ui/Table'
 import TableSkeleton from '@/components/ui/TableSkeleton'
 import Button from '@/components/ui/Button'
@@ -18,6 +19,10 @@ import LeaveBalanceChip from '@/pages/leave/components/LeaveBalanceChip'
 import ApproveLeaveModal from '@/pages/leave/components/ApproveLeaveModal'
 
 const STATUSES = ['Pending', 'Approved', 'Rejected', 'Cancelled']
+const STATUS_OPTIONS = [
+  { value: 'all', label: 'All' },
+  ...STATUSES.map((s) => ({ value: s, label: s })),
+]
 
 const columns = [
   { key: 'employee', header: 'Employee' },
@@ -65,18 +70,13 @@ export default function TeamLeavePage() {
     <div className="space-y-4">
       <div>
         <label className="mb-1 block text-xs font-medium text-gray-500">Status</label>
-        <select
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
-          className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent"
-        >
-          <option value="all">All</option>
-          {STATUSES.map((s) => (
-            <option key={s} value={s}>
-              {s}
-            </option>
-          ))}
-        </select>
+        <div className="w-40">
+          <Select
+            options={STATUS_OPTIONS}
+            value={STATUS_OPTIONS.find((o) => o.value === status) ?? null}
+            onChange={(opt) => setStatus(opt.value)}
+          />
+        </div>
       </div>
 
       {isLoading ? (

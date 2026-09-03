@@ -2,12 +2,11 @@ import { useEffect, useRef, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import Select from 'react-select'
 import { DayPicker } from 'react-day-picker'
 import { format } from 'date-fns'
 import { Icon } from '@iconify/react'
-import clsx from 'clsx'
 import 'react-day-picker/style.css'
+import Select from '@/components/ui/Select'
 import Modal from '@/components/ui/Modal'
 import FormField from '@/components/form/FormField'
 import Input from '@/components/form/Input'
@@ -15,31 +14,6 @@ import Button from '@/components/ui/Button'
 import { useMyTeam } from '@/hooks/useMyTeam'
 import { useCreateGoal } from '@/hooks/useCreateGoal'
 import { useUpdateGoal } from '@/hooks/useUpdateGoal'
-
-const rsClassNames = {
-  control: ({ isFocused }) =>
-    clsx(
-      'flex min-h-[38px] items-center rounded-md border bg-white pl-2 pr-1 text-sm transition-colors',
-      isFocused ? 'border-accent ring-2 ring-accent' : 'border-gray-300',
-    ),
-  valueContainer: () => 'px-1 py-1',
-  placeholder: () => 'text-gray-400',
-  singleValue: () => 'text-text',
-  input: () => 'text-sm text-text',
-  dropdownIndicator: () => 'px-1.5 text-gray-400',
-  indicatorSeparator: () => 'mx-1 w-px self-stretch bg-gray-200',
-  menu: () => 'mt-1 overflow-hidden rounded-md border border-gray-200 bg-white shadow-lg',
-  menuList: () => 'py-1',
-  option: ({ isFocused, isSelected }) =>
-    clsx(
-      'cursor-pointer px-3 py-2 text-sm',
-      isSelected
-        ? 'bg-accent text-white'
-        : isFocused
-          ? 'bg-gray-100 text-text'
-          : 'text-text',
-    ),
-}
 
 function toYmd(d) {
   const p = (n) => String(n).padStart(2, '0')
@@ -216,10 +190,6 @@ export default function GoalFormModal({ goal, onClose }) {
               name="employeeId"
               render={({ field }) => (
                 <Select
-                  unstyled
-                  classNames={rsClassNames}
-                  menuPortalTarget={document.body}
-                  styles={{ menuPortal: (base) => ({ ...base, zIndex: 60 }) }}
                   options={teamOptions}
                   placeholder="Select a direct report…"
                   value={teamOptions.find((o) => o.value === field.value) ?? null}

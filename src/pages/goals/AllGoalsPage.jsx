@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import Select from 'react-select'
 import { format } from 'date-fns'
-import clsx from 'clsx'
+import Select from '@/components/ui/Select'
 import Table from '@/components/ui/Table'
 import TableSkeleton from '@/components/ui/TableSkeleton'
 import Button from '@/components/ui/Button'
@@ -16,6 +15,14 @@ const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December',
 ]
+const YEAR_OPTIONS = [
+  { value: '', label: 'Any year' },
+  ...YEARS.map((y) => ({ value: String(y), label: String(y) })),
+]
+const MONTH_OPTIONS = [
+  { value: '', label: 'Any month' },
+  ...MONTHS.map((name, i) => ({ value: String(i + 1), label: name })),
+]
 
 // No Actions column — HR/Admin have no edit or record-actual capability on any
 // goal, so this page is deliberately read-only oversight.
@@ -28,33 +35,6 @@ const columns = [
   { key: 'progress', header: 'Progress' },
   { key: 'description', header: 'Description' },
 ]
-
-const rsClassNames = {
-  control: ({ isFocused }) =>
-    clsx(
-      'flex min-h-[38px] items-center rounded-md border bg-white pl-2 pr-1 text-sm transition-colors',
-      isFocused ? 'border-accent ring-2 ring-accent' : 'border-gray-300',
-    ),
-  valueContainer: () => 'px-1 py-1',
-  placeholder: () => 'text-gray-400',
-  singleValue: () => 'text-text',
-  input: () => 'text-sm text-text',
-  dropdownIndicator: () => 'px-1.5 text-gray-400',
-  clearIndicator: () => 'px-1.5 text-gray-400 hover:text-text',
-  indicatorSeparator: () => 'mx-1 w-px self-stretch bg-gray-200',
-  menu: () => 'mt-1 overflow-hidden rounded-md border border-gray-200 bg-white shadow-lg',
-  menuList: () => 'py-1',
-  option: ({ isFocused, isSelected }) =>
-    clsx(
-      'cursor-pointer px-3 py-2 text-sm',
-      isSelected
-        ? 'bg-accent text-white'
-        : isFocused
-          ? 'bg-gray-100 text-text'
-          : 'text-text',
-    ),
-  noOptionsMessage: () => 'px-3 py-2 text-sm text-gray-400',
-}
 
 function fmtDate(value) {
   if (!value) return '—'
@@ -120,11 +100,7 @@ export default function AllGoalsPage() {
         <div>
           <label className="mb-1 block text-xs font-medium text-gray-500">Employee</label>
           <Select
-            unstyled
             isClearable
-            classNames={rsClassNames}
-            menuPortalTarget={document.body}
-            styles={{ menuPortal: (base) => ({ ...base, zIndex: 60 }) }}
             options={employeeOptions}
             filterOption={() => true}
             onInputChange={(v) => setEmployeeQuery(v)}
@@ -135,37 +111,23 @@ export default function AllGoalsPage() {
         </div>
         <div>
           <label className="mb-1 block text-xs font-medium text-gray-500">Year</label>
-          <select
-            value={year}
-            onChange={(e) => {
-              setYear(e.target.value)
-              if (!e.target.value) setMonth('')
+          <Select
+            options={YEAR_OPTIONS}
+            value={YEAR_OPTIONS.find((o) => o.value === year) ?? null}
+            onChange={(opt) => {
+              setYear(opt.value)
+              if (!opt.value) setMonth('')
             }}
-            className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent"
-          >
-            <option value="">Any year</option>
-            {YEARS.map((y) => (
-              <option key={y} value={y}>
-                {y}
-              </option>
-            ))}
-          </select>
+          />
         </div>
         <div>
           <label className="mb-1 block text-xs font-medium text-gray-500">Month</label>
-          <select
-            value={month}
-            disabled={!year}
-            onChange={(e) => setMonth(e.target.value)}
-            className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <option value="">Any month</option>
-            {MONTHS.map((name, i) => (
-              <option key={name} value={i + 1}>
-                {name}
-              </option>
-            ))}
-          </select>
+          <Select
+            isDisabled={!year}
+            options={MONTH_OPTIONS}
+            value={MONTH_OPTIONS.find((o) => o.value === month) ?? null}
+            onChange={(opt) => setMonth(opt.value)}
+          />
         </div>
       </div>
 

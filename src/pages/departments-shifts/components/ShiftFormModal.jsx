@@ -1,8 +1,7 @@
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import Select from 'react-select'
-import clsx from 'clsx'
+import MultiSelect from '@/components/ui/MultiSelect'
 import Modal from '@/components/ui/Modal'
 import FormField from '@/components/form/FormField'
 import Input from '@/components/form/Input'
@@ -36,44 +35,6 @@ const schema = z.object({
     .array(z.enum(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']))
     .min(1, 'Pick at least one day'),
 })
-
-function selectClassNames(hasError) {
-  return {
-    control: ({ isFocused }) =>
-      clsx(
-        'flex min-h-[38px] items-center rounded-md border bg-white pl-2 pr-1 text-sm transition-colors',
-        isFocused
-          ? 'border-accent ring-2 ring-accent'
-          : hasError
-            ? 'border-red-600'
-            : 'border-gray-300',
-      ),
-    valueContainer: () => 'flex flex-wrap gap-1 py-1',
-    placeholder: () => 'text-gray-400',
-    input: () => 'text-sm text-text',
-    multiValue: () => 'flex items-center rounded bg-gray-100',
-    multiValueLabel: () => 'px-1.5 py-0.5 text-xs text-text',
-    multiValueRemove: () =>
-      'rounded-r px-1 text-gray-500 hover:bg-gray-200 hover:text-text',
-    indicatorsContainer: () => 'flex items-center',
-    dropdownIndicator: () => 'px-1.5 text-gray-400',
-    clearIndicator: () => 'px-1.5 text-gray-400 hover:text-text',
-    indicatorSeparator: () => 'mx-1 w-px self-stretch bg-gray-200',
-    menu: () =>
-      'mt-1 overflow-hidden rounded-md border border-gray-200 bg-white shadow-lg',
-    menuList: () => 'py-1',
-    option: ({ isFocused, isSelected }) =>
-      clsx(
-        'cursor-pointer px-3 py-2 text-sm',
-        isSelected
-          ? 'bg-accent text-white'
-          : isFocused
-            ? 'bg-gray-100 text-text'
-            : 'text-text',
-      ),
-    noOptionsMessage: () => 'px-3 py-2 text-sm text-gray-400',
-  }
-}
 
 export default function ShiftFormModal({ shift, onClose }) {
   const isEdit = Boolean(shift)
@@ -160,9 +121,8 @@ export default function ShiftFormModal({ shift, onClose }) {
             control={control}
             name="workingDays"
             render={({ field }) => (
-              <Select
-                isMulti
-                unstyled
+              <MultiSelect
+                error={Boolean(errors.workingDays)}
                 options={DAY_OPTIONS}
                 value={DAY_OPTIONS.filter((o) => field.value?.includes(o.value))}
                 onChange={(selected) =>
@@ -170,9 +130,6 @@ export default function ShiftFormModal({ shift, onClose }) {
                 }
                 onBlur={field.onBlur}
                 placeholder="Select days…"
-                menuPortalTarget={document.body}
-                styles={{ menuPortal: (base) => ({ ...base, zIndex: 60 }) }}
-                classNames={selectClassNames(Boolean(errors.workingDays))}
               />
             )}
           />
