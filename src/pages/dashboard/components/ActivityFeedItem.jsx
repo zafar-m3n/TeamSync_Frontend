@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { formatDistanceToNow } from 'date-fns'
 import { Icon } from '@iconify/react'
 import Badge from '../../../components/ui/Badge'
@@ -37,12 +38,25 @@ function relative(timestamp) {
   return Number.isNaN(d.getTime()) ? '' : formatDistanceToNow(d, { addSuffix: true })
 }
 
-export default function ActivityFeedItem({ item }) {
+// Route each item by type. Only employee_created has a real per-record
+// destination; the other two land on their general list page (no per-request
+// or per-assignment detail route exists in the backend).
+function targetFor(item, base) {
+  if (item.type === 'employee_created' && item.data?.id != null) {
+    return `${base}/employees/${item.data.id}`
+  }
+  if (item.type === 'leave_requested') return `${base}/leave`
+  if (item.type === 'training_assigned') return `${base}/training`
+  return null
+}
+
+export default function ActivityFeedItem({ item, base }) {
   const meta =
     TYPES[item.type] ?? { icon: 'lucide:activity', tone: 'neutral', label: item.type }
+  const to = base ? targetFor(item, base) : null
 
-  return (
-    <li className="flex items-start gap-3 px-4 py-3">
+  const body = (
+    <>
       <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-600">
         <Icon icon={meta.icon} width="16" height="16" />
       </span>
@@ -53,6 +67,21 @@ export default function ActivityFeedItem({ item }) {
         </div>
         <p className="mt-1 text-sm text-text">{describe(item.type, item.data)}</p>
       </div>
+    </>
+  )
+
+  return (
+    <li>
+      {to ? (
+        <Link
+          to={to}
+          className="flex items-start gap-3 px-4 py-3 transition-colors hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent"
+        >
+          {body}
+        </Link>
+      ) : (
+        <div className="flex items-start gap-3 px-4 py-3">{body}</div>
+      )}
     </li>
   )
 }

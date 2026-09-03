@@ -1,6 +1,13 @@
+import { Link } from 'react-router-dom'
 import { format } from 'date-fns'
 import StatCard from '../../../components/ui/StatCard'
 import Table from '../../../components/ui/Table'
+import { useAuth } from '../../../store/AuthContext'
+
+const CARD_LINK =
+  'block rounded-lg transition-shadow hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2'
+const HEADER_LINK =
+  'rounded text-sm font-medium text-accent transition-colors hover:text-accent/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent'
 
 function fmt(value, pattern) {
   if (!value) return '—'
@@ -24,6 +31,9 @@ const goalColumns = [
 ]
 
 export default function EmployeeDashboardView({ data }) {
+  const { user } = useAuth()
+  const base = `/${user.roleName.toLowerCase()}`
+
   const {
     clockInStatus,
     leaveBalance,
@@ -42,34 +52,45 @@ export default function EmployeeDashboardView({ data }) {
   return (
     <div className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <div className="rounded-lg border border-gray-200 bg-white p-5">
-          <p className="text-sm text-gray-500">Today&rsquo;s attendance</p>
-          <p className="mt-1 text-lg font-medium text-text">{clockInText}</p>
-        </div>
+        <Link to={`${base}/my-attendance`} className={CARD_LINK}>
+          <div className="rounded-lg border border-gray-200 bg-white p-5">
+            <p className="text-sm text-gray-500">Today&rsquo;s attendance</p>
+            <p className="mt-1 text-lg font-medium text-text">{clockInText}</p>
+          </div>
+        </Link>
 
-        <StatCard
-          value={leaveBalance?.remaining ?? '—'}
-          label="Leave days remaining"
-          tone="info"
-        >
-          {leaveBalance?.usedDays ?? 0} used of {leaveBalance?.totalDays ?? 0} total
-        </StatCard>
+        <Link to={`${base}/my-leave`} className={CARD_LINK}>
+          <StatCard
+            value={leaveBalance?.remaining ?? '—'}
+            label="Leave days remaining"
+            tone="info"
+          >
+            {leaveBalance?.usedDays ?? 0} used of {leaveBalance?.totalDays ?? 0} total
+          </StatCard>
+        </Link>
 
-        <StatCard value={assignedTraining?.count ?? 0} label="Assigned training">
-          {recent.length > 0 ? (
-            <ul className="list-disc space-y-1 pl-4">
-              {recent.map((doc, i) => (
-                <li key={doc.id ?? i}>{doc.title || doc.name || 'Untitled document'}</li>
-              ))}
-            </ul>
-          ) : (
-            <span className="text-gray-500">Nothing assigned right now</span>
-          )}
-        </StatCard>
+        <Link to={`${base}/my-training`} className={CARD_LINK}>
+          <StatCard value={assignedTraining?.count ?? 0} label="Assigned training">
+            {recent.length > 0 ? (
+              <ul className="list-disc space-y-1 pl-4">
+                {recent.map((doc, i) => (
+                  <li key={doc.id ?? i}>{doc.title || doc.name || 'Untitled document'}</li>
+                ))}
+              </ul>
+            ) : (
+              <span className="text-gray-500">Nothing assigned right now</span>
+            )}
+          </StatCard>
+        </Link>
       </div>
 
       <section>
-        <h2 className="mb-3 font-display text-xl text-primary">This month&rsquo;s goals</h2>
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <h2 className="font-display text-xl text-primary">This month&rsquo;s goals</h2>
+          <Link to={`${base}/my-goals`} className={HEADER_LINK}>
+            View all
+          </Link>
+        </div>
         <Table
           columns={goalColumns}
           rows={goals}

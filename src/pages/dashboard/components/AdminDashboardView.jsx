@@ -1,7 +1,12 @@
+import { Link } from 'react-router-dom'
 import { format } from 'date-fns'
 import StatCard from '../../../components/ui/StatCard'
 import Table from '../../../components/ui/Table'
 import ActivityFeedItem from './ActivityFeedItem'
+import { useAuth } from '../../../store/AuthContext'
+
+const HEADER_LINK =
+  'rounded text-sm font-medium text-accent transition-colors hover:text-accent/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent'
 
 function fmt(value, pattern) {
   if (!value) return '—'
@@ -23,6 +28,9 @@ const departmentColumns = [
 ]
 
 export default function AdminDashboardView({ data }) {
+  const { user } = useAuth()
+  const base = `/${user.roleName.toLowerCase()}`
+
   const {
     orgAttendanceSnapshot = [],
     pendingLeaveApprovals,
@@ -35,7 +43,12 @@ export default function AdminDashboardView({ data }) {
   return (
     <div className="space-y-8">
       <section>
-        <h2 className="mb-3 font-display text-xl text-primary">Attendance today</h2>
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <h2 className="font-display text-xl text-primary">Attendance today</h2>
+          <Link to={`${base}/attendance`} className={HEADER_LINK}>
+            View all
+          </Link>
+        </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {orgAttendanceSnapshot.map((s) => (
             <StatCard
@@ -49,7 +62,12 @@ export default function AdminDashboardView({ data }) {
       </section>
 
       <section className="space-y-4">
-        <h2 className="font-display text-xl text-primary">Pending leave approvals</h2>
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="font-display text-xl text-primary">Pending leave approvals</h2>
+          <Link to={`${base}/leave`} className={HEADER_LINK}>
+            View all
+          </Link>
+        </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
             value={pendingLeaveApprovals?.total ?? 0}
@@ -74,7 +92,12 @@ export default function AdminDashboardView({ data }) {
       </section>
 
       <section>
-        <h2 className="mb-3 font-display text-xl text-primary">Employees by department</h2>
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <h2 className="font-display text-xl text-primary">Employees by department</h2>
+          <Link to={`${base}/departments-shifts`} className={HEADER_LINK}>
+            View all
+          </Link>
+        </div>
         <Table
           columns={departmentColumns}
           rows={employeeCountByDepartment}
@@ -93,7 +116,7 @@ export default function AdminDashboardView({ data }) {
         {recentActivityFeed.length > 0 ? (
           <ul className="divide-y divide-gray-100 rounded-lg border border-gray-200 bg-white">
             {recentActivityFeed.map((item, i) => (
-              <ActivityFeedItem key={i} item={item} />
+              <ActivityFeedItem key={i} item={item} base={base} />
             ))}
           </ul>
         ) : (

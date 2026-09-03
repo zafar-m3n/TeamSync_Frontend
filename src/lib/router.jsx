@@ -1,5 +1,6 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import LoginPage from '../pages/auth/LoginPage'
+import NotFoundPage from '../pages/NotFoundPage'
 import ProtectedRoute from '../routes/ProtectedRoute'
 import AppLayout from '../components/layout/AppLayout'
 import { moduleRoutes, buildRoleRoutes } from '../routes/routeConfig'
@@ -23,7 +24,7 @@ const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
   { element: <AppLayout />, children: roleRoutes },
   { path: '/', element: <RootRedirect /> },
-  { path: '*', element: <Navigate to="/" replace /> },
+  { path: '*', element: <NotFoundPage /> },
 ])
 
 export default router
