@@ -9,6 +9,9 @@ import RolesPermissionsPage from '../pages/roles-permissions/RolesPermissionsPag
 import MyAttendancePage from '../pages/attendance/MyAttendancePage'
 import TeamAttendancePage from '../pages/attendance/TeamAttendancePage'
 import AllAttendancePage from '../pages/attendance/AllAttendancePage'
+import MyLeavePage from '../pages/leave/MyLeavePage'
+import TeamLeavePage from '../pages/leave/TeamLeavePage'
+import AllLeavePage from '../pages/leave/AllLeavePage'
 import { SEEDED_ROLES } from '../lib/permissions'
 
 export const moduleRoutes = [
@@ -103,6 +106,30 @@ export const moduleRoutes = [
     navLabel: 'Attendance',
     navIcon: 'lucide:calendar-check',
     navOrder: 5,
+  },
+  {
+    path: 'my-leave',
+    roles: SEEDED_ROLES,
+    element: <MyLeavePage />,
+    navLabel: 'My Leave',
+    navIcon: 'lucide:calendar-days',
+    navOrder: 6,
+  },
+  {
+    path: 'team-leave',
+    roles: ['Manager'],
+    element: <TeamLeavePage />,
+    navLabel: 'Team Leave',
+    navIcon: 'lucide:calendar-days',
+    navOrder: 6,
+  },
+  {
+    path: 'leave',
+    roles: ['HR', 'Admin'],
+    element: <AllLeavePage />,
+    navLabel: 'Leave',
+    navIcon: 'lucide:calendar-days',
+    navOrder: 6,
   },
   {
     path: 'my-profile',
