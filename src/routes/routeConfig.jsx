@@ -12,6 +12,9 @@ import AllAttendancePage from '../pages/attendance/AllAttendancePage'
 import MyLeavePage from '../pages/leave/MyLeavePage'
 import TeamLeavePage from '../pages/leave/TeamLeavePage'
 import AllLeavePage from '../pages/leave/AllLeavePage'
+import MyGoalsPage from '../pages/goals/MyGoalsPage'
+import TeamGoalsPage from '../pages/goals/TeamGoalsPage'
+import AllGoalsPage from '../pages/goals/AllGoalsPage'
 import { SEEDED_ROLES } from '../lib/permissions'
 
 export const moduleRoutes = [
@@ -130,6 +133,30 @@ export const moduleRoutes = [
     navLabel: 'Leave',
     navIcon: 'lucide:calendar-days',
     navOrder: 6,
+  },
+  {
+    path: 'my-goals',
+    roles: SEEDED_ROLES,
+    element: <MyGoalsPage />,
+    navLabel: 'My Goals',
+    navIcon: 'lucide:target',
+    navOrder: 7,
+  },
+  {
+    path: 'team-goals',
+    roles: ['Manager'],
+    element: <TeamGoalsPage />,
+    navLabel: 'Team Goals',
+    navIcon: 'lucide:target',
+    navOrder: 7,
+  },
+  {
+    path: 'goals',
+    roles: ['HR', 'Admin'],
+    element: <AllGoalsPage />,
+    navLabel: 'Goals',
+    navIcon: 'lucide:target',
+    navOrder: 7,
   },
   {
     path: 'my-profile',
