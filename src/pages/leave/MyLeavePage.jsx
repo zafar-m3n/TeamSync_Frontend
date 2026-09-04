@@ -4,6 +4,7 @@ import Select from '@/components/ui/Select'
 import Table from '@/components/ui/Table'
 import TableSkeleton from '@/components/ui/TableSkeleton'
 import Button from '@/components/ui/Button'
+import IconButton from '@/components/ui/IconButton'
 import Modal from '@/components/ui/Modal'
 import StatCard from '@/components/ui/StatCard'
 import { useAuth } from '@/store/AuthContext'
@@ -149,13 +150,13 @@ export default function MyLeavePage() {
                     </td>
                     <td className="px-4 py-3">
                       {showCancel && (
-                        <Button
+                        <IconButton
+                          icon="lucide:ban"
+                          label="Cancel request"
                           variant="danger"
                           size="sm"
                           onClick={() => setCancelTarget(req)}
-                        >
-                          Cancel
-                        </Button>
+                        />
                       )}
                     </td>
                   </tr>

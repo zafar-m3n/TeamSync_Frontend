@@ -392,6 +392,7 @@ export default function EmployeeFormPage({ mode }) {
                 <Input
                   type="password"
                   autoComplete="new-password"
+                  placeholder="••••••••"
                   {...register('initialPassword')}
                 />
               </FormField>

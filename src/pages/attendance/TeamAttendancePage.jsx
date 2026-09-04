@@ -6,6 +6,7 @@ import 'react-day-picker/style.css'
 import Table from '@/components/ui/Table'
 import TableSkeleton from '@/components/ui/TableSkeleton'
 import Button from '@/components/ui/Button'
+import IconButton from '@/components/ui/IconButton'
 import { useTeamAttendance } from '@/hooks/useTeamAttendance'
 import { useMyTeam } from '@/hooks/useMyTeam'
 import AttendanceStatusBadge from '@/pages/attendance/components/AttendanceStatusBadge'
@@ -140,13 +141,13 @@ export default function TeamAttendancePage() {
               <td className="px-4 py-3 text-text">{fmtTime(rec.clockOut)}</td>
               <td className="px-4 py-3">
                 {rec.status === 'Absent' ? (
-                  <Button
+                  <IconButton
+                    icon="lucide:pencil"
+                    label="Correct attendance"
                     variant="secondary"
                     size="sm"
                     onClick={() => setCorrectTarget(rec)}
-                  >
-                    Correct
-                  </Button>
+                  />
                 ) : null}
               </td>
             </tr>

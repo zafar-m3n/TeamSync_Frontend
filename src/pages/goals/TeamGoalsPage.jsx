@@ -3,6 +3,7 @@ import { format } from 'date-fns'
 import Table from '@/components/ui/Table'
 import TableSkeleton from '@/components/ui/TableSkeleton'
 import Button from '@/components/ui/Button'
+import IconButton from '@/components/ui/IconButton'
 import ProgressBar from '@/components/ui/ProgressBar'
 import { useTeamGoals } from '@/hooks/useTeamGoals'
 import GoalFormModal from '@/pages/goals/components/GoalFormModal'
@@ -99,20 +100,20 @@ export default function TeamGoalsPage() {
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex flex-wrap gap-2">
-                    <Button
+                    <IconButton
+                      icon="lucide:pencil"
+                      label="Edit goal"
                       variant="secondary"
                       size="sm"
                       onClick={() => setFormTarget(goal)}
-                    >
-                      Edit
-                    </Button>
-                    <Button
+                    />
+                    <IconButton
+                      icon="lucide:clipboard-check"
+                      label="Record actual"
                       variant="secondary"
                       size="sm"
                       onClick={() => setActualTarget(goal)}
-                    >
-                      Record Actual
-                    </Button>
+                    />
                   </div>
                 </td>
               </tr>

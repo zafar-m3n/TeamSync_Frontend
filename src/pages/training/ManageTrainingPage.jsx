@@ -4,6 +4,7 @@ import Tabs from '@/components/ui/Tabs'
 import Table from '@/components/ui/Table'
 import TableSkeleton from '@/components/ui/TableSkeleton'
 import Button from '@/components/ui/Button'
+import IconButton from '@/components/ui/IconButton'
 import Modal from '@/components/ui/Modal'
 import { useMyUploads } from '@/hooks/useMyUploads'
 import { useMyAssignments } from '@/hooks/useMyAssignments'
@@ -122,13 +123,13 @@ function MyDocumentsTab() {
                   {fmtDate(doc.uploadDate ?? doc.createdAt)}
                 </td>
                 <td className="px-4 py-3">
-                  <Button
+                  <IconButton
+                    icon="lucide:user-plus"
+                    label="Assign document"
                     variant="secondary"
                     size="sm"
                     onClick={() => setAssignTarget(doc)}
-                  >
-                    Assign
-                  </Button>
+                  />
                 </td>
               </tr>
             )}
@@ -197,13 +198,13 @@ function MyAssignmentsTab() {
                   {fmtDate(a.assignedDate ?? a.createdAt)}
                 </td>
                 <td className="px-4 py-3">
-                  <Button
+                  <IconButton
+                    icon="lucide:trash-2"
+                    label="Remove assignment"
                     variant="danger"
                     size="sm"
                     onClick={() => setRemoveTarget(a)}
-                  >
-                    Remove
-                  </Button>
+                  />
                 </td>
               </tr>
             )}

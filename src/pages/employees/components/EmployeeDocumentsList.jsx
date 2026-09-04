@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { format } from 'date-fns'
 import Table from '@/components/ui/Table'
 import Button from '@/components/ui/Button'
+import IconButton from '@/components/ui/IconButton'
 import Modal from '@/components/ui/Modal'
 import { toast } from '@/hooks/useToast'
 import { useUploadDocument, useDeleteDocument } from '@/hooks/useEmployee'
@@ -91,14 +92,16 @@ export default function EmployeeDocumentsList({ employeeId, documents = [], canE
             <td className="px-4 py-3 text-text">{doc.docName}</td>
             <td className="px-4 py-3 text-text">{fmtDate(doc.uploadDate)}</td>
             {canEdit && (
-              <td className="px-4 py-3 text-right">
-                <Button
-                  variant="danger"
-                  size="sm"
-                  onClick={() => setDeleteTarget(doc)}
-                >
-                  Delete
-                </Button>
+              <td className="px-4 py-3">
+                <div className="flex justify-end">
+                  <IconButton
+                    icon="lucide:trash-2"
+                    label="Delete document"
+                    variant="danger"
+                    size="sm"
+                    onClick={() => setDeleteTarget(doc)}
+                  />
+                </div>
               </td>
             )}
           </tr>

@@ -8,6 +8,7 @@ import Tabs from '@/components/ui/Tabs'
 import Table from '@/components/ui/Table'
 import TableSkeleton from '@/components/ui/TableSkeleton'
 import Button from '@/components/ui/Button'
+import IconButton from '@/components/ui/IconButton'
 import Modal from '@/components/ui/Modal'
 import { useAuth } from '@/store/AuthContext'
 import { useMyProfile } from '@/hooks/useMyProfile'
@@ -272,31 +273,31 @@ function RequestsTab() {
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-2">
                       {isPending && (
-                        <Button
+                        <IconButton
+                          icon="lucide:check"
+                          label="Approve"
                           variant="success"
                           size="sm"
                           onClick={() => setApproveTarget(req)}
-                        >
-                          Approve
-                        </Button>
+                        />
                       )}
                       {isPending && (
-                        <Button
+                        <IconButton
+                          icon="lucide:x"
+                          label="Reject"
                           variant="secondary"
                           size="sm"
                           onClick={() => setRejectTarget(req)}
-                        >
-                          Reject
-                        </Button>
+                        />
                       )}
                       {showCancel && (
-                        <Button
+                        <IconButton
+                          icon="lucide:ban"
+                          label="Cancel request"
                           variant="danger"
                           size="sm"
                           onClick={() => setCancelTarget(req)}
-                        >
-                          Cancel
-                        </Button>
+                        />
                       )}
                     </div>
                   </td>

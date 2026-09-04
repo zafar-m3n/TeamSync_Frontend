@@ -3,6 +3,7 @@ import Table from '@/components/ui/Table'
 import TableSkeleton from '@/components/ui/TableSkeleton'
 import Modal from '@/components/ui/Modal'
 import Button from '@/components/ui/Button'
+import IconButton from '@/components/ui/IconButton'
 import Input from '@/components/form/Input'
 import { useDepartments, useDeleteDepartment } from '@/hooks/useDepartments'
 import DepartmentFormModal from '@/pages/departments-shifts/components/DepartmentFormModal'
@@ -100,20 +101,20 @@ export default function DepartmentsTab() {
                 <td className="px-4 py-3 text-gray-400">—</td>
                 <td className="px-4 py-3">
                   <div className="flex gap-2">
-                    <Button
+                    <IconButton
+                      icon="lucide:pencil"
+                      label="Edit department"
                       variant="secondary"
                       size="sm"
                       onClick={() => setFormTarget(dept)}
-                    >
-                      Edit
-                    </Button>
-                    <Button
+                    />
+                    <IconButton
+                      icon="lucide:trash-2"
+                      label="Delete department"
                       variant="danger"
                       size="sm"
                       onClick={() => setDeleteTarget(dept)}
-                    >
-                      Delete
-                    </Button>
+                    />
                   </div>
                 </td>
               </tr>

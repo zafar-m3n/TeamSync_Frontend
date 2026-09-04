@@ -2,6 +2,7 @@ import { useState } from 'react'
 import Table from '@/components/ui/Table'
 import TableSkeleton from '@/components/ui/TableSkeleton'
 import Button from '@/components/ui/Button'
+import IconButton from '@/components/ui/IconButton'
 import { useShifts } from '@/hooks/useShifts'
 import ShiftFormModal from '@/pages/departments-shifts/components/ShiftFormModal'
 
@@ -73,13 +74,13 @@ export default function ShiftsTab() {
               </td>
               <td className="px-4 py-3 text-text">{formatDays(shift.workingDays)}</td>
               <td className="px-4 py-3">
-                <Button
+                <IconButton
+                  icon="lucide:pencil"
+                  label="Edit shift"
                   variant="secondary"
                   size="sm"
                   onClick={() => setFormTarget(shift)}
-                >
-                  Edit
-                </Button>
+                />
               </td>
             </tr>
           )}

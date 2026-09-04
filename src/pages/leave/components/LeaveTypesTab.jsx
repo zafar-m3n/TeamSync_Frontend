@@ -6,6 +6,7 @@ import Table from '@/components/ui/Table'
 import TableSkeleton from '@/components/ui/TableSkeleton'
 import Modal from '@/components/ui/Modal'
 import Button from '@/components/ui/Button'
+import IconButton from '@/components/ui/IconButton'
 import FormField from '@/components/form/FormField'
 import Input from '@/components/form/Input'
 import {
@@ -144,20 +145,20 @@ export default function LeaveTypesTab() {
               <td className="px-4 py-3 text-text">{lt.description || '—'}</td>
               <td className="px-4 py-3">
                 <div className="flex gap-2">
-                  <Button
+                  <IconButton
+                    icon="lucide:pencil"
+                    label="Edit leave type"
                     variant="secondary"
                     size="sm"
                     onClick={() => setFormTarget(lt)}
-                  >
-                    Edit
-                  </Button>
-                  <Button
+                  />
+                  <IconButton
+                    icon="lucide:trash-2"
+                    label="Delete leave type"
                     variant="danger"
                     size="sm"
                     onClick={() => setDeleteTarget(lt)}
-                  >
-                    Delete
-                  </Button>
+                  />
                 </div>
               </td>
             </tr>

@@ -7,6 +7,7 @@ import Select from '@/components/ui/Select'
 import Table from '@/components/ui/Table'
 import TableSkeleton from '@/components/ui/TableSkeleton'
 import Button from '@/components/ui/Button'
+import IconButton from '@/components/ui/IconButton'
 import { useEmployees } from '@/hooks/useEmployees'
 import { useDepartments } from '@/hooks/useDepartments'
 import { useAllAttendance } from '@/hooks/useAllAttendance'
@@ -250,13 +251,13 @@ export default function AllAttendancePage() {
                 <td className="px-4 py-3 text-text">{fmtTime(rec.clockIn)}</td>
                 <td className="px-4 py-3 text-text">{fmtTime(rec.clockOut)}</td>
                 <td className="px-4 py-3">
-                  <Button
+                  <IconButton
+                    icon="lucide:pencil"
+                    label="Edit record"
                     variant="secondary"
                     size="sm"
                     onClick={() => setEditTarget(rec)}
-                  >
-                    Edit
-                  </Button>
+                  />
                 </td>
               </tr>
             )}

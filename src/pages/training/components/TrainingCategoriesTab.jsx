@@ -6,6 +6,7 @@ import Table from '@/components/ui/Table'
 import TableSkeleton from '@/components/ui/TableSkeleton'
 import Modal from '@/components/ui/Modal'
 import Button from '@/components/ui/Button'
+import IconButton from '@/components/ui/IconButton'
 import FormField from '@/components/form/FormField'
 import Input from '@/components/form/Input'
 import {
@@ -132,20 +133,20 @@ export default function TrainingCategoriesTab() {
               <td className="px-4 py-3 text-text">{cat.name}</td>
               <td className="px-4 py-3">
                 <div className="flex gap-2">
-                  <Button
+                  <IconButton
+                    icon="lucide:pencil"
+                    label="Edit category"
                     variant="secondary"
                     size="sm"
                     onClick={() => setFormTarget(cat)}
-                  >
-                    Edit
-                  </Button>
-                  <Button
+                  />
+                  <IconButton
+                    icon="lucide:trash-2"
+                    label="Delete category"
                     variant="danger"
                     size="sm"
                     onClick={() => setDeleteTarget(cat)}
-                  >
-                    Delete
-                  </Button>
+                  />
                 </div>
               </td>
             </tr>

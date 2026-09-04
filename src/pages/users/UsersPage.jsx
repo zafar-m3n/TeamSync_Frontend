@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react'
 import clsx from 'clsx'
+import { Icon } from '@iconify/react'
 import Select from '@/components/ui/Select'
 import Table from '@/components/ui/Table'
 import TableSkeleton from '@/components/ui/TableSkeleton'
 import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
+import IconButton from '@/components/ui/IconButton'
 import { useAuth } from '@/store/AuthContext'
 import { useRoles } from '@/hooks/useRoles'
 import { useUsers } from '@/hooks/useUsers'
@@ -35,7 +37,7 @@ function StatusToggle({ checked, disabled, onChange, label }) {
       aria-checked={checked}
       aria-label={label}
       disabled={disabled}
-      title={disabled ? "You can't deactivate your own account" : undefined}
+      title={disabled ? 'Updating…' : undefined}
       onClick={() => onChange(!checked)}
       className={clsx(
         'relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2',
@@ -148,28 +150,31 @@ export default function UsersPage() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <div className="flex flex-col gap-1">
+                      {isSelf ? (
+                        <span
+                          className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-500"
+                          title="You can't deactivate your own account"
+                        >
+                          <Icon icon="lucide:lock" width="12" height="12" aria-hidden />
+                          Your account
+                        </span>
+                      ) : (
                         <StatusToggle
                           checked={row.isActive}
-                          disabled={isSelf || pendingThisRow}
+                          disabled={pendingThisRow}
                           label={`${row.isActive ? 'Deactivate' : 'Activate'} ${row.email}`}
                           onChange={(next) =>
                             statusMutation.mutate({ id: row.id, isActive: next })
                           }
                         />
-                        {isSelf && (
-                          <span className="text-xs text-gray-400">
-                            You can&rsquo;t deactivate your own account
-                          </span>
-                        )}
-                      </div>
-                      <Button
+                      )}
+                      <IconButton
+                        icon="lucide:key-round"
+                        label="Reset password"
                         variant="secondary"
                         size="sm"
                         onClick={() => setResetTarget(row)}
-                      >
-                        Reset Password
-                      </Button>
+                      />
                     </div>
                   </td>
                 </tr>
