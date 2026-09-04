@@ -3,6 +3,8 @@ import { format } from 'date-fns'
 import StatCard from '@/components/ui/StatCard'
 import Table from '@/components/ui/Table'
 import ActivityFeedItem from '@/pages/dashboard/components/ActivityFeedItem'
+import SystemSection from '@/pages/dashboard/components/SystemSection'
+import WorkforceSection from '@/pages/dashboard/components/WorkforceSection'
 import { useAuth } from '@/store/AuthContext'
 
 const HEADER_LINK =
@@ -125,6 +127,9 @@ export default function AdminDashboardView({ data }) {
           </div>
         )}
       </section>
+
+      {data.system && <SystemSection data={data.system} />}
+      {data.workforce && <WorkforceSection data={data.workforce} />}
     </div>
   )
 }
