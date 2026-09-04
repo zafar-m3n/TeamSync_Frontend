@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom'
 import { format } from 'date-fns'
+import { Icon } from '@iconify/react'
 import StatCard from '@/components/ui/StatCard'
 import Table from '@/components/ui/Table'
+import { CountUp } from '@/hooks/useCountUp'
 import { useAuth } from '@/store/AuthContext'
 
 const CARD_LINK =
@@ -61,7 +63,7 @@ export default function EmployeeDashboardView({ data }) {
 
         <Link to={`${base}/my-leave`} className={CARD_LINK}>
           <StatCard
-            value={leaveBalance?.remaining ?? '—'}
+            value={<CountUp value={leaveBalance?.remaining ?? '—'} />}
             label="Leave days remaining"
             tone="info"
           >
@@ -70,7 +72,10 @@ export default function EmployeeDashboardView({ data }) {
         </Link>
 
         <Link to={`${base}/my-training`} className={CARD_LINK}>
-          <StatCard value={assignedTraining?.count ?? 0} label="Assigned training">
+          <StatCard
+            value={<CountUp value={assignedTraining?.count ?? 0} />}
+            label="Assigned training"
+          >
             {recent.length > 0 ? (
               <ul className="list-disc space-y-1 pl-4">
                 {recent.map((doc, i) => (
@@ -86,7 +91,10 @@ export default function EmployeeDashboardView({ data }) {
 
       <section>
         <div className="mb-3 flex items-center justify-between gap-2">
-          <h2 className="text-xl text-primary">This month&rsquo;s goals</h2>
+          <h2 className="flex items-center gap-2 text-xl text-primary">
+            <Icon icon="lucide:target" width="20" height="20" className="text-gray-400" />
+            This month&rsquo;s goals
+          </h2>
           <Link to={`${base}/my-goals`} className={HEADER_LINK}>
             View all
           </Link>

@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom'
 import { format } from 'date-fns'
+import { Icon } from '@iconify/react'
 import Badge from '@/components/ui/Badge'
 import Table from '@/components/ui/Table'
+import { CountUp } from '@/hooks/useCountUp'
 import { useAuth } from '@/store/AuthContext'
 
 const HEADER_LINK =
@@ -43,6 +45,10 @@ const goalColumns = [
   { key: 'progress', header: 'Progress' },
 ]
 
+function SectionHeadingIcon({ icon }) {
+  return <Icon icon={icon} width="20" height="20" className="text-gray-400" />
+}
+
 export default function ManagerDashboardView({ data }) {
   const { user } = useAuth()
   const base = `/${user.roleName.toLowerCase()}`
@@ -54,38 +60,16 @@ export default function ManagerDashboardView({ data }) {
   } = data
 
   return (
-    <div className="space-y-8">
-      <section>
-        <div className="mb-3 flex items-center justify-between gap-2">
-          <h2 className="text-xl text-primary">Team attendance today</h2>
-          <Link to={`${base}/team-attendance`} className={HEADER_LINK}>
-            View all
-          </Link>
-        </div>
-        <Table
-          columns={attendanceColumns}
-          rows={teamAttendanceToday}
-          emptyMessage="No attendance recorded for your team today"
-          renderRow={(rec, i) => (
-            <tr key={rec.id ?? i} className="border-b border-gray-100 last:border-0">
-              <td className="px-4 py-3 text-text">{rec.employee?.fullName ?? '—'}</td>
-              <td className="px-4 py-3">
-                <Badge tone={attendanceTone[rec.status] ?? 'neutral'}>
-                  {rec.status ?? '—'}
-                </Badge>
-              </td>
-              <td className="px-4 py-3 text-text">{fmt(rec.clockIn, 'p')}</td>
-            </tr>
-          )}
-        />
-      </section>
-
-      <section>
+    <div className="grid gap-6 lg:grid-cols-2">
+      <section className="min-w-0">
         <div className="mb-3 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl text-primary">Pending leave approvals</h2>
+            <h2 className="flex items-center gap-2 text-xl text-primary">
+              <SectionHeadingIcon icon="lucide:calendar-clock" />
+              Pending leave approvals
+            </h2>
             <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
-              {pendingLeaveApprovals.length}
+              <CountUp value={pendingLeaveApprovals.length} />
             </span>
           </div>
           <Link to={`${base}/team-leave`} className={HEADER_LINK}>
@@ -108,9 +92,40 @@ export default function ManagerDashboardView({ data }) {
         />
       </section>
 
-      <section>
+      <section className="min-w-0">
         <div className="mb-3 flex items-center justify-between gap-2">
-          <h2 className="text-xl text-primary">Team goal progress</h2>
+          <h2 className="flex items-center gap-2 text-xl text-primary">
+            <SectionHeadingIcon icon="lucide:calendar-check" />
+            Team attendance today
+          </h2>
+          <Link to={`${base}/team-attendance`} className={HEADER_LINK}>
+            View all
+          </Link>
+        </div>
+        <Table
+          columns={attendanceColumns}
+          rows={teamAttendanceToday}
+          emptyMessage="No attendance recorded for your team today"
+          renderRow={(rec, i) => (
+            <tr key={rec.id ?? i} className="border-b border-gray-100 last:border-0">
+              <td className="px-4 py-3 text-text">{rec.employee?.fullName ?? '—'}</td>
+              <td className="px-4 py-3">
+                <Badge tone={attendanceTone[rec.status] ?? 'neutral'}>
+                  {rec.status ?? '—'}
+                </Badge>
+              </td>
+              <td className="px-4 py-3 text-text">{fmt(rec.clockIn, 'p')}</td>
+            </tr>
+          )}
+        />
+      </section>
+
+      <section className="min-w-0 lg:col-span-2">
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <h2 className="flex items-center gap-2 text-xl text-primary">
+            <SectionHeadingIcon icon="lucide:target" />
+            Team goal progress
+          </h2>
           <Link to={`${base}/team-goals`} className={HEADER_LINK}>
             View all
           </Link>
