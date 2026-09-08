@@ -1,7 +1,10 @@
 import { Fragment, useMemo, useState } from 'react'
 import clsx from 'clsx'
+import { Icon } from '@iconify/react'
 import Spinner from '@/components/ui/Spinner'
 import Button from '@/components/ui/Button'
+import Badge from '@/components/ui/Badge'
+import Checkbox from '@/components/ui/Checkbox'
 import { useRoles } from '@/hooks/useRoles'
 import { usePermissions } from '@/hooks/usePermissions'
 import { useBulkUpdatePermissions } from '@/hooks/useBulkUpdatePermissions'
@@ -37,6 +40,22 @@ function humanize(value) {
 
 const actionLabel = (a) => ACTION_LABELS[a] ?? humanize(a)
 const moduleLabel = (m) => humanize(m)
+
+const MODULE_ICONS = {
+  employees: 'lucide:users',
+  users: 'lucide:user-cog',
+  departments: 'lucide:building-2',
+  shifts: 'lucide:clock',
+  attendance: 'lucide:calendar-check',
+  leave: 'lucide:calendar-days',
+  leave_types: 'lucide:calendar-days',
+  goals: 'lucide:target',
+  training: 'lucide:graduation-cap',
+  training_categories: 'lucide:graduation-cap',
+  roles: 'lucide:shield',
+  permissions: 'lucide:shield',
+}
+const moduleIcon = (m) => MODULE_ICONS[m] ?? 'lucide:folder'
 
 const LOCKOUT_TITLE =
   'The Admin role must keep permission management — removing it would lock everyone out of this screen.'
@@ -110,6 +129,8 @@ export default function PermissionsTab() {
     })
   }
 
+  const discard = () => setPending(new Map())
+
   if (rolesQuery.isLoading || permsQuery.isLoading) {
     return (
       <div className="flex min-h-[40vh] items-center justify-center">
@@ -140,19 +161,6 @@ export default function PermissionsTab() {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end">
-        <Button
-          variant="accent"
-          disabled={count === 0}
-          isLoading={bulkUpdate.isPending}
-          onClick={save}
-        >
-          {count === 0
-            ? 'Save Changes'
-            : `Save ${count} ${count === 1 ? 'Change' : 'Changes'}`}
-        </Button>
-      </div>
-
       <div className="overflow-x-auto rounded-lg border border-gray-200">
         <table className="min-w-full border-collapse text-sm">
           <thead>
@@ -165,7 +173,10 @@ export default function PermissionsTab() {
                   key={role.id}
                   className="whitespace-nowrap px-4 py-3 text-center font-medium text-text"
                 >
-                  {role.name}
+                  <span className="inline-flex items-center gap-2">
+                    {role.name}
+                    {role.isCustom && <Badge tone="info">Custom</Badge>}
+                  </span>
                 </th>
               ))}
             </tr>
@@ -176,17 +187,25 @@ export default function PermissionsTab() {
                 <tr>
                   <td
                     colSpan={roles.length + 1}
-                    className="bg-white px-4 pb-1 pt-4 text-xs font-semibold uppercase tracking-wide text-gray-500"
+                    className="bg-white px-4 pb-2 pt-5 text-sm font-semibold text-primary"
                   >
-                    {moduleLabel(group.module)}
+                    <span className="inline-flex items-center gap-2">
+                      <Icon
+                        icon={moduleIcon(group.module)}
+                        width="16"
+                        height="16"
+                        className="text-gray-400"
+                      />
+                      {moduleLabel(group.module)}
+                    </span>
                   </td>
                 </tr>
                 {group.rows.map((row) => (
                   <tr
                     key={`${row.module}|${row.action}`}
-                    className="border-b border-gray-100 last:border-0"
+                    className="group border-b border-gray-100 last:border-0 hover:bg-gray-50"
                   >
-                    <td className="sticky left-0 z-10 min-w-48 bg-white px-4 py-2 text-text">
+                    <td className="sticky left-0 z-10 min-w-48 bg-white px-4 py-2 text-text group-hover:bg-gray-50">
                       {actionLabel(row.action)}
                     </td>
                     {roles.map((role) => {
@@ -195,17 +214,13 @@ export default function PermissionsTab() {
                       const cellPending = entry != null && pending.has(entry.id)
                       return (
                         <td key={role.id} className="px-4 py-2 text-center">
-                          <input
-                            type="checkbox"
+                          <Checkbox
                             checked={isChecked(entry)}
-                            disabled={entry == null || locked}
+                            disabled={entry == null}
+                            locked={locked}
+                            pending={cellPending}
                             onChange={() => toggle(entry)}
                             title={locked ? LOCKOUT_TITLE : undefined}
-                            className={clsx(
-                              'h-4 w-4 rounded border-gray-300 accent-accent',
-                              cellPending && 'ring-2 ring-accent ring-offset-1',
-                              (entry == null || locked) && 'cursor-not-allowed opacity-60',
-                            )}
                           />
                         </td>
                       )
@@ -216,6 +231,28 @@ export default function PermissionsTab() {
             ))}
           </tbody>
         </table>
+      </div>
+
+      <div
+        className={clsx(
+          'flex items-center justify-end gap-2',
+          count > 0 &&
+            'sticky bottom-0 z-20 border-t border-gray-200 bg-white py-3',
+        )}
+      >
+        <Button variant="secondary" disabled={count === 0} onClick={discard}>
+          Discard
+        </Button>
+        <Button
+          variant="accent"
+          disabled={count === 0}
+          isLoading={bulkUpdate.isPending}
+          onClick={save}
+        >
+          {count === 0
+            ? 'Save Changes'
+            : `Save ${count} ${count === 1 ? 'Change' : 'Changes'}`}
+        </Button>
       </div>
     </div>
   )
