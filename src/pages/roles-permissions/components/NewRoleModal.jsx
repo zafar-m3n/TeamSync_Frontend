@@ -60,10 +60,15 @@ export default function NewRoleModal({ onClose }) {
         noValidate
       >
         <FormField label="Name" required error={errors.name?.message}>
-          <Input autoFocus placeholder="e.g. Auditor" {...register('name')} />
+          <Input autoFocus placeholder="Auditor" {...register('name')} />
         </FormField>
         <FormField label="Description" error={errors.description?.message}>
-          <Input multiline rows={3} {...register('description')} />
+          <Input
+            multiline
+            rows={3}
+            placeholder="Read-only access to audit logs and compliance reports"
+            {...register('description')}
+          />
         </FormField>
       </form>
     </Modal>

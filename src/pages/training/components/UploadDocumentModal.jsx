@@ -106,11 +106,20 @@ export default function UploadDocumentModal({ onClose }) {
         noValidate
       >
         <FormField label="Title" required error={errors.title?.message}>
-          <Input autoFocus {...register('title')} />
+          <Input
+            autoFocus
+            placeholder="Workplace Safety Handbook 2024"
+            {...register('title')}
+          />
         </FormField>
 
         <FormField label="Description" error={errors.description?.message}>
-          <Input multiline rows={3} {...register('description')} />
+          <Input
+            multiline
+            rows={3}
+            placeholder="Mandatory reading covering emergency procedures and reporting"
+            {...register('description')}
+          />
         </FormField>
 
         <FormField label="Category" required error={errors.categoryId?.message}>

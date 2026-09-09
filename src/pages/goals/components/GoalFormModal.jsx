@@ -202,15 +202,30 @@ export default function GoalFormModal({ goal, onClose }) {
         )}
 
         <FormField label="Title" required error={errors.title?.message}>
-          <Input autoFocus {...register('title')} />
+          <Input
+            autoFocus
+            placeholder="Close 50 enterprise deals this quarter"
+            {...register('title')}
+          />
         </FormField>
 
         <FormField label="Description" error={errors.description?.message}>
-          <Input multiline rows={3} {...register('description')} />
+          <Input
+            multiline
+            rows={3}
+            placeholder="Focus on accounts above $25k ARR in the west region"
+            {...register('description')}
+          />
         </FormField>
 
         <FormField label="Numeric Target" required error={errors.numericTarget?.message}>
-          <Input type="number" min="0" step="any" {...register('numericTarget')} />
+          <Input
+            type="number"
+            min="0"
+            step="any"
+            placeholder="50"
+            {...register('numericTarget')}
+          />
         </FormField>
 
         <FormField label="Target Date" required error={errors.targetDate?.message}>

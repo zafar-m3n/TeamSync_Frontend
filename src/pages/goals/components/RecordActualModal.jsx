@@ -61,7 +61,14 @@ export default function RecordActualModal({ goal, onClose }) {
           Target: <span className="font-medium text-text">{goal.numericTarget}</span>
         </p>
         <FormField label="Actual Value" required error={errors.actualValue?.message}>
-          <Input type="number" min="0" step="any" autoFocus {...register('actualValue')} />
+          <Input
+            type="number"
+            min="0"
+            step="any"
+            autoFocus
+            placeholder="35"
+            {...register('actualValue')}
+          />
         </FormField>
       </form>
     </Modal>

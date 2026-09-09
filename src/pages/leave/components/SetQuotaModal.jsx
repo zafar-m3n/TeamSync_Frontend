@@ -58,7 +58,14 @@ export default function SetQuotaModal({ employeeId, year, defaultTotalDays, onCl
         noValidate
       >
         <FormField label="Total Days" required error={errors.totalDays?.message}>
-          <Input type="number" min="0" step="0.5" autoFocus {...register('totalDays')} />
+          <Input
+            type="number"
+            min="0"
+            step="0.5"
+            autoFocus
+            placeholder="20"
+            {...register('totalDays')}
+          />
         </FormField>
       </form>
     </Modal>

@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { DayPicker } from 'react-day-picker'
 import { format } from 'date-fns'
 import { Icon } from '@iconify/react'
+import clsx from 'clsx'
 import 'react-day-picker/style.css'
 import Select from '@/components/ui/Select'
 import FormField from '@/components/form/FormField'
@@ -218,13 +219,92 @@ function useDebouncedValue(value, delay) {
   return debounced
 }
 
-function SectionHeading({ children, hint }) {
+function SectionHeading({ icon, children, hint }) {
   return (
-    <div className="border-b border-gray-200 pb-2">
-      <h2 className="text-lg text-primary">{children}</h2>
-      {hint && <p className="text-xs text-gray-500">{hint}</p>}
+    <div className="border-b border-gray-200 pb-3">
+      <div className="flex items-center gap-2">
+        {icon && (
+          <Icon icon={icon} width="20" height="20" className="shrink-0 text-accent" />
+        )}
+        <h2 className="text-lg font-medium text-primary">{children}</h2>
+      </div>
+      {hint && <p className="mt-1 text-xs text-gray-500">{hint}</p>}
     </div>
   )
+}
+
+function Subheading({ children }) {
+  return (
+    <p className="border-b border-gray-100 pb-1.5 text-sm font-semibold text-primary">
+      {children}
+    </p>
+  )
+}
+
+// Non-clickable progress display. Trail wraps (flex-wrap, no nowrap / no fixed
+// widths) so it can never scroll horizontally; the track fill is a % width.
+function Stepper({ steps, currentStep }) {
+  return (
+    <div>
+      <ol className="flex flex-wrap items-center gap-x-2 gap-y-1.5 text-sm">
+        {steps.map((step, i) => (
+          <li key={step.label} className="inline-flex items-center gap-1.5">
+            {i > 0 && (
+              <Icon
+                icon="lucide:chevron-right"
+                width="14"
+                height="14"
+                className="text-gray-300"
+                aria-hidden
+              />
+            )}
+            {step.status === 'complete' && (
+              <Icon
+                icon="lucide:check"
+                width="14"
+                height="14"
+                className="text-accent"
+                aria-hidden
+              />
+            )}
+            {step.status === 'error' && (
+              <Icon
+                icon="lucide:triangle-alert"
+                width="14"
+                height="14"
+                className="text-red-600"
+                aria-hidden
+              />
+            )}
+            <span
+              aria-current={step.status === 'current' ? 'step' : undefined}
+              className={clsx(
+                step.status === 'current' && 'font-semibold text-primary',
+                step.status === 'upcoming' && 'text-gray-400',
+                step.status === 'complete' && 'text-gray-500',
+                step.status === 'error' && 'font-medium text-red-600',
+              )}
+            >
+              {step.label}
+            </span>
+          </li>
+        ))}
+      </ol>
+      <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-gray-200">
+        <div
+          className="h-full rounded-full bg-accent transition-[width] duration-300 ease-out motion-reduce:transition-none"
+          style={{ width: `${(currentStep / 4) * 100}%` }}
+        />
+      </div>
+    </div>
+  )
+}
+
+const STEP_LABELS = {
+  1: 'Account & Basic Information',
+  2: 'Employment Details',
+  3: 'Contact Information',
+  4: 'Banking Information',
 }
 
 export default function EmployeeFormPage({ mode }) {
@@ -264,6 +344,7 @@ export default function EmployeeFormPage({ mode }) {
     handleSubmit,
     reset,
     setError,
+    trigger,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(buildSchema(mode)),
@@ -297,6 +378,53 @@ export default function EmployeeFormPage({ mode }) {
       }
     }
   }, [isEdit, employee, reset])
+
+  const [currentStep, setCurrentStep] = useState(1)
+  const [visitedSteps, setVisitedSteps] = useState(() => new Set())
+  const [entered, setEntered] = useState(true)
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setEntered(true))
+    return () => cancelAnimationFrame(id)
+  }, [currentStep])
+
+  const goToStep = (next) => {
+    setEntered(false)
+    setCurrentStep(next)
+  }
+
+  const STEP_FIELDS = {
+    1:
+      mode === 'create'
+        ? ['email', 'initialPassword', 'roleId', 'fullName', 'employeeCode', 'dateOfBirth', 'gender', 'phone']
+        : ['email', 'roleId', 'fullName', 'employeeCode', 'dateOfBirth', 'gender', 'phone'],
+    2: ['departmentId', 'designation', 'dateOfJoining', 'employmentType', 'managerId'],
+    3: Object.keys(contactSchema.shape).map((k) => `contact.${k}`),
+    4: Object.keys(bankingSchema.shape).map((k) => `banking.${k}`),
+  }
+
+  const errorKeys = Object.keys(errors)
+  const stepHasError = (step) =>
+    STEP_FIELDS[step].some((name) => errorKeys.includes(name.split('.')[0]))
+
+  const stepStatus = (step) => {
+    if (step === currentStep) return 'current'
+    if (!visitedSteps.has(step) && step > currentStep) return 'upcoming'
+    return stepHasError(step) ? 'error' : 'complete'
+  }
+
+  const stepperSteps = [1, 2, 3, 4].map((n) => ({
+    label: STEP_LABELS[n],
+    status: stepStatus(n),
+  }))
+
+  const handleNext = async () => {
+    setVisitedSteps((prev) => new Set(prev).add(currentStep))
+    const ok = await trigger(STEP_FIELDS[currentStep])
+    if (ok) goToStep((s) => Math.min(4, s + 1))
+  }
+
+  const handleBack = () => goToStep((s) => Math.max(1, s - 1))
 
   const roleOptions = roles.map((r) => ({ value: r.id, label: r.name }))
   const departmentOptions = departments.map((d) => ({ value: d.id, label: d.name }))
@@ -355,6 +483,24 @@ export default function EmployeeFormPage({ mode }) {
     }
   }
 
+  // Final-submit re-validates the whole schema; if an earlier step is at fault,
+  // jump to the lowest-numbered offending step so the failure is visible.
+  const onInvalid = (formErrors) => {
+    const bad = Object.keys(formErrors)
+    setVisitedSteps(new Set([1, 2, 3, 4]))
+    for (const step of [1, 2, 3, 4]) {
+      if (STEP_FIELDS[step].some((name) => bad.includes(name.split('.')[0]))) {
+        goToStep(step)
+        return
+      }
+    }
+  }
+
+  const submit = handleSubmit((values) => {
+    if (currentStep !== 4) return
+    onSubmit(values)
+  }, onInvalid)
+
   if (isEdit && loadingEmployee) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
@@ -370,196 +516,266 @@ export default function EmployeeFormPage({ mode }) {
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8 pb-16">
-      <h1 className="text-2xl text-primary">
-        {isEdit ? 'Edit Employee' : 'New Employee'}
-      </h1>
-
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-10" noValidate>
-        {/* Account */}
-        <section className="space-y-4">
-          <SectionHeading>Account</SectionHeading>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <FormField label="Email" required error={errors.email?.message}>
-              <Input type="email" autoComplete="off" {...register('email')} />
-            </FormField>
-            {mode === 'create' && (
-              <FormField
-                label="Initial Password"
-                required
-                error={errors.initialPassword?.message}
-              >
-                <Input
-                  type="password"
-                  autoComplete="new-password"
-                  placeholder="••••••••"
-                  {...register('initialPassword')}
-                />
-              </FormField>
-            )}
-            <FormField label="Role" required error={errors.roleId?.message}>
-              <Controller
-                control={control}
-                name="roleId"
-                render={({ field }) => (
-                  <Select
-                    options={roleOptions}
-                    placeholder="Select a role…"
-                    value={roleOptions.find((o) => o.value === field.value) ?? null}
-                    onChange={(opt) => field.onChange(opt?.value ?? undefined)}
-                    onBlur={field.onBlur}
-                  />
-                )}
-              />
-            </FormField>
-          </div>
-        </section>
-
-        {/* Basic Information */}
-        <section className="space-y-4">
-          <SectionHeading>Basic Information</SectionHeading>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <FormField label="Full Name" required error={errors.fullName?.message}>
-              <Input {...register('fullName')} />
-            </FormField>
-            <FormField
-              label="Employee Code"
-              required
-              error={errors.employeeCode?.message}
-            >
-              <Input {...register('employeeCode')} />
-            </FormField>
-            <FormField label="Date of Birth" error={errors.dateOfBirth?.message}>
-              <Controller
-                control={control}
-                name="dateOfBirth"
-                render={({ field }) => (
-                  <DateField
-                    id={field.name}
-                    value={field.value}
-                    onChange={field.onChange}
-                  />
-                )}
-              />
-            </FormField>
-            <FormField label="Gender" error={errors.gender?.message}>
-              <Input {...register('gender')} />
-            </FormField>
-            <FormField label="Phone" error={errors.phone?.message}>
-              <Input {...register('phone')} />
-            </FormField>
-          </div>
-        </section>
-
-        {/* Employment Details */}
-        <section className="space-y-4">
-          <SectionHeading>Employment Details</SectionHeading>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <FormField label="Department" error={errors.departmentId?.message}>
-              <Controller
-                control={control}
-                name="departmentId"
-                render={({ field }) => (
-                  <Select
-                    isClearable
-                    options={departmentOptions}
-                    placeholder="Select a department…"
-                    value={
-                      departmentOptions.find((o) => o.value === field.value) ?? null
-                    }
-                    onChange={(opt) => field.onChange(opt?.value ?? null)}
-                    onBlur={field.onBlur}
-                  />
-                )}
-              />
-            </FormField>
-            <FormField label="Designation" error={errors.designation?.message}>
-              <Input {...register('designation')} />
-            </FormField>
-            <FormField label="Date of Joining" error={errors.dateOfJoining?.message}>
-              <Controller
-                control={control}
-                name="dateOfJoining"
-                render={({ field }) => (
-                  <DateField
-                    id={field.name}
-                    value={field.value}
-                    onChange={field.onChange}
-                  />
-                )}
-              />
-            </FormField>
-            <FormField label="Employment Type" error={errors.employmentType?.message}>
-              <Controller
-                control={control}
-                name="employmentType"
-                render={({ field }) => (
-                  <Select
-                    isClearable
-                    options={employmentOptions}
-                    placeholder="Select a type…"
-                    value={
-                      employmentOptions.find((o) => o.value === field.value) ?? null
-                    }
-                    onChange={(opt) => field.onChange(opt?.value ?? '')}
-                    onBlur={field.onBlur}
-                  />
-                )}
-              />
-            </FormField>
-            <FormField label="Manager" error={errors.managerId?.message}>
-              <Controller
-                control={control}
-                name="managerId"
-                render={({ field }) => (
-                  <Select
-                    isClearable
-                    options={managerOptions}
-                    placeholder="Search employees…"
-                    filterOption={() => true}
-                    onInputChange={(v) => setManagerQuery(v)}
-                    value={managerSelected}
-                    onChange={(opt) => {
-                      setManagerSelected(opt ?? null)
-                      field.onChange(opt?.value ?? null)
-                    }}
-                    onBlur={field.onBlur}
-                  />
-                )}
-              />
-            </FormField>
-          </div>
-        </section>
-
-        {/* Contact Information */}
-        <section className="space-y-4">
-          <SectionHeading hint="Optional">Contact Information</SectionHeading>
-          <ContactFields register={register} />
-        </section>
-
-        {/* Banking Information */}
-        <section className="space-y-4">
-          <SectionHeading hint="Optional">Banking Information</SectionHeading>
-          <BankingFields register={register} />
-        </section>
-
-        <div className="flex justify-end gap-3">
-          <Button
-            variant="secondary"
+    <div className="mx-auto max-w-3xl pb-16">
+      <div className="rounded-lg border border-gray-200 bg-white p-6 sm:p-8">
+        <div className="flex items-start justify-between gap-4">
+          <h1 className="font-display text-3xl leading-tight text-primary">
+            {isEdit ? 'Edit Employee' : 'New Employee'}
+          </h1>
+          <button
+            type="button"
             onClick={() =>
               navigate(
                 isEdit ? `/${roleSeg}/employees/${employeeId}` : `/${roleSeg}/employees`,
               )
             }
             disabled={mutation.isPending}
+            className="mt-1 shrink-0 rounded text-sm text-gray-500 transition-colors hover:text-text focus:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-50"
           >
             Cancel
-          </Button>
-          <Button type="submit" variant="accent" isLoading={mutation.isPending}>
-            {isEdit ? 'Save changes' : 'Create employee'}
-          </Button>
+          </button>
         </div>
-      </form>
+
+        <div className="mt-6">
+          <Stepper steps={stepperSteps} currentStep={currentStep} />
+        </div>
+
+        <form onSubmit={submit} className="mt-8" noValidate>
+          <div
+            className={clsx(
+              'transition duration-200 ease-out motion-reduce:transition-none',
+              entered ? 'translate-y-0 opacity-100' : 'translate-y-1 opacity-0',
+            )}
+          >
+            {currentStep === 1 && (
+              <section className="space-y-6">
+                <SectionHeading icon="lucide:user">
+                  Account &amp; Basic Information
+                </SectionHeading>
+
+                <div className="space-y-3">
+                  <Subheading>Account</Subheading>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <FormField label="Email" required error={errors.email?.message}>
+                      <Input
+                        type="email"
+                        autoComplete="off"
+                        placeholder="jordan.rivera@company.com"
+                        {...register('email')}
+                      />
+                    </FormField>
+                    {mode === 'create' && (
+                      <FormField
+                        label="Initial Password"
+                        required
+                        error={errors.initialPassword?.message}
+                      >
+                        <Input
+                          type="password"
+                          autoComplete="new-password"
+                          placeholder="••••••••"
+                          {...register('initialPassword')}
+                        />
+                      </FormField>
+                    )}
+                    <FormField label="Role" required error={errors.roleId?.message}>
+                      <Controller
+                        control={control}
+                        name="roleId"
+                        render={({ field }) => (
+                          <Select
+                            options={roleOptions}
+                            placeholder="Select a role…"
+                            value={
+                              roleOptions.find((o) => o.value === field.value) ?? null
+                            }
+                            onChange={(opt) => field.onChange(opt?.value ?? undefined)}
+                            onBlur={field.onBlur}
+                          />
+                        )}
+                      />
+                    </FormField>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <Subheading>Personal details</Subheading>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <FormField
+                      label="Full Name"
+                      required
+                      error={errors.fullName?.message}
+                    >
+                      <Input placeholder="Jordan Rivera" {...register('fullName')} />
+                    </FormField>
+                    <FormField
+                      label="Employee Code"
+                      required
+                      error={errors.employeeCode?.message}
+                    >
+                      <Input placeholder="ENG-2024-014" {...register('employeeCode')} />
+                    </FormField>
+                    <FormField
+                      label="Date of Birth"
+                      error={errors.dateOfBirth?.message}
+                    >
+                      <Controller
+                        control={control}
+                        name="dateOfBirth"
+                        render={({ field }) => (
+                          <DateField
+                            id={field.name}
+                            value={field.value}
+                            onChange={field.onChange}
+                          />
+                        )}
+                      />
+                    </FormField>
+                    <FormField label="Gender" error={errors.gender?.message}>
+                      <Input placeholder="Female" {...register('gender')} />
+                    </FormField>
+                    <FormField label="Phone" error={errors.phone?.message}>
+                      <Input placeholder="+1 415 555 0142" {...register('phone')} />
+                    </FormField>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {currentStep === 2 && (
+              <section className="space-y-6">
+                <SectionHeading icon="lucide:briefcase">
+                  Employment Details
+                </SectionHeading>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <FormField label="Department" error={errors.departmentId?.message}>
+                    <Controller
+                      control={control}
+                      name="departmentId"
+                      render={({ field }) => (
+                        <Select
+                          isClearable
+                          options={departmentOptions}
+                          placeholder="Select a department…"
+                          value={
+                            departmentOptions.find((o) => o.value === field.value) ??
+                            null
+                          }
+                          onChange={(opt) => field.onChange(opt?.value ?? null)}
+                          onBlur={field.onBlur}
+                        />
+                      )}
+                    />
+                  </FormField>
+                  <FormField label="Designation" error={errors.designation?.message}>
+                    <Input placeholder="Senior Software Engineer" {...register('designation')} />
+                  </FormField>
+                  <FormField
+                    label="Date of Joining"
+                    error={errors.dateOfJoining?.message}
+                  >
+                    <Controller
+                      control={control}
+                      name="dateOfJoining"
+                      render={({ field }) => (
+                        <DateField
+                          id={field.name}
+                          value={field.value}
+                          onChange={field.onChange}
+                        />
+                      )}
+                    />
+                  </FormField>
+                  <FormField
+                    label="Employment Type"
+                    error={errors.employmentType?.message}
+                  >
+                    <Controller
+                      control={control}
+                      name="employmentType"
+                      render={({ field }) => (
+                        <Select
+                          isClearable
+                          options={employmentOptions}
+                          placeholder="Select a type…"
+                          value={
+                            employmentOptions.find((o) => o.value === field.value) ??
+                            null
+                          }
+                          onChange={(opt) => field.onChange(opt?.value ?? '')}
+                          onBlur={field.onBlur}
+                        />
+                      )}
+                    />
+                  </FormField>
+                  <FormField label="Manager" error={errors.managerId?.message}>
+                    <Controller
+                      control={control}
+                      name="managerId"
+                      render={({ field }) => (
+                        <Select
+                          isClearable
+                          options={managerOptions}
+                          placeholder="Search employees…"
+                          filterOption={() => true}
+                          onInputChange={(v) => setManagerQuery(v)}
+                          value={managerSelected}
+                          onChange={(opt) => {
+                            setManagerSelected(opt ?? null)
+                            field.onChange(opt?.value ?? null)
+                          }}
+                          onBlur={field.onBlur}
+                        />
+                      )}
+                    />
+                  </FormField>
+                </div>
+              </section>
+            )}
+
+            {currentStep === 3 && (
+              <section className="space-y-6">
+                <SectionHeading icon="lucide:map-pin" hint="Optional">
+                  Contact Information
+                </SectionHeading>
+                <ContactFields register={register} />
+              </section>
+            )}
+
+            {currentStep === 4 && (
+              <section className="space-y-6">
+                <SectionHeading icon="lucide:credit-card" hint="Optional">
+                  Banking Information
+                </SectionHeading>
+                <BankingFields register={register} />
+              </section>
+            )}
+          </div>
+
+          <div className="sticky bottom-0 z-10 -mb-6 mt-8 flex items-center justify-end gap-3 border-t border-gray-200 bg-white pb-6 pt-4 sm:-mb-8 sm:pb-8">
+            {currentStep > 1 && (
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={handleBack}
+                disabled={mutation.isPending}
+                className="mr-auto"
+              >
+                Back
+              </Button>
+            )}
+            {currentStep < 4 ? (
+              <Button type="button" variant="accent" onClick={handleNext}>
+                Next
+              </Button>
+            ) : (
+              <Button type="submit" variant="accent" isLoading={mutation.isPending}>
+                {isEdit ? 'Save changes' : 'Create employee'}
+              </Button>
+            )}
+          </div>
+        </form>
+      </div>
     </div>
   )
 }

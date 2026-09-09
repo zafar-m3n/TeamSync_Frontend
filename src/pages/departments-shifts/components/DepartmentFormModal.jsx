@@ -78,7 +78,7 @@ export default function DepartmentFormModal({ department, onClose }) {
         noValidate
       >
         <FormField label="Name" required error={errors.name?.message}>
-          <Input autoFocus placeholder="e.g. Engineering" {...register('name')} />
+          <Input autoFocus placeholder="Engineering" {...register('name')} />
         </FormField>
 
         <FormField label="Department Head" error={errors.departmentHeadId?.message}>
