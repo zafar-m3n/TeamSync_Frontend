@@ -1,11 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { DayPicker } from 'react-day-picker'
+import { useEffect, useMemo, useState } from 'react'
 import { format } from 'date-fns'
-import { Icon } from '@iconify/react'
-import 'react-day-picker/style.css'
 import Table from '@/components/ui/Table'
 import TableSkeleton from '@/components/ui/TableSkeleton'
 import Button from '@/components/ui/Button'
+import { DateRangeField } from '@/components/form/DatePicker'
 import { useMyAttendance } from '@/hooks/useMyAttendance'
 import AttendanceStatusBadge from '@/pages/attendance/components/AttendanceStatusBadge'
 
@@ -33,79 +31,6 @@ function fmtTime(value) {
   if (!value) return '—'
   const d = new Date(value)
   return Number.isNaN(d.getTime()) ? '—' : format(d, 'p')
-}
-
-function DateRangeField({ value, onChange }) {
-  const [open, setOpen] = useState(false)
-  const ref = useRef(null)
-
-  useEffect(() => {
-    if (!open) return
-    const onDown = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false)
-    }
-    const onKey = (e) => {
-      if (e.key === 'Escape') setOpen(false)
-    }
-    document.addEventListener('mousedown', onDown)
-    document.addEventListener('keydown', onKey)
-    return () => {
-      document.removeEventListener('mousedown', onDown)
-      document.removeEventListener('keydown', onKey)
-    }
-  }, [open])
-
-  const label = value?.from
-    ? value.to
-      ? `${format(value.from, 'PP')} – ${format(value.to, 'PP')}`
-      : `${format(value.from, 'PP')} – …`
-    : 'Any dates'
-
-  return (
-    <div ref={ref} className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="flex w-72 items-center justify-between rounded-md border border-gray-300 bg-white px-3 py-2 text-left text-sm focus:outline-none focus:ring-2 focus:ring-accent"
-      >
-        <span className={value?.from ? 'text-text' : 'text-gray-400'}>{label}</span>
-        <span className="flex items-center gap-2">
-          {value?.from && (
-            <span
-              role="button"
-              tabIndex={0}
-              onClick={(e) => {
-                e.stopPropagation()
-                onChange(undefined)
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.stopPropagation()
-                  onChange(undefined)
-                }
-              }}
-              className="text-xs text-gray-400 hover:text-text"
-            >
-              Clear
-            </span>
-          )}
-          <Icon icon="lucide:calendar" width="16" height="16" className="text-gray-400" />
-        </span>
-      </button>
-
-      {open && (
-        <div
-          className="absolute left-0 z-40 mt-1 rounded-lg border border-gray-200 bg-white p-2 shadow-lg"
-          style={{
-            '--rdp-accent-color': '#059c99',
-            '--rdp-accent-background-color': '#e6f4f3',
-          }}
-        >
-          <DayPicker mode="range" selected={value} onSelect={onChange} />
-        </div>
-      )}
-    </div>
-  )
 }
 
 export default function MyAttendancePage() {
@@ -136,7 +61,12 @@ export default function MyAttendancePage() {
       <div className="flex flex-wrap items-end gap-3">
         <div>
           <label className="mb-1 block text-xs font-medium text-gray-500">Date range</label>
-          <DateRangeField value={range} onChange={setRange} />
+          <DateRangeField
+            value={range}
+            onChange={setRange}
+            placeholder="Any dates"
+            className="w-72"
+          />
         </div>
       </div>
 

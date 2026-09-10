@@ -5,7 +5,14 @@ import clsx from 'clsx'
 const FOCUSABLE =
   'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
 
-export default function Modal({ isOpen, onClose, title, children, footer }) {
+export default function Modal({
+  isOpen,
+  onClose,
+  title,
+  children,
+  footer,
+  centered = false,
+}) {
   const panelRef = useRef(null)
   const openerRef = useRef(null)
   const onCloseRef = useRef(onClose)
@@ -70,7 +77,10 @@ export default function Modal({ isOpen, onClose, title, children, footer }) {
   return (
     <div
       className={clsx(
-        'fixed inset-0 z-50 flex items-center justify-center p-4 transition-opacity duration-200',
+        'fixed inset-0 z-50 flex justify-center px-4 transition-opacity duration-200',
+        // centered: vertically centered (unchanged). default: near the top, below
+        // the topbar, still comfortably off the edge on small screens.
+        centered ? 'items-center py-4' : 'items-start pt-[10vh] pb-4',
         entered ? 'opacity-100' : 'opacity-0',
       )}
     >
@@ -86,7 +96,8 @@ export default function Modal({ isOpen, onClose, title, children, footer }) {
         aria-label={title}
         tabIndex={-1}
         className={clsx(
-          'relative z-10 flex max-h-[calc(100vh-2rem)] w-full max-w-lg flex-col rounded-lg bg-white shadow-xl transition-all duration-200 focus:outline-none',
+          'relative z-10 flex w-full max-w-lg flex-col rounded-lg bg-white shadow-xl transition-all duration-200 focus:outline-none',
+          centered ? 'max-h-[calc(100vh-2rem)]' : 'max-h-[85vh]',
           entered ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0',
         )}
       >

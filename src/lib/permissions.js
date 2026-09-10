@@ -1,6 +1,7 @@
 export const PERMISSION_MATRIX = [
   { module: "employees", action: "create", roles: ["HR", "Admin"] },
   { module: "employees", action: "edit", roles: ["HR", "Admin"] },
+  { module: "employees", action: "delete", roles: ["HR", "Admin"] },
   { module: "employees", action: "view_own", roles: ["Admin", "HR", "Manager", "Employee"] },
   { module: "employees", action: "view_team", roles: ["Manager"] },
   { module: "employees", action: "view_all", roles: ["HR", "Admin"] },

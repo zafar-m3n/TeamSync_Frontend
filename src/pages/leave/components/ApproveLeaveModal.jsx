@@ -15,6 +15,7 @@ export default function ApproveLeaveModal({ request, onClose }) {
 
   return (
     <Modal
+      centered
       isOpen
       onClose={onClose}
       title="Approve leave request"

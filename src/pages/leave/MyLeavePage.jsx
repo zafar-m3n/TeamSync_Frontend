@@ -194,6 +194,7 @@ export default function MyLeavePage() {
       {showForm && <LeaveRequestFormModal onClose={() => setShowForm(false)} />}
 
       <Modal
+        centered
         isOpen={Boolean(cancelTarget)}
         onClose={() => setCancelTarget(null)}
         title="Cancel leave request"

@@ -1,12 +1,10 @@
-import { useEffect, useRef, useState } from 'react'
-import { DayPicker } from 'react-day-picker'
+import { useState } from 'react'
 import { format } from 'date-fns'
-import { Icon } from '@iconify/react'
-import 'react-day-picker/style.css'
 import Table from '@/components/ui/Table'
 import TableSkeleton from '@/components/ui/TableSkeleton'
 import Button from '@/components/ui/Button'
 import IconButton from '@/components/ui/IconButton'
+import { DateField } from '@/components/form/DatePicker'
 import { useTeamAttendance } from '@/hooks/useTeamAttendance'
 import { useMyTeam } from '@/hooks/useMyTeam'
 import AttendanceStatusBadge from '@/pages/attendance/components/AttendanceStatusBadge'
@@ -31,64 +29,6 @@ function fmtTime(value) {
   return Number.isNaN(d.getTime()) ? '—' : format(d, 'p')
 }
 
-function SingleDateField({ value, onChange }) {
-  const [open, setOpen] = useState(false)
-  const ref = useRef(null)
-  const selected = value ? new Date(`${value}T00:00:00`) : undefined
-
-  useEffect(() => {
-    if (!open) return
-    const onDown = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false)
-    }
-    const onKey = (e) => {
-      if (e.key === 'Escape') setOpen(false)
-    }
-    document.addEventListener('mousedown', onDown)
-    document.addEventListener('keydown', onKey)
-    return () => {
-      document.removeEventListener('mousedown', onDown)
-      document.removeEventListener('keydown', onKey)
-    }
-  }, [open])
-
-  return (
-    <div ref={ref} className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="flex w-56 items-center justify-between rounded-md border border-gray-300 bg-white px-3 py-2 text-left text-sm focus:outline-none focus:ring-2 focus:ring-accent"
-      >
-        <span className="text-text">
-          {selected ? format(selected, 'PP') : 'Pick a date'}
-        </span>
-        <Icon icon="lucide:calendar" width="16" height="16" className="text-gray-400" />
-      </button>
-
-      {open && (
-        <div
-          className="absolute left-0 z-40 mt-1 rounded-lg border border-gray-200 bg-white p-2 shadow-lg"
-          style={{
-            '--rdp-accent-color': '#059c99',
-            '--rdp-accent-background-color': '#e6f4f3',
-          }}
-        >
-          <DayPicker
-            mode="single"
-            selected={selected}
-            defaultMonth={selected}
-            onSelect={(d) => {
-              if (d) {
-                onChange(toYmd(d))
-                setOpen(false)
-              }
-            }}
-          />
-        </div>
-      )}
-    </div>
-  )
-}
 
 export default function TeamAttendancePage() {
   const [date, setDate] = useState(() => toYmd(new Date()))
@@ -105,7 +45,12 @@ export default function TeamAttendancePage() {
       <div className="flex flex-wrap items-end gap-3">
         <div>
           <label className="mb-1 block text-xs font-medium text-gray-500">Date</label>
-          <SingleDateField value={date} onChange={setDate} />
+          <DateField
+            value={date}
+            onChange={setDate}
+            placeholder="Pick a date"
+            className="w-56"
+          />
         </div>
       </div>
 

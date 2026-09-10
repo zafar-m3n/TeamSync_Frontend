@@ -170,6 +170,7 @@ export default function TeamLeavePage() {
       )}
 
       <Modal
+        centered
         isOpen={Boolean(rejectTarget)}
         onClose={() => setRejectTarget(null)}
         title="Reject leave request"
@@ -203,6 +204,7 @@ export default function TeamLeavePage() {
       </Modal>
 
       <Modal
+        centered
         isOpen={Boolean(cancelTarget)}
         onClose={() => setCancelTarget(null)}
         title="Cancel leave request"

@@ -1,15 +1,12 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { DayPicker } from 'react-day-picker'
-import { format } from 'date-fns'
-import { Icon } from '@iconify/react'
-import 'react-day-picker/style.css'
 import Select from '@/components/ui/Select'
 import Modal from '@/components/ui/Modal'
 import FormField from '@/components/form/FormField'
 import Button from '@/components/ui/Button'
+import { DateField, DateRangeField, toYmd, parseYmd } from '@/components/form/DatePicker'
 import { useLeaveTypes } from '@/hooks/useLeaveTypes'
 import { useSubmitLeaveRequest } from '@/hooks/useLeaveRequestMutations'
 import { computeLeaveDays } from '@/pages/leave/utils/computeLeaveDays'
@@ -32,120 +29,6 @@ const schema = z
     message: 'A half day must be a single date',
     path: ['endDate'],
   })
-
-function toYmd(d) {
-  const p = (n) => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`
-}
-
-function parseYmd(value) {
-  if (!value) return undefined
-  const d = new Date(`${value}T00:00:00`)
-  return Number.isNaN(d.getTime()) ? undefined : d
-}
-
-function usePopover() {
-  const [open, setOpen] = useState(false)
-  const ref = useRef(null)
-  useEffect(() => {
-    if (!open) return
-    const onDown = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false)
-    }
-    const onKey = (e) => {
-      if (e.key === 'Escape') setOpen(false)
-    }
-    document.addEventListener('mousedown', onDown)
-    document.addEventListener('keydown', onKey)
-    return () => {
-      document.removeEventListener('mousedown', onDown)
-      document.removeEventListener('keydown', onKey)
-    }
-  }, [open])
-  return { open, setOpen, ref }
-}
-
-const POPOVER_STYLE = {
-  '--rdp-accent-color': '#059c99',
-  '--rdp-accent-background-color': '#e6f4f3',
-}
-
-function SingleDateField({ value, onChange }) {
-  const { open, setOpen, ref } = usePopover()
-  const selected = parseYmd(value)
-  return (
-    <div ref={ref} className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center justify-between rounded-md border border-gray-300 bg-white px-3 py-2 text-left text-sm focus:outline-none focus:ring-2 focus:ring-accent"
-      >
-        <span className={selected ? 'text-text' : 'text-gray-400'}>
-          {selected ? format(selected, 'PP') : 'Pick a date'}
-        </span>
-        <Icon icon="lucide:calendar" width="16" height="16" className="text-gray-400" />
-      </button>
-      {open && (
-        <div
-          className="absolute left-0 z-40 mt-1 rounded-lg border border-gray-200 bg-white p-2 shadow-lg"
-          style={POPOVER_STYLE}
-        >
-          <DayPicker
-            mode="single"
-            selected={selected}
-            defaultMonth={selected}
-            onSelect={(d) => {
-              if (d) {
-                onChange(toYmd(d))
-                setOpen(false)
-              }
-            }}
-          />
-        </div>
-      )}
-    </div>
-  )
-}
-
-function DateRangeField({ from, to, onChange }) {
-  const { open, setOpen, ref } = usePopover()
-  const value = { from: parseYmd(from), to: parseYmd(to) }
-  const label = value.from
-    ? value.to
-      ? `${format(value.from, 'PP')} – ${format(value.to, 'PP')}`
-      : `${format(value.from, 'PP')} – …`
-    : 'Pick a date range'
-  return (
-    <div ref={ref} className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center justify-between rounded-md border border-gray-300 bg-white px-3 py-2 text-left text-sm focus:outline-none focus:ring-2 focus:ring-accent"
-      >
-        <span className={value.from ? 'text-text' : 'text-gray-400'}>{label}</span>
-        <Icon icon="lucide:calendar" width="16" height="16" className="text-gray-400" />
-      </button>
-      {open && (
-        <div
-          className="absolute left-0 z-40 mt-1 rounded-lg border border-gray-200 bg-white p-2 shadow-lg"
-          style={POPOVER_STYLE}
-        >
-          <DayPicker
-            mode="range"
-            selected={value.from ? value : undefined}
-            defaultMonth={value.from}
-            onSelect={(range) =>
-              onChange(
-                range?.from ? toYmd(range.from) : '',
-                range?.to ? toYmd(range.to) : '',
-              )
-            }
-          />
-        </div>
-      )}
-    </div>
-  )
-}
 
 export default function LeaveRequestFormModal({ onClose }) {
   const { data: leaveTypes = [] } = useLeaveTypes()
@@ -249,8 +132,9 @@ export default function LeaveRequestFormModal({ onClose }) {
 
         {isHalfDay ? (
           <FormField label="Date" required error={errors.startDate?.message || errors.endDate?.message}>
-            <SingleDateField
+            <DateField
               value={startDate}
+              placeholder="Pick a date"
               onChange={(ymd) => {
                 setValue('startDate', ymd, { shouldValidate: true })
                 setValue('endDate', ymd, { shouldValidate: true })
@@ -264,11 +148,16 @@ export default function LeaveRequestFormModal({ onClose }) {
             error={errors.startDate?.message || errors.endDate?.message}
           >
             <DateRangeField
-              from={startDate}
-              to={endDate}
-              onChange={(from, to) => {
-                setValue('startDate', from, { shouldValidate: true })
-                setValue('endDate', to, { shouldValidate: true })
+              value={{ from: parseYmd(startDate), to: parseYmd(endDate) }}
+              clearable={false}
+              placeholder="Pick a date range"
+              onChange={(range) => {
+                setValue('startDate', range?.from ? toYmd(range.from) : '', {
+                  shouldValidate: true,
+                })
+                setValue('endDate', range?.to ? toYmd(range.to) : '', {
+                  shouldValidate: true,
+                })
               }}
             />
           </FormField>

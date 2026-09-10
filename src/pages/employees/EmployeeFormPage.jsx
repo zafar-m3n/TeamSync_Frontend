@@ -1,16 +1,14 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { DayPicker } from 'react-day-picker'
-import { format } from 'date-fns'
 import { Icon } from '@iconify/react'
 import clsx from 'clsx'
-import 'react-day-picker/style.css'
 import Select from '@/components/ui/Select'
 import FormField from '@/components/form/FormField'
 import Input from '@/components/form/Input'
+import { DateField } from '@/components/form/DatePicker'
 import Button from '@/components/ui/Button'
 import Spinner from '@/components/ui/Spinner'
 import { useAuth } from '@/store/AuthContext'
@@ -23,6 +21,16 @@ import ContactFields from '@/pages/employees/components/ContactFields'
 import BankingFields from '@/pages/employees/components/BankingFields'
 
 const EMPLOYMENT_TYPES = ['Full-time', 'Part-time', 'Contract', 'Intern', 'Probation']
+
+const GENDER_OPTIONS = [
+  { value: 'Male', label: 'Male' },
+  { value: 'Female', label: 'Female' },
+]
+
+// Single source of truth for the wizard length. Every "is this the last step"
+// and "how many steps" decision derives from this — nothing hardcoded elsewhere.
+const TOTAL_STEPS = 4
+const ALL_STEPS = Array.from({ length: TOTAL_STEPS }, (_, i) => i + 1)
 
 // NOTE: field names below are inferred (camelCase, YYYY-MM-DD dates); reconcile
 // against the backend createEmployee/updateEmployee zod schemas once available.
@@ -116,100 +124,6 @@ function cleanObject(obj) {
   return out
 }
 
-function toYmd(date) {
-  const y = date.getFullYear()
-  const m = String(date.getMonth() + 1).padStart(2, '0')
-  const d = String(date.getDate()).padStart(2, '0')
-  return `${y}-${m}-${d}`
-}
-
-function parseYmd(value) {
-  if (!value) return undefined
-  const d = new Date(value.length <= 10 ? `${value}T00:00:00` : value)
-  return Number.isNaN(d.getTime()) ? undefined : d
-}
-
-const YEAR_NOW = new Date().getFullYear()
-
-function DateField({ id, value, onChange }) {
-  const [open, setOpen] = useState(false)
-  const ref = useRef(null)
-  const selected = parseYmd(value)
-
-  useEffect(() => {
-    if (!open) return
-    const onDown = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false)
-    }
-    const onKey = (e) => {
-      if (e.key === 'Escape') setOpen(false)
-    }
-    document.addEventListener('mousedown', onDown)
-    document.addEventListener('keydown', onKey)
-    return () => {
-      document.removeEventListener('mousedown', onDown)
-      document.removeEventListener('keydown', onKey)
-    }
-  }, [open])
-
-  return (
-    <div ref={ref} className="relative">
-      <button
-        type="button"
-        id={id}
-        onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center justify-between rounded-md border border-gray-300 bg-white px-3 py-2 text-left text-sm focus:outline-none focus:ring-2 focus:ring-accent"
-      >
-        <span className={selected ? 'text-text' : 'text-gray-400'}>
-          {selected ? format(selected, 'PP') : 'Select a date'}
-        </span>
-        <span className="flex items-center gap-2">
-          {value && (
-            <span
-              role="button"
-              tabIndex={0}
-              onClick={(e) => {
-                e.stopPropagation()
-                onChange('')
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.stopPropagation()
-                  onChange('')
-                }
-              }}
-              className="text-xs text-gray-400 hover:text-text"
-            >
-              Clear
-            </span>
-          )}
-          <Icon icon="lucide:calendar" width="16" height="16" className="text-gray-400" />
-        </span>
-      </button>
-
-      {open && (
-        <div
-          className="absolute left-0 z-40 mt-1 rounded-lg border border-gray-200 bg-white p-2 shadow-lg"
-          style={{ '--rdp-accent-color': '#059c99', '--rdp-accent-background-color': '#e6f4f3' }}
-        >
-          <DayPicker
-            mode="single"
-            captionLayout="dropdown"
-            startMonth={new Date(1950, 0)}
-            endMonth={new Date(YEAR_NOW + 1, 11)}
-            defaultMonth={selected}
-            selected={selected}
-            onSelect={(d) => {
-              onChange(d ? toYmd(d) : '')
-              setOpen(false)
-            }}
-          />
-        </div>
-      )}
-    </div>
-  )
-}
-
 function useDebouncedValue(value, delay) {
   const [debounced, setDebounced] = useState(value)
   useEffect(() => {
@@ -217,20 +131,6 @@ function useDebouncedValue(value, delay) {
     return () => clearTimeout(t)
   }, [value, delay])
   return debounced
-}
-
-function SectionHeading({ icon, children, hint }) {
-  return (
-    <div className="border-b border-gray-200 pb-3">
-      <div className="flex items-center gap-2">
-        {icon && (
-          <Icon icon={icon} width="20" height="20" className="shrink-0 text-accent" />
-        )}
-        <h2 className="text-lg font-medium text-primary">{children}</h2>
-      </div>
-      {hint && <p className="mt-1 text-xs text-gray-500">{hint}</p>}
-    </div>
-  )
 }
 
 function Subheading({ children }) {
@@ -241,60 +141,56 @@ function Subheading({ children }) {
   )
 }
 
-// Non-clickable progress display. Trail wraps (flex-wrap, no nowrap / no fixed
-// widths) so it can never scroll horizontally; the track fill is a % width.
+// Non-clickable progress display. The label is a single truncating line so it
+// can never wrap or overflow; the track fill is a % width; the status row is
+// icon/dot only (flex-wrap purely as a safety net).
 function Stepper({ steps, currentStep }) {
+  const currentLabel = steps[currentStep - 1]?.label
   return (
     <div>
-      <ol className="flex flex-wrap items-center gap-x-2 gap-y-1.5 text-sm">
-        {steps.map((step, i) => (
-          <li key={step.label} className="inline-flex items-center gap-1.5">
-            {i > 0 && (
-              <Icon
-                icon="lucide:chevron-right"
-                width="14"
-                height="14"
-                className="text-gray-300"
-                aria-hidden
-              />
-            )}
-            {step.status === 'complete' && (
-              <Icon
-                icon="lucide:check"
-                width="14"
-                height="14"
-                className="text-accent"
-                aria-hidden
-              />
-            )}
-            {step.status === 'error' && (
-              <Icon
-                icon="lucide:triangle-alert"
-                width="14"
-                height="14"
-                className="text-red-600"
-                aria-hidden
-              />
-            )}
-            <span
-              aria-current={step.status === 'current' ? 'step' : undefined}
-              className={clsx(
-                step.status === 'current' && 'font-semibold text-primary',
-                step.status === 'upcoming' && 'text-gray-400',
-                step.status === 'complete' && 'text-gray-500',
-                step.status === 'error' && 'font-medium text-red-600',
-              )}
-            >
-              {step.label}
-            </span>
-          </li>
-        ))}
-      </ol>
+      <p className="truncate text-sm font-medium text-primary">
+        Step {currentStep} of {TOTAL_STEPS} — {currentLabel}
+      </p>
       <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-gray-200">
         <div
           className="h-full rounded-full bg-accent transition-[width] duration-300 ease-out motion-reduce:transition-none"
-          style={{ width: `${(currentStep / 4) * 100}%` }}
+          style={{ width: `${(currentStep / TOTAL_STEPS) * 100}%` }}
         />
+      </div>
+      <div className="mt-2 flex flex-wrap items-center gap-1.5" aria-hidden>
+        {steps.map((step) => {
+          if (step.status === 'error') {
+            return (
+              <Icon
+                key={step.label}
+                icon="lucide:circle-alert"
+                width="14"
+                height="14"
+                className="text-red-600"
+              />
+            )
+          }
+          if (step.status === 'complete') {
+            return (
+              <Icon
+                key={step.label}
+                icon="lucide:circle-check"
+                width="14"
+                height="14"
+                className="text-accent"
+              />
+            )
+          }
+          return (
+            <span
+              key={step.label}
+              className={clsx(
+                'h-3.5 w-3.5 rounded-full',
+                step.status === 'current' ? 'bg-accent' : 'bg-gray-200',
+              )}
+            />
+          )
+        })}
       </div>
     </div>
   )
@@ -383,6 +279,10 @@ export default function EmployeeFormPage({ mode }) {
   const [visitedSteps, setVisitedSteps] = useState(() => new Set())
   const [entered, setEntered] = useState(true)
 
+  // The one derived flag that both the button swap and the last-step content
+  // render off of, so they can never disagree.
+  const isLastStep = currentStep === TOTAL_STEPS
+
   useEffect(() => {
     const id = requestAnimationFrame(() => setEntered(true))
     return () => cancelAnimationFrame(id)
@@ -413,7 +313,7 @@ export default function EmployeeFormPage({ mode }) {
     return stepHasError(step) ? 'error' : 'complete'
   }
 
-  const stepperSteps = [1, 2, 3, 4].map((n) => ({
+  const stepperSteps = ALL_STEPS.map((n) => ({
     label: STEP_LABELS[n],
     status: stepStatus(n),
   }))
@@ -421,7 +321,7 @@ export default function EmployeeFormPage({ mode }) {
   const handleNext = async () => {
     setVisitedSteps((prev) => new Set(prev).add(currentStep))
     const ok = await trigger(STEP_FIELDS[currentStep])
-    if (ok) goToStep((s) => Math.min(4, s + 1))
+    if (ok) goToStep((s) => Math.min(TOTAL_STEPS, s + 1))
   }
 
   const handleBack = () => goToStep((s) => Math.max(1, s - 1))
@@ -431,6 +331,10 @@ export default function EmployeeFormPage({ mode }) {
   const employmentOptions = EMPLOYMENT_TYPES.map((t) => ({ value: t, label: t }))
 
   const onSubmit = (values) => {
+    // Hard safety net: the form can never actually submit from a non-final step,
+    // no matter what triggers the submit event.
+    if (currentStep !== TOTAL_STEPS) return
+
     const payload = cleanObject({
       email: values.email,
       ...(mode === 'create' ? { initialPassword: values.initialPassword } : {}),
@@ -474,9 +378,9 @@ export default function EmployeeFormPage({ mode }) {
       )
     } else {
       createMutation.mutate(payload, {
-        onSuccess: (res) => {
+        onSuccess: () => {
           toast.success('Employee created')
-          navigate(`/${roleSeg}/employees/${res.data.id}`)
+          navigate(`/${roleSeg}/employees`)
         },
         onError,
       })
@@ -487,8 +391,8 @@ export default function EmployeeFormPage({ mode }) {
   // jump to the lowest-numbered offending step so the failure is visible.
   const onInvalid = (formErrors) => {
     const bad = Object.keys(formErrors)
-    setVisitedSteps(new Set([1, 2, 3, 4]))
-    for (const step of [1, 2, 3, 4]) {
+    setVisitedSteps(new Set(ALL_STEPS))
+    for (const step of ALL_STEPS) {
       if (STEP_FIELDS[step].some((name) => bad.includes(name.split('.')[0]))) {
         goToStep(step)
         return
@@ -496,10 +400,7 @@ export default function EmployeeFormPage({ mode }) {
     }
   }
 
-  const submit = handleSubmit((values) => {
-    if (currentStep !== 4) return
-    onSubmit(values)
-  }, onInvalid)
+  const submit = handleSubmit(onSubmit, onInvalid)
 
   if (isEdit && loadingEmployee) {
     return (
@@ -549,10 +450,6 @@ export default function EmployeeFormPage({ mode }) {
           >
             {currentStep === 1 && (
               <section className="space-y-6">
-                <SectionHeading icon="lucide:user">
-                  Account &amp; Basic Information
-                </SectionHeading>
-
                 <div className="space-y-3">
                   <Subheading>Account</Subheading>
                   <div className="grid gap-4 sm:grid-cols-2">
@@ -627,12 +524,29 @@ export default function EmployeeFormPage({ mode }) {
                             id={field.name}
                             value={field.value}
                             onChange={field.onChange}
+                            clearable
+                            withDropdownNav
                           />
                         )}
                       />
                     </FormField>
                     <FormField label="Gender" error={errors.gender?.message}>
-                      <Input placeholder="Female" {...register('gender')} />
+                      <Controller
+                        control={control}
+                        name="gender"
+                        render={({ field }) => (
+                          <Select
+                            isClearable
+                            options={GENDER_OPTIONS}
+                            placeholder="Select a gender…"
+                            value={
+                              GENDER_OPTIONS.find((o) => o.value === field.value) ?? null
+                            }
+                            onChange={(opt) => field.onChange(opt?.value ?? '')}
+                            onBlur={field.onBlur}
+                          />
+                        )}
+                      />
                     </FormField>
                     <FormField label="Phone" error={errors.phone?.message}>
                       <Input placeholder="+1 415 555 0142" {...register('phone')} />
@@ -644,9 +558,6 @@ export default function EmployeeFormPage({ mode }) {
 
             {currentStep === 2 && (
               <section className="space-y-6">
-                <SectionHeading icon="lucide:briefcase">
-                  Employment Details
-                </SectionHeading>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <FormField label="Department" error={errors.departmentId?.message}>
                     <Controller
@@ -682,6 +593,8 @@ export default function EmployeeFormPage({ mode }) {
                           id={field.name}
                           value={field.value}
                           onChange={field.onChange}
+                          clearable
+                          withDropdownNav
                         />
                       )}
                     />
@@ -735,18 +648,14 @@ export default function EmployeeFormPage({ mode }) {
 
             {currentStep === 3 && (
               <section className="space-y-6">
-                <SectionHeading icon="lucide:map-pin" hint="Optional">
-                  Contact Information
-                </SectionHeading>
-                <ContactFields register={register} />
+                <p className="text-sm text-gray-500">All fields in this step are optional.</p>
+                <ContactFields register={register} control={control} />
               </section>
             )}
 
-            {currentStep === 4 && (
+            {isLastStep && (
               <section className="space-y-6">
-                <SectionHeading icon="lucide:credit-card" hint="Optional">
-                  Banking Information
-                </SectionHeading>
+                <p className="text-sm text-gray-500">All fields in this step are optional.</p>
                 <BankingFields register={register} />
               </section>
             )}
@@ -764,13 +673,13 @@ export default function EmployeeFormPage({ mode }) {
                 Back
               </Button>
             )}
-            {currentStep < 4 ? (
-              <Button type="button" variant="accent" onClick={handleNext}>
-                Next
-              </Button>
-            ) : (
+            {isLastStep ? (
               <Button type="submit" variant="accent" isLoading={mutation.isPending}>
                 {isEdit ? 'Save changes' : 'Create employee'}
+              </Button>
+            ) : (
+              <Button type="button" variant="accent" onClick={handleNext}>
+                Next
               </Button>
             )}
           </div>
