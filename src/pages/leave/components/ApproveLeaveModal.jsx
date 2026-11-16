@@ -1,20 +1,34 @@
+import { useQueries } from '@tanstack/react-query'
 import Modal from '@/components/ui/Modal'
 import Button from '@/components/ui/Button'
-import { useLeaveBalance } from '@/hooks/useLeaveBalance'
+import { getLeaveBalance } from '@/services/leaveBalanceService'
 import { useApproveLeaveRequest } from '@/hooks/useLeaveRequestMutations'
-import { computeLeaveDays } from '@/pages/leave/utils/computeLeaveDays'
 import { findBalance } from '@/pages/leave/utils/leaveBalances'
 
-export default function ApproveLeaveModal({ request, onClose }) {
-  const year = new Date(request.startDate).getFullYear()
-  const { data: balances, isLoading } = useLeaveBalance(request.employee.id, year)
-  const approve = useApproveLeaveRequest()
+const dayLabel = (n) => `${n} day${n === 1 ? '' : 's'}`
 
-  const balance = findBalance(balances, request.leaveTypeId)
-  const typeName = balance?.leaveTypeName ?? request.leaveType?.name ?? 'leave'
-  const days = computeLeaveDays(request.startDate, request.endDate, request.isHalfDay)
+export default function ApproveLeaveModal({ request, onClose }) {
+  const approve = useApproveLeaveRequest()
+  const employeeId = request.employee.id
+  // A request crossing New Year is charged to each year's balance separately.
+  const parts = Object.entries(request.daysByYear ?? {}).map(([year, days]) => ({
+    year: Number(year),
+    days,
+  }))
+
+  const balanceQueries = useQueries({
+    queries: parts.map(({ year }) => ({
+      queryKey: ['leave-balances', String(employeeId), year],
+      queryFn: () => getLeaveBalance(employeeId, year),
+      select: (res) => findBalance(res.data, request.leaveTypeId),
+    })),
+  })
+  const isLoading = balanceQueries.some((q) => q.isLoading)
+  const rows = parts.map((part, i) => ({ ...part, balance: balanceQueries[i].data ?? null }))
+  const shortYears = rows.filter((r) => r.balance && r.days > r.balance.remaining)
+
+  const typeName = rows[0]?.balance?.leaveTypeName ?? request.leaveType?.name ?? 'leave'
   const employeeName = request.employee?.fullName ?? 'This employee'
-  const insufficient = balance != null && days > balance.remaining
 
   return (
     <Modal
@@ -30,7 +44,7 @@ export default function ApproveLeaveModal({ request, onClose }) {
           <Button
             variant="success"
             isLoading={approve.isPending}
-            disabled={isLoading || insufficient}
+            disabled={isLoading || shortYears.length > 0}
             onClick={() => approve.mutate(request.id, { onSuccess: onClose })}
           >
             Confirm
@@ -39,23 +53,34 @@ export default function ApproveLeaveModal({ request, onClose }) {
       }
     >
       <div className="space-y-2 text-sm text-text">
+        <p>
+          {employeeName} is requesting <strong>{dayLabel(request.days)}</strong> of {typeName}.
+        </p>
         {isLoading ? (
           <p className="text-gray-500">Checking their balance…</p>
-        ) : balance ? (
-          <p>
-            {employeeName} is requesting <strong>{days}</strong> days of {typeName}. They have{' '}
-            <strong>{balance.remaining}</strong> of {balance.totalDays} {typeName} days
-            remaining in {year}.
-          </p>
         ) : (
-          <p className="text-gray-500">
-            {employeeName} is requesting <strong>{days}</strong> days. Their balance for{' '}
-            {year} could not be loaded.
-          </p>
+          rows.map(({ year, days, balance }) =>
+            balance ? (
+              <p key={year}>
+                {parts.length > 1 && (
+                  <>
+                    <strong>{dayLabel(days)}</strong> in {year}:{' '}
+                  </>
+                )}
+                <strong>{balance.remaining}</strong> of {balance.totalDays} {typeName} days
+                remaining in {year}.
+              </p>
+            ) : (
+              <p key={year} className="text-gray-500">
+                Their {year} balance could not be loaded.
+              </p>
+            ),
+          )
         )}
-        {insufficient && (
+        {shortYears.length > 0 && (
           <p className="text-sm text-red-600">
-            Insufficient balance — this request can&rsquo;t be approved as-is.
+            Insufficient balance for {shortYears.map((r) => r.year).join(' and ')} — this
+            request can&rsquo;t be approved as-is.
           </p>
         )}
       </div>

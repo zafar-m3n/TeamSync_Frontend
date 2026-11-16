@@ -12,7 +12,6 @@ import { useMyProfile } from '@/hooks/useMyProfile'
 import { useLeaveBalance } from '@/hooks/useLeaveBalance'
 import { useMyLeaveRequests } from '@/hooks/useMyLeaveRequests'
 import { useCancelLeaveRequest } from '@/hooks/useLeaveRequestMutations'
-import { computeLeaveDays } from '@/pages/leave/utils/computeLeaveDays'
 import { canCancelLeaveRequest } from '@/pages/leave/utils/canCancelLeaveRequest'
 import LeaveStatusBadge from '@/pages/leave/components/LeaveStatusBadge'
 import LeaveRequestFormModal from '@/pages/leave/components/LeaveRequestFormModal'
@@ -158,7 +157,7 @@ export default function MyLeavePage() {
                     <td className="px-4 py-3 text-text">{req.leaveType?.name ?? '—'}</td>
                     <td className="px-4 py-3 text-text">{datesLabel(req)}</td>
                     <td className="px-4 py-3 text-text">
-                      {computeLeaveDays(req.startDate, req.endDate, req.isHalfDay)}
+                      {req.days}
                     </td>
                     <td className="px-4 py-3">
                       <LeaveStatusBadge status={req.status} />

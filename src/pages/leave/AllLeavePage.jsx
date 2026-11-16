@@ -16,7 +16,6 @@ import {
   useRejectLeaveRequest,
   useCancelLeaveRequest,
 } from '@/hooks/useLeaveRequestMutations'
-import { computeLeaveDays } from '@/pages/leave/utils/computeLeaveDays'
 import { canCancelLeaveRequest } from '@/pages/leave/utils/canCancelLeaveRequest'
 import { canActOnLeaveRequest } from '@/pages/leave/utils/canActOnLeaveRequest'
 import LeaveStatusBadge from '@/pages/leave/components/LeaveStatusBadge'
@@ -188,7 +187,7 @@ function RequestsTab() {
                   <td className="px-4 py-3 text-text">{req.leaveType?.name ?? '—'}</td>
                   <td className="px-4 py-3 text-text">{datesLabel(req)}</td>
                   <td className="px-4 py-3 text-text">
-                    {computeLeaveDays(req.startDate, req.endDate, req.isHalfDay)}
+                    {req.days}
                   </td>
                   <td className="px-4 py-3">
                     <LeaveStatusBadge status={req.status} />
