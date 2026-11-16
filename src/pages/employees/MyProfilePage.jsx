@@ -3,6 +3,7 @@ import { useAuth } from '@/store/AuthContext'
 import Spinner from '@/components/ui/Spinner'
 import Button from '@/components/ui/Button'
 import EmployeeDetailView from '@/pages/employees/components/EmployeeDetailView'
+import ChangePasswordForm from '@/pages/employees/components/ChangePasswordForm'
 
 export default function MyProfilePage() {
   const { can } = useAuth()
@@ -21,8 +22,9 @@ export default function MyProfilePage() {
     )
   }
 
+  let profile
   if (isError) {
-    return (
+    profile = (
       <div className="flex min-h-[40vh] flex-col items-center justify-center gap-4 text-center">
         <p className="text-sm text-gray-600">
           {error?.message || 'Could not load your profile.'}
@@ -30,22 +32,22 @@ export default function MyProfilePage() {
         <Button onClick={() => refetch()}>Try again</Button>
       </div>
     )
-  }
-
-  if (!data) {
-    return (
+  } else if (!data) {
+    profile = (
       <div className="rounded-lg border border-gray-200 bg-white p-6 text-sm text-gray-600">
         Your account has no employee profile yet.
       </div>
     )
+  } else {
+    profile = (
+      <EmployeeDetailView data={data} canEdit={canEdit} editHref={editHref} heading="My Profile" />
+    )
   }
 
   return (
-    <EmployeeDetailView
-      data={data}
-      canEdit={canEdit}
-      editHref={editHref}
-      heading="My Profile"
-    />
+    <div className="space-y-6">
+      {profile}
+      <ChangePasswordForm />
+    </div>
   )
 }
