@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react'
-import { format } from 'date-fns'
 import Select from '@/components/ui/Select'
 import Table from '@/components/ui/Table'
 import TableSkeleton from '@/components/ui/TableSkeleton'
@@ -19,6 +18,7 @@ import { canActOnLeaveRequest } from '@/pages/leave/utils/canActOnLeaveRequest'
 import LeaveStatusBadge from '@/pages/leave/components/LeaveStatusBadge'
 import LeaveBalanceChip from '@/pages/leave/components/LeaveBalanceChip'
 import ApproveLeaveModal from '@/pages/leave/components/ApproveLeaveModal'
+import { datesLabel } from '@/pages/leave/utils/leaveDates'
 
 const STATUSES = ['Pending', 'Approved', 'Rejected', 'Cancelled']
 const STATUS_OPTIONS = [
@@ -37,18 +37,6 @@ const columns = [
   { key: 'balance', header: 'Balance' },
   { key: 'actions', header: 'Actions' },
 ]
-
-function fmtDate(value) {
-  if (!value) return '—'
-  const d = new Date(value)
-  return Number.isNaN(d.getTime()) ? '—' : format(d, 'PP')
-}
-
-function datesLabel(req) {
-  if (req.isHalfDay) return `${fmtDate(req.startDate)} · Half day`
-  if (req.startDate === req.endDate) return fmtDate(req.startDate)
-  return `${fmtDate(req.startDate)} – ${fmtDate(req.endDate)}`
-}
 
 export default function TeamLeavePage() {
   const { user } = useAuth()

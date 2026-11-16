@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react'
-import { format } from 'date-fns'
 import Select from '@/components/ui/Select'
 import Table from '@/components/ui/Table'
 import TableSkeleton from '@/components/ui/TableSkeleton'
@@ -18,6 +17,7 @@ import LeaveRequestFormModal from '@/pages/leave/components/LeaveRequestFormModa
 import LeaveBalanceSummary from '@/pages/leave/components/LeaveBalanceSummary'
 import { sumBalances } from '@/pages/leave/utils/leaveBalances'
 import HolidayList from '@/pages/holidays/components/HolidayList'
+import { datesLabel } from '@/pages/leave/utils/leaveDates'
 
 const LIMIT = 10
 const STATUSES = ['Pending', 'Approved', 'Rejected', 'Cancelled']
@@ -36,18 +36,6 @@ const columns = [
   { key: 'status', header: 'Status' },
   { key: 'actions', header: 'Actions' },
 ]
-
-function fmtDate(value) {
-  if (!value) return '—'
-  const d = new Date(value)
-  return Number.isNaN(d.getTime()) ? '—' : format(d, 'PP')
-}
-
-function datesLabel(req) {
-  if (req.isHalfDay) return `${fmtDate(req.startDate)} · Half day`
-  if (req.startDate === req.endDate) return fmtDate(req.startDate)
-  return `${fmtDate(req.startDate)} – ${fmtDate(req.endDate)}`
-}
 
 export default function MyLeavePage() {
   const { user, can } = useAuth()
