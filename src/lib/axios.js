@@ -1,11 +1,9 @@
 import axios from 'axios'
 import * as token from '@/lib/token'
 import { emitUnauthorized } from '@/lib/sessionEvents'
+import { API_BASE_URL } from '@/lib/config'
 
-const baseURL =
-  import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1'
-
-const api = axios.create({ baseURL })
+const api = axios.create({ baseURL: API_BASE_URL })
 
 api.interceptors.request.use((config) => {
   // FormData must set its own multipart Content-Type (with boundary) — forcing

@@ -7,8 +7,23 @@ import { queryClient } from '@/lib/queryClient.js'
 import { ToastProvider } from '@/components/ui/Toast.jsx'
 import { AuthProvider } from '@/store/AuthContext.jsx'
 import router from '@/lib/router.jsx'
+import { CONFIG_ERROR } from '@/lib/config'
 
-createRoot(document.getElementById('root')).render(
+const root = createRoot(document.getElementById('root'))
+
+if (CONFIG_ERROR) {
+  if (import.meta.env.DEV) {
+    root.render(
+      <div role="alert" className="p-6 font-mono text-sm text-red-700">
+        <strong>Configuration error</strong>
+        <p>{CONFIG_ERROR}</p>
+      </div>,
+    )
+  }
+  throw new Error(CONFIG_ERROR)
+}
+
+root.render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <ToastProvider>
