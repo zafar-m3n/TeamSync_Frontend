@@ -1,14 +1,17 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { format } from 'date-fns'
 import Table from '@/components/ui/Table'
 import TableSkeleton from '@/components/ui/TableSkeleton'
 import Button from '@/components/ui/Button'
 import IconButton from '@/components/ui/IconButton'
+import Pagination from '@/components/ui/Pagination'
 import { DateField } from '@/components/form/DatePicker'
 import { useTeamAttendance } from '@/hooks/useTeamAttendance'
 import { useMyTeam } from '@/hooks/useMyTeam'
 import AttendanceStatusBadge from '@/pages/attendance/components/AttendanceStatusBadge'
 import OverrideAttendanceModal from '@/pages/attendance/components/OverrideAttendanceModal'
+
+const LIMIT = 20
 
 const columns = [
   { key: 'employee', header: 'Employee' },
@@ -32,9 +35,12 @@ function fmtTime(value) {
 
 export default function TeamAttendancePage() {
   const [date, setDate] = useState(() => toYmd(new Date()))
+  const [page, setPage] = useState(1)
   const [correctTarget, setCorrectTarget] = useState(null)
 
-  const { data: rows = [], isLoading, isError, error, refetch } = useTeamAttendance(date)
+  const params = useMemo(() => ({ date, page, limit: LIMIT }), [date, page])
+  const { data, isLoading, isError, error, refetch } = useTeamAttendance(params)
+  const rows = data?.rows ?? []
   const { data: team = [] } = useMyTeam()
 
   const emptyMessage =
@@ -47,7 +53,10 @@ export default function TeamAttendancePage() {
           <label className="mb-1 block text-xs font-medium text-gray-500">Date</label>
           <DateField
             value={date}
-            onChange={setDate}
+            onChange={(value) => {
+              setDate(value)
+              setPage(1)
+            }}
             placeholder="Pick a date"
             className="w-56"
           />
@@ -55,7 +64,7 @@ export default function TeamAttendancePage() {
       </div>
 
       {isLoading ? (
-        <TableSkeleton columns={columns} rows={5} />
+        <TableSkeleton columns={columns} rows={LIMIT} />
       ) : isError ? (
         <div className="flex flex-col items-center gap-3 rounded-lg border border-gray-200 bg-white py-12 text-center">
           <p className="text-sm text-gray-600">
@@ -66,38 +75,41 @@ export default function TeamAttendancePage() {
           </Button>
         </div>
       ) : (
-        <Table
-          columns={columns}
-          rows={rows}
-          emptyMessage={emptyMessage}
-          renderRow={(rec) => (
-            <tr
-              key={rec.id}
-              className="border-b border-gray-100 last:border-0 hover:bg-gray-50"
-            >
-              <td className="px-4 py-3 text-text">{rec.employee?.fullName ?? '—'}</td>
-              <td className="px-4 py-3">
-                <AttendanceStatusBadge
-                  status={rec.status}
-                  isManualOverride={rec.isManualOverride}
-                />
-              </td>
-              <td className="px-4 py-3 text-text">{fmtTime(rec.clockIn)}</td>
-              <td className="px-4 py-3 text-text">{fmtTime(rec.clockOut)}</td>
-              <td className="px-4 py-3">
-                {rec.status === 'Absent' ? (
-                  <IconButton
-                    icon="lucide:pencil"
-                    label="Correct attendance"
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => setCorrectTarget(rec)}
+        <>
+          <Table
+            columns={columns}
+            rows={rows}
+            emptyMessage={emptyMessage}
+            renderRow={(rec) => (
+              <tr
+                key={rec.id}
+                className="border-b border-gray-100 last:border-0 hover:bg-gray-50"
+              >
+                <td className="px-4 py-3 text-text">{rec.employee?.fullName ?? '—'}</td>
+                <td className="px-4 py-3">
+                  <AttendanceStatusBadge
+                    status={rec.status}
+                    isManualOverride={rec.isManualOverride}
                   />
-                ) : null}
-              </td>
-            </tr>
-          )}
-        />
+                </td>
+                <td className="px-4 py-3 text-text">{fmtTime(rec.clockIn)}</td>
+                <td className="px-4 py-3 text-text">{fmtTime(rec.clockOut)}</td>
+                <td className="px-4 py-3">
+                  {rec.status === 'Absent' ? (
+                    <IconButton
+                      icon="lucide:pencil"
+                      label="Correct attendance"
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => setCorrectTarget(rec)}
+                    />
+                  ) : null}
+                </td>
+              </tr>
+            )}
+          />
+          <Pagination meta={data?.meta} onPageChange={setPage} />
+        </>
       )}
 
       {correctTarget && (

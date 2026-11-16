@@ -6,6 +6,7 @@ import TableSkeleton from '@/components/ui/TableSkeleton'
 import Button from '@/components/ui/Button'
 import IconButton from '@/components/ui/IconButton'
 import Modal from '@/components/ui/Modal'
+import Pagination from '@/components/ui/Pagination'
 import { useAuth } from '@/store/AuthContext'
 import { useMyProfile } from '@/hooks/useMyProfile'
 import { useTeamLeaveRequests } from '@/hooks/useTeamLeaveRequests'
@@ -24,6 +25,8 @@ const STATUS_OPTIONS = [
   { value: 'all', label: 'All' },
   ...STATUSES.map((s) => ({ value: s, label: s })),
 ]
+
+const LIMIT = 10
 
 const columns = [
   { key: 'employee', header: 'Employee' },
@@ -53,17 +56,18 @@ export default function TeamLeavePage() {
   const currentEmployeeId = profile?.id ?? null
 
   const [status, setStatus] = useState('all')
+  const [page, setPage] = useState(1)
   const [approveTarget, setApproveTarget] = useState(null)
   const [rejectTarget, setRejectTarget] = useState(null)
   const [cancelTarget, setCancelTarget] = useState(null)
 
   const params = useMemo(
-    () => (status !== 'all' ? { status } : {}),
-    [status],
+    () => ({ page, limit: LIMIT, ...(status !== 'all' ? { status } : {}) }),
+    [page, status],
   )
 
-  const { data: rows = [], isLoading, isError, error, refetch } =
-    useTeamLeaveRequests(params)
+  const { data, isLoading, isError, error, refetch } = useTeamLeaveRequests(params)
+  const rows = data?.rows ?? []
   const rejectMutation = useRejectLeaveRequest()
   const cancelMutation = useCancelLeaveRequest()
 
@@ -75,13 +79,16 @@ export default function TeamLeavePage() {
           <Select
             options={STATUS_OPTIONS}
             value={STATUS_OPTIONS.find((o) => o.value === status) ?? null}
-            onChange={(opt) => setStatus(opt.value)}
+            onChange={(opt) => {
+              setStatus(opt.value)
+              setPage(1)
+            }}
           />
         </div>
       </div>
 
       {isLoading ? (
-        <TableSkeleton columns={columns} rows={5} />
+        <TableSkeleton columns={columns} rows={LIMIT} />
       ) : isError ? (
         <div className="flex flex-col items-center gap-3 rounded-lg border border-gray-200 bg-white py-12 text-center">
           <p className="text-sm text-gray-600">
@@ -92,78 +99,81 @@ export default function TeamLeavePage() {
           </Button>
         </div>
       ) : (
-        <Table
-          columns={columns}
-          rows={rows}
-          emptyMessage="No leave requests from your team"
-          renderRow={(req) => {
-            const showCancel = canCancelLeaveRequest({
-              request: req,
-              currentUser: user,
-              currentEmployeeId,
-            })
-            const canAct = canActOnLeaveRequest({
-              request: req,
-              currentUser: user,
-              currentEmployeeId,
-            })
-            return (
-              <tr
-                key={req.id}
-                className="border-b border-gray-100 last:border-0 hover:bg-gray-50"
-              >
-                <td className="px-4 py-3 text-text">{req.employee?.fullName ?? '—'}</td>
-                <td className="px-4 py-3 text-text">{req.leaveType?.name ?? '—'}</td>
-                <td className="px-4 py-3 text-text">{datesLabel(req)}</td>
-                <td className="px-4 py-3 text-text">
-                  {req.days}
-                </td>
-                <td className="px-4 py-3">
-                  <LeaveStatusBadge status={req.status} />
-                </td>
-                <td className="px-4 py-3">
-                  {req.employee?.id != null && (
-                    <LeaveBalanceChip
-                      employeeId={req.employee.id}
-                      year={new Date(req.startDate).getFullYear()}
-                    />
-                  )}
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex flex-wrap gap-2">
-                    {canAct && (
-                      <IconButton
-                        icon="lucide:check"
-                        label="Approve"
-                        variant="success"
-                        size="sm"
-                        onClick={() => setApproveTarget(req)}
+        <>
+          <Table
+            columns={columns}
+            rows={rows}
+            emptyMessage="No leave requests from your team"
+            renderRow={(req) => {
+              const showCancel = canCancelLeaveRequest({
+                request: req,
+                currentUser: user,
+                currentEmployeeId,
+              })
+              const canAct = canActOnLeaveRequest({
+                request: req,
+                currentUser: user,
+                currentEmployeeId,
+              })
+              return (
+                <tr
+                  key={req.id}
+                  className="border-b border-gray-100 last:border-0 hover:bg-gray-50"
+                >
+                  <td className="px-4 py-3 text-text">{req.employee?.fullName ?? '—'}</td>
+                  <td className="px-4 py-3 text-text">{req.leaveType?.name ?? '—'}</td>
+                  <td className="px-4 py-3 text-text">{datesLabel(req)}</td>
+                  <td className="px-4 py-3 text-text">
+                    {req.days}
+                  </td>
+                  <td className="px-4 py-3">
+                    <LeaveStatusBadge status={req.status} />
+                  </td>
+                  <td className="px-4 py-3">
+                    {req.employee?.id != null && (
+                      <LeaveBalanceChip
+                        employeeId={req.employee.id}
+                        year={new Date(req.startDate).getFullYear()}
                       />
                     )}
-                    {canAct && (
-                      <IconButton
-                        icon="lucide:x"
-                        label="Reject"
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => setRejectTarget(req)}
-                      />
-                    )}
-                    {showCancel && (
-                      <IconButton
-                        icon="lucide:ban"
-                        label="Cancel request"
-                        variant="danger"
-                        size="sm"
-                        onClick={() => setCancelTarget(req)}
-                      />
-                    )}
-                  </div>
-                </td>
-              </tr>
-            )
-          }}
-        />
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex flex-wrap gap-2">
+                      {canAct && (
+                        <IconButton
+                          icon="lucide:check"
+                          label="Approve"
+                          variant="success"
+                          size="sm"
+                          onClick={() => setApproveTarget(req)}
+                        />
+                      )}
+                      {canAct && (
+                        <IconButton
+                          icon="lucide:x"
+                          label="Reject"
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => setRejectTarget(req)}
+                        />
+                      )}
+                      {showCancel && (
+                        <IconButton
+                          icon="lucide:ban"
+                          label="Cancel request"
+                          variant="danger"
+                          size="sm"
+                          onClick={() => setCancelTarget(req)}
+                        />
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              )
+            }}
+          />
+          <Pagination meta={data?.meta} onPageChange={setPage} />
+        </>
       )}
 
       {approveTarget && (

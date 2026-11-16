@@ -1,10 +1,11 @@
-import { useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { getTeamAttendance } from '@/services/attendanceService'
 
-export function useTeamAttendance(date) {
+export function useTeamAttendance(params) {
   return useQuery({
-    queryKey: ['attendance', 'team', date],
-    queryFn: () => getTeamAttendance(date),
-    select: (res) => res.data ?? [],
+    queryKey: ['attendance', 'team', params],
+    queryFn: () => getTeamAttendance(params),
+    placeholderData: keepPreviousData,
+    select: (res) => ({ rows: res.data ?? [], meta: res.meta ?? null }),
   })
 }
