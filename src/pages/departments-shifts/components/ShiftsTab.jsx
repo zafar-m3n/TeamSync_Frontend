@@ -3,7 +3,9 @@ import Table from '@/components/ui/Table'
 import TableSkeleton from '@/components/ui/TableSkeleton'
 import Button from '@/components/ui/Button'
 import IconButton from '@/components/ui/IconButton'
+import Modal from '@/components/ui/Modal'
 import { useShifts } from '@/hooks/useShifts'
+import { useDeleteShift } from '@/hooks/useShift'
 import ShiftFormModal from '@/pages/departments-shifts/components/ShiftFormModal'
 
 const DAY_ORDER = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
@@ -25,6 +27,8 @@ function formatDays(days) {
 export default function ShiftsTab() {
   const { data: shifts, isLoading, isError, error, refetch } = useShifts()
   const [formTarget, setFormTarget] = useState(undefined) // undefined = closed, null = create, record = edit
+  const [deleteTarget, setDeleteTarget] = useState(null)
+  const deleteMutation = useDeleteShift()
 
   const openCreate = () => setFormTarget(null)
 
@@ -74,13 +78,22 @@ export default function ShiftsTab() {
               </td>
               <td className="px-4 py-3 text-text">{formatDays(shift.workingDays)}</td>
               <td className="px-4 py-3">
-                <IconButton
-                  icon="lucide:pencil"
-                  label="Edit shift"
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setFormTarget(shift)}
-                />
+                <div className="flex gap-2">
+                  <IconButton
+                    icon="lucide:pencil"
+                    label="Edit shift"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setFormTarget(shift)}
+                  />
+                  <IconButton
+                    icon="lucide:trash-2"
+                    label="Delete shift"
+                    variant="danger"
+                    size="sm"
+                    onClick={() => setDeleteTarget(shift)}
+                  />
+                </div>
               </td>
             </tr>
           )}
@@ -94,6 +107,39 @@ export default function ShiftsTab() {
           onClose={() => setFormTarget(undefined)}
         />
       )}
+
+      <Modal
+        isOpen={Boolean(deleteTarget)}
+        onClose={() => setDeleteTarget(null)}
+        title="Delete shift"
+        footer={
+          <>
+            <Button
+              variant="secondary"
+              onClick={() => setDeleteTarget(null)}
+              disabled={deleteMutation.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              isLoading={deleteMutation.isPending}
+              onClick={() =>
+                deleteMutation.mutate(deleteTarget.id, {
+                  onSuccess: () => setDeleteTarget(null),
+                })
+              }
+            >
+              Delete
+            </Button>
+          </>
+        }
+      >
+        <p>
+          Delete <strong>{deleteTarget?.name}</strong>? Shifts still assigned to employees can&rsquo;t
+          be deleted. This can&rsquo;t be undone.
+        </p>
+      </Modal>
     </div>
   )
 }

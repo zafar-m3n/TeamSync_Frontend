@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { getShift, createShift, updateShift } from '@/services/shiftService'
+import { getShift, createShift, updateShift, deleteShift } from '@/services/shiftService'
 import { toast } from '@/hooks/useToast'
 
 export function useShift(id) {
@@ -31,6 +31,20 @@ export function useUpdateShift() {
       qc.invalidateQueries({ queryKey: ['shifts'] })
       toast.success('Shift updated')
     },
+    onError: (error) => toast.error(error.message),
+  })
+}
+
+export function useDeleteShift() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id) => deleteShift(id),
+    onSuccess: () => {
+      // Also refreshes the shift pickers, which read the same list.
+      qc.invalidateQueries({ queryKey: ['shifts'] })
+      toast.success('Shift deleted')
+    },
+    // SHIFT_HAS_EMPLOYEES: the backend message carries the count.
     onError: (error) => toast.error(error.message),
   })
 }
