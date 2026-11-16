@@ -6,6 +6,7 @@ import Button from '@/components/ui/Button'
 import IconButton from '@/components/ui/IconButton'
 import { useRoles } from '@/hooks/useRoles'
 import RoleFormModal from '@/pages/roles-permissions/components/RoleFormModal'
+import DeleteRoleModal from '@/pages/roles-permissions/components/DeleteRoleModal'
 
 const columns = [
   { key: 'name', header: 'Name' },
@@ -16,6 +17,9 @@ const columns = [
 export default function RolesTab() {
   const { data: roles = [], isLoading, isError, error, refetch } = useRoles()
   const [formTarget, setFormTarget] = useState(undefined) // undefined = closed, null = create, record = edit
+  // Looked up from the live list, so a refetch after a 409 shows the current user count.
+  const [deleteId, setDeleteId] = useState(null)
+  const deleteTarget = roles.find((r) => r.id === deleteId)
 
   return (
     <div className="space-y-4">
@@ -49,13 +53,24 @@ export default function RolesTab() {
               </td>
               <td className="px-4 py-3 text-text">{role.description || '—'}</td>
               <td className="px-4 py-3">
-                <IconButton
-                  icon="lucide:pencil"
-                  label={`Edit ${role.name}`}
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setFormTarget(role)}
-                />
+                <div className="flex gap-2">
+                  <IconButton
+                    icon="lucide:pencil"
+                    label={`Edit ${role.name}`}
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setFormTarget(role)}
+                  />
+                  {role.isCustom && (
+                    <IconButton
+                      icon="lucide:trash-2"
+                      label={`Delete ${role.name}`}
+                      variant="danger"
+                      size="sm"
+                      onClick={() => setDeleteId(role.id)}
+                    />
+                  )}
+                </div>
               </td>
             </tr>
           )}
@@ -67,6 +82,14 @@ export default function RolesTab() {
           key={formTarget?.id ?? 'new'}
           role={formTarget}
           onClose={() => setFormTarget(undefined)}
+        />
+      )}
+
+      {deleteTarget && (
+        <DeleteRoleModal
+          key={deleteTarget.id}
+          role={deleteTarget}
+          onClose={() => setDeleteId(null)}
         />
       )}
     </div>
