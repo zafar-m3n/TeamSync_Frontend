@@ -10,6 +10,8 @@ import { DateField, DateRangeField, toYmd, parseYmd } from '@/components/form/Da
 import { useLeaveTypes } from '@/hooks/useLeaveTypes'
 import { useSubmitLeaveRequest } from '@/hooks/useLeaveRequestMutations'
 import { computeLeaveDays } from '@/pages/leave/utils/computeLeaveDays'
+import { useLeaveBalance } from '@/hooks/useLeaveBalance'
+import { findBalance } from '@/pages/leave/utils/leaveBalances'
 
 const schema = z
   .object({
@@ -62,6 +64,11 @@ export default function LeaveRequestFormModal({ onClose }) {
       setValue('endDate', startDate, { shouldValidate: true })
     }
   }, [isHalfDay, startDate, setValue])
+
+  const leaveTypeId = watch('leaveTypeId')
+  const balanceYear = startDate ? parseYmd(startDate).getFullYear() : new Date().getFullYear()
+  const { data: balances } = useLeaveBalance('me', balanceYear, leaveTypeId != null)
+  const typeBalance = findBalance(balances, leaveTypeId)
 
   const typeOptions = leaveTypes.map((t) => ({ value: t.id, label: t.name }))
 
@@ -123,6 +130,11 @@ export default function LeaveRequestFormModal({ onClose }) {
               />
             )}
           />
+          {typeBalance && (
+            <p className="mt-1 text-xs text-gray-500">
+              {typeBalance.remaining} of {typeBalance.totalDays} days remaining in {balanceYear}
+            </p>
+          )}
         </FormField>
 
         <label className="flex items-center gap-2 text-sm text-text">

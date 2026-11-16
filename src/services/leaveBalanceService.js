@@ -6,5 +6,5 @@ export const getLeaveBalance = (employeeId, year) =>
     { params: year ? { year } : {} },
   )
 
-export const setLeaveQuota = (employeeId, year, totalDays) =>
-  api.put(`/leave-balances/${employeeId}/${year}`, { totalDays })
+export const setLeaveQuota = (employeeId, year, leaveTypeId, totalDays) =>
+  api.put(`/leave-balances/${employeeId}/${year}/${leaveTypeId}`, { totalDays })

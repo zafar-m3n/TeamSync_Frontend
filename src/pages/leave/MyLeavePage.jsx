@@ -16,6 +16,8 @@ import { computeLeaveDays } from '@/pages/leave/utils/computeLeaveDays'
 import { canCancelLeaveRequest } from '@/pages/leave/utils/canCancelLeaveRequest'
 import LeaveStatusBadge from '@/pages/leave/components/LeaveStatusBadge'
 import LeaveRequestFormModal from '@/pages/leave/components/LeaveRequestFormModal'
+import LeaveBalanceSummary from '@/pages/leave/components/LeaveBalanceSummary'
+import { sumBalances } from '@/pages/leave/utils/leaveBalances'
 
 const LIMIT = 10
 const STATUSES = ['Pending', 'Approved', 'Rejected', 'Cancelled']
@@ -59,7 +61,8 @@ export default function MyLeavePage() {
   const [showForm, setShowForm] = useState(false)
   const [cancelTarget, setCancelTarget] = useState(null)
 
-  const { data: balance } = useLeaveBalance(currentEmployeeId, year)
+  const { data: balances, isLoading: balancesLoading } = useLeaveBalance(currentEmployeeId, year)
+  const balance = balances ? sumBalances(balances) : null
 
   useEffect(() => {
     setPage(1)
@@ -102,6 +105,12 @@ export default function MyLeavePage() {
         <StatCard value={balance?.usedDays ?? '—'} label="Used" />
         <StatCard value={balance?.totalDays ?? '—'} label="Total" />
       </div>
+
+      <LeaveBalanceSummary
+        balances={balances}
+        year={year}
+        isLoading={currentEmployeeId != null && balancesLoading}
+      />
 
       <div className="space-y-4">
         <div>

@@ -3,12 +3,15 @@ import Button from '@/components/ui/Button'
 import { useLeaveBalance } from '@/hooks/useLeaveBalance'
 import { useApproveLeaveRequest } from '@/hooks/useLeaveRequestMutations'
 import { computeLeaveDays } from '@/pages/leave/utils/computeLeaveDays'
+import { findBalance } from '@/pages/leave/utils/leaveBalances'
 
 export default function ApproveLeaveModal({ request, onClose }) {
   const year = new Date(request.startDate).getFullYear()
-  const { data: balance, isLoading } = useLeaveBalance(request.employee.id, year)
+  const { data: balances, isLoading } = useLeaveBalance(request.employee.id, year)
   const approve = useApproveLeaveRequest()
 
+  const balance = findBalance(balances, request.leaveTypeId)
+  const typeName = balance?.leaveTypeName ?? request.leaveType?.name ?? 'leave'
   const days = computeLeaveDays(request.startDate, request.endDate, request.isHalfDay)
   const employeeName = request.employee?.fullName ?? 'This employee'
   const insufficient = balance != null && days > balance.remaining
@@ -40,9 +43,9 @@ export default function ApproveLeaveModal({ request, onClose }) {
           <p className="text-gray-500">Checking their balance…</p>
         ) : balance ? (
           <p>
-            {employeeName} is requesting <strong>{days}</strong> days. They have{' '}
-            <strong>{balance.remaining}</strong> of {balance.totalDays} days remaining
-            this year.
+            {employeeName} is requesting <strong>{days}</strong> days of {typeName}. They have{' '}
+            <strong>{balance.remaining}</strong> of {balance.totalDays} {typeName} days
+            remaining in {year}.
           </p>
         ) : (
           <p className="text-gray-500">

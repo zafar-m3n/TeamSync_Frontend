@@ -3,6 +3,7 @@ import { Icon } from '@iconify/react'
 import { useAuth } from '@/store/AuthContext'
 import { useLeaveBalance } from '@/hooks/useLeaveBalance'
 import SetQuotaModal from '@/pages/leave/components/SetQuotaModal'
+import { activeBalances } from '@/pages/leave/utils/leaveBalances'
 
 export default function LeaveBalanceChip({ employeeId, year }) {
   const { can } = useAuth()
@@ -11,12 +12,13 @@ export default function LeaveBalanceChip({ employeeId, year }) {
 
   const resolvedYear = year ?? new Date().getFullYear()
   // Lazy: the query only runs once `expanded` is true — never per-row on load.
-  const { data: balance, isLoading } = useLeaveBalance(
+  const { data: balances, isLoading } = useLeaveBalance(
     employeeId,
     resolvedYear,
     expanded,
   )
   const canSetQuota = can('leave', 'set_quota')
+  const shown = activeBalances(balances)
 
   if (!expanded) {
     return (
@@ -35,9 +37,13 @@ export default function LeaveBalanceChip({ employeeId, year }) {
     <span className="inline-flex items-center gap-2 rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-xs">
       {isLoading ? (
         <span className="text-gray-400">Loading…</span>
-      ) : balance ? (
+      ) : shown.length > 0 ? (
         <span className="text-text">
-          {balance.remaining} of {balance.totalDays} days remaining
+          {shown.map((b) => (
+            <span key={b.leaveTypeId} className="mr-2 whitespace-nowrap last:mr-0">
+              {b.leaveTypeName}: {b.remaining}/{b.totalDays}
+            </span>
+          ))}
         </span>
       ) : (
         <span className="text-gray-400">No balance set</span>
@@ -67,7 +73,6 @@ export default function LeaveBalanceChip({ employeeId, year }) {
         <SetQuotaModal
           employeeId={employeeId}
           year={resolvedYear}
-          defaultTotalDays={balance?.totalDays ?? 0}
           onClose={() => setShowQuota(false)}
         />
       )}

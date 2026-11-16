@@ -14,12 +14,14 @@ export function useLeaveBalance(employeeId, year, enabled = true) {
 export function useSetLeaveQuota() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: ({ employeeId, year, totalDays }) =>
-      setLeaveQuota(employeeId, year, totalDays),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['leave-balances'] })
-      toast.success('Leave balance updated')
-    },
+    // quotas: [{ leaveTypeId, totalDays }] — one PUT per changed type.
+    mutationFn: ({ employeeId, year, quotas }) =>
+      Promise.all(
+        quotas.map((q) => setLeaveQuota(employeeId, year, q.leaveTypeId, q.totalDays)),
+      ),
+    onSuccess: () => toast.success('Leave balance updated'),
     onError: (error) => toast.error(error.message),
+    // Refetch even on a partial failure so the table shows what actually saved.
+    onSettled: () => qc.invalidateQueries({ queryKey: ['leave-balances'] }),
   })
 }
