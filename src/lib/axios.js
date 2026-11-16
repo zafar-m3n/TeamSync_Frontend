@@ -22,10 +22,23 @@ api.interceptors.request.use((config) => {
   return config
 })
 
+// A blob request's error body is a Blob, so read the JSON envelope out of it.
+async function errorEnvelope(data) {
+  if (data instanceof Blob) {
+    try {
+      return JSON.parse(await data.text())?.error
+    } catch {
+      return undefined
+    }
+  }
+  return data?.error
+}
+
 api.interceptors.response.use(
-  (response) => response.data,
-  (error) => {
-    const envelope = error.response?.data?.error
+  // File downloads need the headers (Content-Disposition), so keep the full response.
+  (response) => (response.config.responseType === 'blob' ? response : response.data),
+  async (error) => {
+    const envelope = await errorEnvelope(error.response?.data)
     const normalized = new Error(
       envelope?.message || 'Something went wrong. Please try again.',
     )

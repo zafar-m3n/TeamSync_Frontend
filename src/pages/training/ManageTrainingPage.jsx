@@ -6,6 +6,8 @@ import TableSkeleton from '@/components/ui/TableSkeleton'
 import Button from '@/components/ui/Button'
 import IconButton from '@/components/ui/IconButton'
 import Modal from '@/components/ui/Modal'
+import FileActions from '@/components/ui/FileActions'
+import { trainingDocumentDownloadUrl } from '@/services/trainingDocumentService'
 import { useMyUploads } from '@/hooks/useMyUploads'
 import { useMyAssignments } from '@/hooks/useMyAssignments'
 import { useRemoveAssignment } from '@/hooks/useTrainingMutations'
@@ -123,13 +125,20 @@ function MyDocumentsTab() {
                   {fmtDate(doc.uploadDate ?? doc.createdAt)}
                 </td>
                 <td className="px-4 py-3">
-                  <IconButton
-                    icon="lucide:user-plus"
-                    label="Assign document"
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => setAssignTarget(doc)}
-                  />
+                  <div className="flex items-center gap-1">
+                    <FileActions
+                      url={trainingDocumentDownloadUrl(doc.id)}
+                      mimeType={doc.mimeType}
+                      name={doc.title}
+                    />
+                    <IconButton
+                      icon="lucide:user-plus"
+                      label="Assign document"
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => setAssignTarget(doc)}
+                    />
+                  </div>
                 </td>
               </tr>
             )}

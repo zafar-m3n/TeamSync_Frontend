@@ -10,3 +10,4 @@ export const deleteEmployee = (id) => api.delete(`/employees/${id}`);
 export const assignShift = (id, shiftId) => api.patch(`/employees/${id}/shift`, { shiftId });
 export const uploadDocument = (id, formData) => api.post(`/employees/${id}/documents`, formData);
 export const deleteDocument = (id, documentId) => api.delete(`/employees/${id}/documents/${documentId}`);
+export const documentDownloadUrl = (id, documentId) => `/employees/${id}/documents/${documentId}/download`;

@@ -7,8 +7,10 @@ import IconButton from '@/components/ui/IconButton'
 import Modal from '@/components/ui/Modal'
 import FormField from '@/components/form/FormField'
 import Input from '@/components/form/Input'
+import FileActions from '@/components/ui/FileActions'
 import { toast } from '@/hooks/useToast'
 import { useUploadDocument, useDeleteDocument } from '@/hooks/useEmployee'
+import { documentDownloadUrl } from '@/services/employeeService'
 
 const ALLOWED_TYPES = [
   'application/pdf',
@@ -35,9 +37,10 @@ function fmtDate(value) {
   return Number.isNaN(d.getTime()) ? '—' : format(d, 'PP')
 }
 
-const baseColumns = [
+const columns = [
   { key: 'docName', header: 'Document' },
   { key: 'uploadDate', header: 'Uploaded' },
+  { key: 'actions', header: '' },
 ]
 
 function UploadDocumentModal({ employeeId, onClose }) {
@@ -145,10 +148,6 @@ export default function EmployeeDocumentsList({ employeeId, documents = [], canE
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [uploadOpen, setUploadOpen] = useState(false)
 
-  const columns = canEdit
-    ? [...baseColumns, { key: 'actions', header: '' }]
-    : baseColumns
-
   return (
     <div className="space-y-4">
       {canEdit && (
@@ -178,9 +177,14 @@ export default function EmployeeDocumentsList({ employeeId, documents = [], canE
               </span>
             </td>
             <td className="px-4 py-3 text-text">{fmtDate(doc.uploadDate)}</td>
-            {canEdit && (
-              <td className="px-4 py-3">
-                <div className="flex justify-end">
+            <td className="px-4 py-3">
+              <div className="flex items-center justify-end gap-1">
+                <FileActions
+                  url={documentDownloadUrl(employeeId, doc.id)}
+                  mimeType={doc.mimeType}
+                  name={doc.docName}
+                />
+                {canEdit && (
                   <IconButton
                     icon="lucide:trash-2"
                     label="Delete document"
@@ -188,9 +192,9 @@ export default function EmployeeDocumentsList({ employeeId, documents = [], canE
                     size="sm"
                     onClick={() => setDeleteTarget(doc)}
                   />
-                </div>
-              </td>
-            )}
+                )}
+              </div>
+            </td>
           </tr>
         )}
       />

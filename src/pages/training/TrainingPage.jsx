@@ -7,6 +7,8 @@ import TableSkeleton from '@/components/ui/TableSkeleton'
 import Button from '@/components/ui/Button'
 import IconButton from '@/components/ui/IconButton'
 import Modal from '@/components/ui/Modal'
+import FileActions from '@/components/ui/FileActions'
+import { trainingDocumentDownloadUrl } from '@/services/trainingDocumentService'
 import { useEmployees } from '@/hooks/useEmployees'
 import { useDepartments } from '@/hooks/useDepartments'
 import { useTrainingCategories } from '@/hooks/useTrainingCategories'
@@ -78,6 +80,7 @@ const documentColumns = [
   { key: 'category', header: 'Category' },
   { key: 'uploadedBy', header: 'Uploaded By' },
   { key: 'uploaded', header: 'Uploaded' },
+  { key: 'actions', header: 'Actions' },
 ]
 
 function DocumentsTab() {
@@ -142,6 +145,13 @@ function DocumentsTab() {
                 </td>
                 <td className="px-4 py-3 text-text">
                   {fmtDate(doc.uploadDate ?? doc.createdAt)}
+                </td>
+                <td className="px-4 py-3">
+                  <FileActions
+                    url={trainingDocumentDownloadUrl(doc.id)}
+                    mimeType={doc.mimeType}
+                    name={doc.title}
+                  />
                 </td>
               </tr>
             )}

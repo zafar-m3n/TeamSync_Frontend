@@ -8,3 +8,5 @@ export const getAllTrainingDocuments = (params) =>
   api.get('/training-documents', { params })
 export const uploadDocument = (formData) =>
   api.post('/training-documents', formData)
+export const trainingDocumentDownloadUrl = (id) =>
+  `/training-documents/${id}/download`

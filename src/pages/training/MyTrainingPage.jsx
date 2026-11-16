@@ -1,12 +1,15 @@
 import Table from '@/components/ui/Table'
 import TableSkeleton from '@/components/ui/TableSkeleton'
 import Button from '@/components/ui/Button'
+import FileActions from '@/components/ui/FileActions'
+import { trainingDocumentDownloadUrl } from '@/services/trainingDocumentService'
 import { useAssignedTraining } from '@/hooks/useAssignedTraining'
 
 const columns = [
   { key: 'title', header: 'Title' },
   { key: 'category', header: 'Category' },
   { key: 'description', header: 'Description' },
+  { key: 'actions', header: '' },
 ]
 
 export default function MyTrainingPage() {
@@ -44,6 +47,13 @@ export default function MyTrainingPage() {
             title={doc.description || undefined}
           >
             {doc.description || '—'}
+          </td>
+          <td className="px-4 py-3">
+            <FileActions
+              url={trainingDocumentDownloadUrl(doc.id)}
+              mimeType={doc.mimeType}
+              name={doc.title}
+            />
           </td>
         </tr>
       )}
