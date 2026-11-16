@@ -6,6 +6,8 @@ import Button from '@/components/ui/Button'
 import { DateRangeField } from '@/components/form/DatePicker'
 import { useMyAttendance } from '@/hooks/useMyAttendance'
 import AttendanceStatusBadge from '@/pages/attendance/components/AttendanceStatusBadge'
+import ClockPanel from '@/pages/attendance/components/ClockPanel'
+import { useAuth } from '@/store/AuthContext'
 
 const LIMIT = 10
 
@@ -34,6 +36,7 @@ function fmtTime(value) {
 }
 
 export default function MyAttendancePage() {
+  const { can } = useAuth()
   const [range, setRange] = useState(undefined)
   const [page, setPage] = useState(1)
 
@@ -58,6 +61,8 @@ export default function MyAttendancePage() {
 
   return (
     <div className="space-y-4">
+      {can('attendance', 'clock') && <ClockPanel />}
+
       <div className="flex flex-wrap items-end gap-3">
         <div>
           <label className="mb-1 block text-xs font-medium text-gray-500">Date range</label>

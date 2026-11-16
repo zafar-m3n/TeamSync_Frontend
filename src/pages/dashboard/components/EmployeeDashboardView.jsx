@@ -4,6 +4,8 @@ import { Icon } from '@iconify/react'
 import StatCard from '@/components/ui/StatCard'
 import Table from '@/components/ui/Table'
 import { CountUp } from '@/hooks/useCountUp'
+import { useAuth } from '@/store/AuthContext'
+import ClockPanel from '@/pages/attendance/components/ClockPanel'
 
 const CARD_LINK =
   'block rounded-lg transition-shadow hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2'
@@ -32,6 +34,7 @@ const goalColumns = [
 ]
 
 export default function EmployeeDashboardView({ data }) {
+  const { can } = useAuth()
 
   const {
     clockInStatus,
@@ -51,12 +54,16 @@ export default function EmployeeDashboardView({ data }) {
   return (
     <div className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <Link to={`/my-attendance`} className={CARD_LINK}>
-          <div className="rounded-lg border border-gray-200 bg-white p-5">
-            <p className="text-sm text-gray-500">Today&rsquo;s attendance</p>
-            <p className="mt-1 text-lg font-medium text-text">{clockInText}</p>
-          </div>
-        </Link>
+        {can('attendance', 'clock') ? (
+          <ClockPanel />
+        ) : (
+          <Link to={`/my-attendance`} className={CARD_LINK}>
+            <div className="rounded-lg border border-gray-200 bg-white p-5">
+              <p className="text-sm text-gray-500">Today&rsquo;s attendance</p>
+              <p className="mt-1 text-lg font-medium text-text">{clockInText}</p>
+            </div>
+          </Link>
+        )}
 
         <Link to={`/my-leave`} className={CARD_LINK}>
           <StatCard

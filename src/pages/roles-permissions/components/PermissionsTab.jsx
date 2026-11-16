@@ -22,6 +22,7 @@ const ACTION_LABELS = {
   manage: 'Manage',
   assign: 'Assign',
   override: 'Override',
+  clock: 'Clock in/out',
   set_quota: 'Set quota',
   submit: 'Submit',
   approve: 'Approve',
