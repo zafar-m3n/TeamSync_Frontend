@@ -1,239 +1,31 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Controller, useForm, useWatch } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { Icon } from '@iconify/react'
 import clsx from 'clsx'
-import Select from '@/components/ui/Select'
-import FormField from '@/components/form/FormField'
-import Input from '@/components/form/Input'
-import { DateField } from '@/components/form/DatePicker'
-import Button from '@/components/ui/Button'
 import Spinner from '@/components/ui/Spinner'
 import { useAuth } from '@/store/AuthContext'
 import { canAssignRole } from '@/lib/permissions'
 import { toast } from '@/hooks/useToast'
 import { useRoles } from '@/hooks/useRoles'
 import { useDepartments } from '@/hooks/useDepartments'
-import { useEmployees, useCreateEmployee } from '@/hooks/useEmployees'
+import { useCreateEmployee } from '@/hooks/useEmployees'
 import { useEmployee, useUpdateEmployee } from '@/hooks/useEmployee'
 import ContactFields from '@/pages/employees/components/ContactFields'
 import BankingFields from '@/pages/employees/components/BankingFields'
-import { EMPLOYMENT_STATUSES, isLeaving } from '@/pages/employees/utils/employmentStatus'
-
-const EMPLOYMENT_TYPES = ['Full-time', 'Part-time', 'Contract', 'Intern']
-const STATUS_OPTIONS = EMPLOYMENT_STATUSES.map((s) => ({ value: s, label: s }))
-
-const GENDER_OPTIONS = [
-  { value: 'Male', label: 'Male' },
-  { value: 'Female', label: 'Female' },
-]
-
-// Single source of truth for the wizard length. Every "is this the last step"
-// and "how many steps" decision derives from this — nothing hardcoded elsewhere.
-const TOTAL_STEPS = 4
-const ALL_STEPS = Array.from({ length: TOTAL_STEPS }, (_, i) => i + 1)
-
-// NOTE: field names below are inferred (camelCase, YYYY-MM-DD dates); reconcile
-// against the backend createEmployee/updateEmployee zod schemas once available.
-const optionalStr = z.string().trim().optional()
-
-const contactSchema = z.object({
-  addressLine1: optionalStr,
-  addressLine2: optionalStr,
-  state: optionalStr,
-  country: optionalStr,
-  postalCode: optionalStr,
-  emergencyContactName: optionalStr,
-  emergencyContactRelationship: optionalStr,
-  emergencyContactPhone: optionalStr,
-})
-
-const bankingSchema = z.object({
-  bankName: optionalStr,
-  accountHolderName: optionalStr,
-  accountNumber: optionalStr,
-  bankBranch: optionalStr,
-})
-
-function buildSchema(mode) {
-  return z.object({
-    email: z.string().min(1, 'Email is required').email('Enter a valid email'),
-    ...(mode === 'create'
-      ? { initialPassword: z.string().min(8, 'At least 8 characters') }
-      : {}),
-    roleId: z
-      .number({ message: 'Role is required' })
-      .int()
-      .positive('Role is required'),
-    fullName: z.string().trim().min(1, 'Full name is required'),
-    employeeCode: z.string().trim().min(1, 'Employee code is required'),
-    dob: optionalStr,
-    gender: optionalStr,
-    phone: optionalStr,
-    departmentId: z.number().int().positive().nullable().optional(),
-    designation: optionalStr,
-    dateOfJoining: optionalStr,
-    employmentType: optionalStr,
-    employmentStatus: z.enum(EMPLOYMENT_STATUSES),
-    terminationDate: optionalStr,
-    managerId: z.number().int().positive().nullable().optional(),
-    contact: contactSchema,
-    banking: bankingSchema,
-  }).superRefine((v, ctx) => {
-    if (!isLeaving(v.employmentStatus)) return
-    if (!v.terminationDate) {
-      ctx.addIssue({ code: 'custom', path: ['terminationDate'], message: `Required when ${v.employmentStatus}` })
-    } else if (v.dateOfJoining && v.terminationDate < v.dateOfJoining) {
-      ctx.addIssue({ code: 'custom', path: ['terminationDate'], message: 'Cannot be before the date of joining' })
-    }
-  })
-}
-
-const EMPTY_CONTACT = {
-  addressLine1: '',
-  addressLine2: '',
-  state: '',
-  country: '',
-  postalCode: '',
-  emergencyContactName: '',
-  emergencyContactRelationship: '',
-  emergencyContactPhone: '',
-}
-const EMPTY_BANKING = {
-  bankName: '',
-  accountHolderName: '',
-  accountNumber: '',
-  bankBranch: '',
-}
-
-// NULL columns load as '' so the string fields validate.
-const toFormFields = (empty, row) =>
-  Object.fromEntries(Object.keys(empty).map((key) => [key, row?.[key] ?? '']))
-
-function toFormValues(emp) {
-  return {
-    email: emp.email ?? '',
-    roleId: emp.role?.id ?? emp.roleId ?? undefined,
-    fullName: emp.fullName ?? '',
-    employeeCode: emp.employeeCode ?? '',
-    dob: (emp.dob ?? '').slice(0, 10),
-    gender: emp.gender ?? '',
-    phone: emp.phone ?? '',
-    departmentId: emp.department?.id ?? emp.departmentId ?? null,
-    designation: emp.designation ?? '',
-    dateOfJoining: (emp.dateOfJoining ?? '').slice(0, 10),
-    employmentType: emp.employmentType ?? '',
-    employmentStatus: emp.employmentStatus ?? 'Active',
-    terminationDate: (emp.terminationDate ?? '').slice(0, 10),
-    managerId: emp.manager?.id ?? emp.managerId ?? null,
-    contact: toFormFields(EMPTY_CONTACT, emp.contact),
-    banking: toFormFields(EMPTY_BANKING, emp.banking),
-  }
-}
-
-const isEmpty = (value) => value === '' || value === null || value === undefined
-
-function cleanObject(obj) {
-  const out = {}
-  for (const [key, value] of Object.entries(obj)) {
-    if (isEmpty(value)) continue
-    out[key] = value
-  }
-  return out
-}
-
-// employmentType is required by the backend, so it can be changed but not cleared.
-const CLEARABLE_FIELDS = ['dob', 'gender', 'phone', 'departmentId', 'designation', 'dateOfJoining', 'managerId']
-
-// On edit, a field the user emptied is sent as null so the backend clears it.
-function clearedFields(values, dirty, keys) {
-  const out = {}
-  for (const key of keys) {
-    if (dirty?.[key] && isEmpty(values[key])) out[key] = null
-  }
-  return out
-}
-
-function useDebouncedValue(value, delay) {
-  const [debounced, setDebounced] = useState(value)
-  useEffect(() => {
-    const t = setTimeout(() => setDebounced(value), delay)
-    return () => clearTimeout(t)
-  }, [value, delay])
-  return debounced
-}
-
-function Subheading({ children }) {
-  return (
-    <p className="border-b border-gray-100 pb-1.5 text-sm font-semibold text-primary">
-      {children}
-    </p>
-  )
-}
-
-// Non-clickable progress display. The label is a single truncating line so it
-// can never wrap or overflow; the track fill is a % width; the status row is
-// icon/dot only (flex-wrap purely as a safety net).
-function Stepper({ steps, currentStep }) {
-  const currentLabel = steps[currentStep - 1]?.label
-  return (
-    <div>
-      <p className="truncate text-sm font-medium text-primary">
-        Step {currentStep} of {TOTAL_STEPS} — {currentLabel}
-      </p>
-      <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-gray-200">
-        <div
-          className="h-full rounded-full bg-accent transition-[width] duration-300 ease-out motion-reduce:transition-none"
-          style={{ width: `${(currentStep / TOTAL_STEPS) * 100}%` }}
-        />
-      </div>
-      <div className="mt-2 flex flex-wrap items-center gap-1.5" aria-hidden>
-        {steps.map((step) => {
-          if (step.status === 'error') {
-            return (
-              <Icon
-                key={step.label}
-                icon="lucide:circle-alert"
-                width="14"
-                height="14"
-                className="text-red-600"
-              />
-            )
-          }
-          if (step.status === 'complete') {
-            return (
-              <Icon
-                key={step.label}
-                icon="lucide:circle-check"
-                width="14"
-                height="14"
-                className="text-accent"
-              />
-            )
-          }
-          return (
-            <span
-              key={step.label}
-              className={clsx(
-                'h-3.5 w-3.5 rounded-full',
-                step.status === 'current' ? 'bg-accent' : 'bg-gray-200',
-              )}
-            />
-          )
-        })}
-      </div>
-    </div>
-  )
-}
-
-const STEP_LABELS = {
-  1: 'Account & Basic Information',
-  2: 'Employment Details',
-  3: 'Contact Information',
-  4: 'Banking Information',
-}
+import {
+  TOTAL_STEPS,
+  buildPayload,
+  buildSchema,
+  emptyFormValues,
+  stepFields,
+  toFormValues,
+} from '@/pages/employees/form/employeeFormSchema'
+import { useEmployeeWizard } from '@/pages/employees/form/useEmployeeWizard'
+import Stepper from '@/pages/employees/form/Stepper'
+import AccountStep from '@/pages/employees/form/AccountStep'
+import EmploymentStep from '@/pages/employees/form/EmploymentStep'
+import WizardFooter from '@/pages/employees/form/WizardFooter'
 
 export default function EmployeeFormPage({ mode }) {
   const { employeeId } = useParams()
@@ -252,115 +44,40 @@ export default function EmployeeFormPage({ mode }) {
   const updateMutation = useUpdateEmployee()
   const mutation = isEdit ? updateMutation : createMutation
 
-  const [managerQuery, setManagerQuery] = useState('')
-  const debouncedManagerQuery = useDebouncedValue(managerQuery.trim(), 300)
-  const { data: managerData } = useEmployees({
-    page: 1,
-    limit: 20,
-    ...(debouncedManagerQuery ? { search: debouncedManagerQuery } : {}),
+  const form = useForm({
+    resolver: zodResolver(buildSchema(mode)),
+    defaultValues: emptyFormValues(mode),
   })
-  const managerOptions = (managerData?.rows ?? []).map((e) => ({
-    value: e.id,
-    label: e.fullName,
-  }))
-  const [managerSelected, setManagerSelected] = useState(null)
-
   const {
-    register,
-    control,
     handleSubmit,
     reset,
     setError,
-    setValue,
     trigger,
     formState: { errors, dirtyFields },
-  } = useForm({
-    resolver: zodResolver(buildSchema(mode)),
-    defaultValues: {
-      email: '',
-      ...(mode === 'create' ? { initialPassword: '' } : {}),
-      roleId: undefined,
-      fullName: '',
-      employeeCode: '',
-      dob: '',
-      gender: '',
-      phone: '',
-      departmentId: null,
-      designation: '',
-      dateOfJoining: '',
-      employmentType: '',
-      employmentStatus: 'Active',
-      terminationDate: '',
-      managerId: null,
-      contact: EMPTY_CONTACT,
-      banking: EMPTY_BANKING,
-    },
-  })
-
-  const leaving = isLeaving(useWatch({ control, name: 'employmentStatus' }))
+  } = form
 
   useEffect(() => {
-    if (isEdit && employee) {
-      reset(toFormValues(employee))
-      if (employee.manager) {
-        setManagerSelected({
-          value: employee.manager.id,
-          label: employee.manager.fullName,
-        })
-      }
-    }
+    if (isEdit && employee) reset(toFormValues(employee))
   }, [isEdit, employee, reset])
 
-  const [currentStep, setCurrentStep] = useState(1)
-  const [visitedSteps, setVisitedSteps] = useState(() => new Set())
-  const [entered, setEntered] = useState(true)
+  // A pick only counts for the employee data it was made against; a reload resets it.
+  const [managerPick, setManagerPick] = useState(null)
+  const savedManager = employee?.manager
+    ? { value: employee.manager.id, label: employee.manager.fullName }
+    : null
+  const manager =
+    managerPick && managerPick.source === employee ? managerPick.option : savedManager
 
+  const wizard = useEmployeeWizard(stepFields(mode))
   // The one derived flag that both the button swap and the last-step content
   // render off of, so they can never disagree.
-  const isLastStep = currentStep === TOTAL_STEPS
-
-  useEffect(() => {
-    const id = requestAnimationFrame(() => setEntered(true))
-    return () => cancelAnimationFrame(id)
-  }, [currentStep])
-
-  const goToStep = (next) => {
-    setEntered(false)
-    setCurrentStep(next)
-  }
-
-  const STEP_FIELDS = {
-    1:
-      mode === 'create'
-        ? ['email', 'initialPassword', 'roleId', 'fullName', 'employeeCode', 'dob', 'gender', 'phone']
-        : ['email', 'roleId', 'fullName', 'employeeCode', 'dob', 'gender', 'phone'],
-    2: ['departmentId', 'designation', 'dateOfJoining', 'employmentType', 'employmentStatus', 'terminationDate', 'managerId'],
-    3: Object.keys(contactSchema.shape).map((k) => `contact.${k}`),
-    4: Object.keys(bankingSchema.shape).map((k) => `banking.${k}`),
-  }
-
-  const errorKeys = Object.keys(errors)
-  const stepHasError = (step) =>
-    STEP_FIELDS[step].some((name) => errorKeys.includes(name.split('.')[0]))
-
-  const stepStatus = (step) => {
-    if (step === currentStep) return 'current'
-    if (!visitedSteps.has(step) && step > currentStep) return 'upcoming'
-    return stepHasError(step) ? 'error' : 'complete'
-  }
-
-  const stepperSteps = ALL_STEPS.map((n) => ({
-    label: STEP_LABELS[n],
-    status: stepStatus(n),
-  }))
+  const { currentStep, entered, isLastStep } = wizard
 
   const handleNext = async () => {
-    setVisitedSteps((prev) => new Set(prev).add(currentStep))
-    const ok = await trigger(STEP_FIELDS[currentStep])
-    if (ok) goToStep((s) => Math.min(TOTAL_STEPS, s + 1))
+    wizard.visit(currentStep)
+    const ok = await trigger(wizard.currentFields)
+    if (ok) wizard.next()
   }
-
-  const handleBack = () => goToStep((s) => Math.max(1, s - 1))
 
   // A current role the user can't assign stays visible but locked.
   const currentRole = isEdit ? employee?.role : null
@@ -369,40 +86,13 @@ export default function EmployeeFormPage({ mode }) {
     .filter((r) => r.id === currentRole?.id || canAssignRole(user, r))
     .map((r) => ({ value: r.id, label: r.name }))
   const departmentOptions = departments.map((d) => ({ value: d.id, label: d.name }))
-  const employmentOptions = EMPLOYMENT_TYPES.map((t) => ({ value: t, label: t }))
 
   const onSubmit = (values) => {
     // Hard safety net: the form can never actually submit from a non-final step,
     // no matter what triggers the submit event.
     if (currentStep !== TOTAL_STEPS) return
 
-    const payload = cleanObject({
-      email: values.email,
-      ...(mode === 'create' ? { initialPassword: values.initialPassword } : {}),
-      roleId: values.roleId,
-      fullName: values.fullName,
-      employeeCode: values.employeeCode,
-      dob: values.dob,
-      gender: values.gender,
-      phone: values.phone,
-      departmentId: values.departmentId ?? undefined,
-      designation: values.designation,
-      dateOfJoining: values.dateOfJoining,
-      employmentType: values.employmentType,
-      employmentStatus: values.employmentStatus,
-      managerId: values.managerId ?? undefined,
-    })
-    // Always explicit: null tells the backend a non-leaving status has no date.
-    payload.terminationDate = isLeaving(values.employmentStatus) ? values.terminationDate : null
-    const contact = cleanObject(values.contact)
-    const banking = cleanObject(values.banking)
-    if (isEdit) {
-      Object.assign(payload, clearedFields(values, dirtyFields, CLEARABLE_FIELDS))
-      Object.assign(contact, clearedFields(values.contact, dirtyFields.contact, Object.keys(contactSchema.shape)))
-      Object.assign(banking, clearedFields(values.banking, dirtyFields.banking, Object.keys(bankingSchema.shape)))
-    }
-    if (Object.keys(contact).length) payload.contact = contact
-    if (Object.keys(banking).length) payload.banking = banking
+    const payload = buildPayload(values, { mode, dirtyFields })
 
     const onError = (error) => {
       if (error?.code === 'EMAIL_TAKEN') {
@@ -411,7 +101,7 @@ export default function EmployeeFormPage({ mode }) {
         setError('employeeCode', { message: error.message })
       } else if (error?.code?.startsWith('TERMINATION_')) {
         setError('terminationDate', { message: error.message })
-        goToStep(2)
+        wizard.goTo(2)
       } else {
         toast.error(error?.message || 'Something went wrong. Please try again.')
       }
@@ -440,19 +130,8 @@ export default function EmployeeFormPage({ mode }) {
   }
 
   // Final-submit re-validates the whole schema; if an earlier step is at fault,
-  // jump to the lowest-numbered offending step so the failure is visible.
-  const onInvalid = (formErrors) => {
-    const bad = Object.keys(formErrors)
-    setVisitedSteps(new Set(ALL_STEPS))
-    for (const step of ALL_STEPS) {
-      if (STEP_FIELDS[step].some((name) => bad.includes(name.split('.')[0]))) {
-        goToStep(step)
-        return
-      }
-    }
-  }
-
-  const submit = handleSubmit(onSubmit, onInvalid)
+  // jump to it so the failure is visible.
+  const submit = handleSubmit(onSubmit, wizard.showFirstError)
 
   if (isEdit && loadingEmployee) {
     return (
@@ -490,7 +169,7 @@ export default function EmployeeFormPage({ mode }) {
         </div>
 
         <div className="mt-6">
-          <Stepper steps={stepperSteps} currentStep={currentStep} />
+          <Stepper steps={wizard.stepperSteps(errors)} currentStep={currentStep} />
         </div>
 
         <form onSubmit={submit} className="mt-8" noValidate>
@@ -501,282 +180,46 @@ export default function EmployeeFormPage({ mode }) {
             )}
           >
             {currentStep === 1 && (
-              <section className="space-y-6">
-                <div className="space-y-3">
-                  <Subheading>Account</Subheading>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <FormField label="Email" required error={errors.email?.message}>
-                      <Input
-                        type="email"
-                        autoComplete="off"
-                        placeholder="jordan.rivera@company.com"
-                        {...register('email')}
-                      />
-                    </FormField>
-                    {mode === 'create' && (
-                      <FormField
-                        label="Initial Password"
-                        required
-                        error={errors.initialPassword?.message}
-                      >
-                        <Input
-                          type="password"
-                          autoComplete="new-password"
-                          placeholder="••••••••"
-                          {...register('initialPassword')}
-                        />
-                      </FormField>
-                    )}
-                    <FormField label="Role" required error={errors.roleId?.message}>
-                      <Controller
-                        control={control}
-                        name="roleId"
-                        render={({ field }) => (
-                          <Select
-                            options={roleOptions}
-                            placeholder="Select a role…"
-                            isDisabled={roleLocked}
-                            value={
-                              roleOptions.find((o) => o.value === field.value) ?? null
-                            }
-                            onChange={(opt) => field.onChange(opt?.value ?? undefined)}
-                            onBlur={field.onBlur}
-                          />
-                        )}
-                      />
-                    </FormField>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <Subheading>Personal details</Subheading>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <FormField
-                      label="Full Name"
-                      required
-                      error={errors.fullName?.message}
-                    >
-                      <Input placeholder="Jordan Rivera" {...register('fullName')} />
-                    </FormField>
-                    <FormField
-                      label="Employee Code"
-                      required
-                      error={errors.employeeCode?.message}
-                    >
-                      <Input placeholder="ENG-2024-014" {...register('employeeCode')} />
-                    </FormField>
-                    <FormField
-                      label="Date of Birth"
-                      error={errors.dob?.message}
-                    >
-                      <Controller
-                        control={control}
-                        name="dob"
-                        render={({ field }) => (
-                          <DateField
-                            id={field.name}
-                            value={field.value}
-                            onChange={field.onChange}
-                            clearable
-                            withDropdownNav
-                          />
-                        )}
-                      />
-                    </FormField>
-                    <FormField label="Gender" error={errors.gender?.message}>
-                      <Controller
-                        control={control}
-                        name="gender"
-                        render={({ field }) => (
-                          <Select
-                            isClearable
-                            options={GENDER_OPTIONS}
-                            placeholder="Select a gender…"
-                            value={
-                              GENDER_OPTIONS.find((o) => o.value === field.value) ?? null
-                            }
-                            onChange={(opt) => field.onChange(opt?.value ?? '')}
-                            onBlur={field.onBlur}
-                          />
-                        )}
-                      />
-                    </FormField>
-                    <FormField label="Phone" error={errors.phone?.message}>
-                      <Input placeholder="+1 415 555 0142" {...register('phone')} />
-                    </FormField>
-                  </div>
-                </div>
-              </section>
+              <AccountStep
+                form={form}
+                mode={mode}
+                roleOptions={roleOptions}
+                roleLocked={roleLocked}
+              />
             )}
 
             {currentStep === 2 && (
-              <section className="space-y-6">
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <FormField label="Department" error={errors.departmentId?.message}>
-                    <Controller
-                      control={control}
-                      name="departmentId"
-                      render={({ field }) => (
-                        <Select
-                          isClearable
-                          options={departmentOptions}
-                          placeholder="Select a department…"
-                          value={
-                            departmentOptions.find((o) => o.value === field.value) ??
-                            null
-                          }
-                          onChange={(opt) => field.onChange(opt?.value ?? null)}
-                          onBlur={field.onBlur}
-                        />
-                      )}
-                    />
-                  </FormField>
-                  <FormField label="Designation" error={errors.designation?.message}>
-                    <Input placeholder="Senior Software Engineer" {...register('designation')} />
-                  </FormField>
-                  <FormField
-                    label="Date of Joining"
-                    error={errors.dateOfJoining?.message}
-                  >
-                    <Controller
-                      control={control}
-                      name="dateOfJoining"
-                      render={({ field }) => (
-                        <DateField
-                          id={field.name}
-                          value={field.value}
-                          onChange={field.onChange}
-                          clearable
-                          withDropdownNav
-                        />
-                      )}
-                    />
-                  </FormField>
-                  <FormField
-                    label="Employment Type"
-                    error={errors.employmentType?.message}
-                  >
-                    <Controller
-                      control={control}
-                      name="employmentType"
-                      render={({ field }) => (
-                        <Select
-                          isClearable
-                          options={employmentOptions}
-                          placeholder="Select a type…"
-                          value={
-                            employmentOptions.find((o) => o.value === field.value) ??
-                            null
-                          }
-                          onChange={(opt) => field.onChange(opt?.value ?? '')}
-                          onBlur={field.onBlur}
-                        />
-                      )}
-                    />
-                  </FormField>
-                  <FormField label="Status" required error={errors.employmentStatus?.message}>
-                    <Controller
-                      control={control}
-                      name="employmentStatus"
-                      render={({ field }) => (
-                        <Select
-                          options={STATUS_OPTIONS}
-                          value={STATUS_OPTIONS.find((o) => o.value === field.value) ?? null}
-                          onChange={(opt) => {
-                            field.onChange(opt.value)
-                            if (!isLeaving(opt.value)) {
-                              setValue('terminationDate', '', { shouldValidate: true })
-                            }
-                          }}
-                          onBlur={field.onBlur}
-                        />
-                      )}
-                    />
-                  </FormField>
-                  {leaving && (
-                    <FormField
-                      label="Termination Date"
-                      required
-                      error={errors.terminationDate?.message}
-                    >
-                      <Controller
-                        control={control}
-                        name="terminationDate"
-                        render={({ field }) => (
-                          <DateField
-                            id={field.name}
-                            value={field.value}
-                            onChange={field.onChange}
-                            withDropdownNav
-                          />
-                        )}
-                      />
-                    </FormField>
-                  )}
-                  <FormField label="Manager" error={errors.managerId?.message}>
-                    <Controller
-                      control={control}
-                      name="managerId"
-                      render={({ field }) => (
-                        <Select
-                          isClearable
-                          options={managerOptions}
-                          placeholder="Search employees…"
-                          filterOption={() => true}
-                          onInputChange={(v) => setManagerQuery(v)}
-                          value={managerSelected}
-                          onChange={(opt) => {
-                            setManagerSelected(opt ?? null)
-                            field.onChange(opt?.value ?? null)
-                          }}
-                          onBlur={field.onBlur}
-                        />
-                      )}
-                    />
-                  </FormField>
-                </div>
-              </section>
+              <EmploymentStep
+                form={form}
+                departmentOptions={departmentOptions}
+                manager={manager}
+                onManagerChange={(option) => setManagerPick({ source: employee, option })}
+              />
             )}
 
             {currentStep === 3 && (
               <section className="space-y-6">
                 <p className="text-sm text-gray-500">All fields in this step are optional.</p>
-                <ContactFields register={register} control={control} />
+                <ContactFields register={form.register} control={form.control} />
               </section>
             )}
 
             {isLastStep && (
               <section className="space-y-6">
                 <p className="text-sm text-gray-500">All fields in this step are optional.</p>
-                <BankingFields register={register} />
+                <BankingFields register={form.register} />
               </section>
             )}
           </div>
 
-          <div className="sticky bottom-0 z-10 -mb-6 mt-8 flex items-center justify-end gap-3 border-t border-gray-200 bg-white pb-6 pt-4 sm:-mb-8 sm:pb-8">
-            {currentStep > 1 && (
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={handleBack}
-                disabled={mutation.isPending}
-                className="mr-auto"
-              >
-                Back
-              </Button>
-            )}
-            {/* Distinct keys: reusing one <button> would flip it to type="submit"
-                mid-click on the last Next, submitting the form and skipping banking. */}
-            {isLastStep ? (
-              <Button key="submit" type="submit" variant="accent" isLoading={mutation.isPending}>
-                {isEdit ? 'Save changes' : 'Create employee'}
-              </Button>
-            ) : (
-              <Button key="next" type="button" variant="accent" onClick={handleNext}>
-                Next
-              </Button>
-            )}
-          </div>
+          <WizardFooter
+            showBack={currentStep > 1}
+            isLastStep={isLastStep}
+            isPending={mutation.isPending}
+            submitLabel={isEdit ? 'Save changes' : 'Create employee'}
+            onBack={wizard.back}
+            onNext={handleNext}
+          />
         </form>
       </div>
     </div>
