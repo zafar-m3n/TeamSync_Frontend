@@ -3,22 +3,24 @@ import Table from '@/components/ui/Table'
 import TableSkeleton from '@/components/ui/TableSkeleton'
 import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
+import IconButton from '@/components/ui/IconButton'
 import { useRoles } from '@/hooks/useRoles'
-import NewRoleModal from '@/pages/roles-permissions/components/NewRoleModal'
+import RoleFormModal from '@/pages/roles-permissions/components/RoleFormModal'
 
 const columns = [
   { key: 'name', header: 'Name' },
   { key: 'description', header: 'Description' },
+  { key: 'actions', header: 'Actions' },
 ]
 
 export default function RolesTab() {
   const { data: roles = [], isLoading, isError, error, refetch } = useRoles()
-  const [showNew, setShowNew] = useState(false)
+  const [formTarget, setFormTarget] = useState(undefined) // undefined = closed, null = create, record = edit
 
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
-        <Button variant="accent" onClick={() => setShowNew(true)}>
+        <Button variant="accent" onClick={() => setFormTarget(null)}>
           New Role
         </Button>
       </div>
@@ -46,12 +48,27 @@ export default function RolesTab() {
                 </span>
               </td>
               <td className="px-4 py-3 text-text">{role.description || '—'}</td>
+              <td className="px-4 py-3">
+                <IconButton
+                  icon="lucide:pencil"
+                  label={`Edit ${role.name}`}
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setFormTarget(role)}
+                />
+              </td>
             </tr>
           )}
         />
       )}
 
-      {showNew && <NewRoleModal onClose={() => setShowNew(false)} />}
+      {formTarget !== undefined && (
+        <RoleFormModal
+          key={formTarget?.id ?? 'new'}
+          role={formTarget}
+          onClose={() => setFormTarget(undefined)}
+        />
+      )}
     </div>
   )
 }
