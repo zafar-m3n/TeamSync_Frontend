@@ -18,6 +18,7 @@ import AllGoalsPage from '@/pages/goals/AllGoalsPage'
 import MyTrainingPage from '@/pages/training/MyTrainingPage'
 import ManageTrainingPage from '@/pages/training/ManageTrainingPage'
 import TrainingPage from '@/pages/training/TrainingPage'
+import HolidaysPage from '@/pages/holidays/HolidaysPage'
 import { hasAnyPermission } from '@/lib/permissions'
 
 // `anyOf`: the user needs at least one of these permissions.
@@ -139,6 +140,14 @@ export const moduleRoutes = [
     navLabel: 'Leave',
     navIcon: 'lucide:calendar-days',
     navOrder: 6,
+  },
+  {
+    path: 'holidays',
+    anyOf: ['holidays.manage'],
+    element: <HolidaysPage />,
+    navLabel: 'Holidays',
+    navIcon: 'lucide:calendar-heart',
+    navOrder: 6.5,
   },
   {
     path: 'my-goals',

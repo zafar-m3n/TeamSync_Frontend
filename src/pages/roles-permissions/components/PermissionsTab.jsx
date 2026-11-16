@@ -49,6 +49,7 @@ const MODULE_ICONS = {
   attendance: 'lucide:calendar-check',
   leave: 'lucide:calendar-days',
   leave_types: 'lucide:calendar-days',
+  holidays: 'lucide:calendar-heart',
   goals: 'lucide:target',
   training: 'lucide:graduation-cap',
   training_categories: 'lucide:graduation-cap',

@@ -18,6 +18,7 @@ import LeaveStatusBadge from '@/pages/leave/components/LeaveStatusBadge'
 import LeaveRequestFormModal from '@/pages/leave/components/LeaveRequestFormModal'
 import LeaveBalanceSummary from '@/pages/leave/components/LeaveBalanceSummary'
 import { sumBalances } from '@/pages/leave/utils/leaveBalances'
+import HolidayList from '@/pages/holidays/components/HolidayList'
 
 const LIMIT = 10
 const STATUSES = ['Pending', 'Approved', 'Rejected', 'Cancelled']
@@ -111,6 +112,8 @@ export default function MyLeavePage() {
         year={year}
         isLoading={currentEmployeeId != null && balancesLoading}
       />
+
+      {can('holidays', 'view') && <HolidayList year={year} />}
 
       <div className="space-y-4">
         <div>
