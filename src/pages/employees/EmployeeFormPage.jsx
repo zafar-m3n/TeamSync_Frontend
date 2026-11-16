@@ -97,6 +97,10 @@ const EMPTY_BANKING = {
   bankBranch: '',
 }
 
+// NULL columns load as '' so the string fields validate.
+const toFormFields = (empty, row) =>
+  Object.fromEntries(Object.keys(empty).map((key) => [key, row?.[key] ?? '']))
+
 function toFormValues(emp) {
   return {
     email: emp.email ?? '',
@@ -111,16 +115,30 @@ function toFormValues(emp) {
     dateOfJoining: (emp.dateOfJoining ?? '').slice(0, 10),
     employmentType: emp.employmentType ?? '',
     managerId: emp.manager?.id ?? emp.managerId ?? null,
-    contact: { ...EMPTY_CONTACT, ...(emp.contact ?? {}) },
-    banking: { ...EMPTY_BANKING, ...(emp.banking ?? {}) },
+    contact: toFormFields(EMPTY_CONTACT, emp.contact),
+    banking: toFormFields(EMPTY_BANKING, emp.banking),
   }
 }
+
+const isEmpty = (value) => value === '' || value === null || value === undefined
 
 function cleanObject(obj) {
   const out = {}
   for (const [key, value] of Object.entries(obj)) {
-    if (value === '' || value === null || value === undefined) continue
+    if (isEmpty(value)) continue
     out[key] = value
+  }
+  return out
+}
+
+// employmentType is required by the backend, so it can be changed but not cleared.
+const CLEARABLE_FIELDS = ['dob', 'gender', 'phone', 'departmentId', 'designation', 'dateOfJoining', 'managerId']
+
+// On edit, a field the user emptied is sent as null so the backend clears it.
+function clearedFields(values, dirty, keys) {
+  const out = {}
+  for (const key of keys) {
+    if (dirty?.[key] && isEmpty(values[key])) out[key] = null
   }
   return out
 }
@@ -241,7 +259,7 @@ export default function EmployeeFormPage({ mode }) {
     reset,
     setError,
     trigger,
-    formState: { errors },
+    formState: { errors, dirtyFields },
   } = useForm({
     resolver: zodResolver(buildSchema(mode)),
     defaultValues: {
@@ -357,6 +375,11 @@ export default function EmployeeFormPage({ mode }) {
     })
     const contact = cleanObject(values.contact)
     const banking = cleanObject(values.banking)
+    if (isEdit) {
+      Object.assign(payload, clearedFields(values, dirtyFields, CLEARABLE_FIELDS))
+      Object.assign(contact, clearedFields(values.contact, dirtyFields.contact, Object.keys(contactSchema.shape)))
+      Object.assign(banking, clearedFields(values.banking, dirtyFields.banking, Object.keys(bankingSchema.shape)))
+    }
     if (Object.keys(contact).length) payload.contact = contact
     if (Object.keys(banking).length) payload.banking = banking
 
