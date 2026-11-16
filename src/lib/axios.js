@@ -1,7 +1,6 @@
 import axios from 'axios'
 import * as token from '@/lib/token'
-import router from '@/lib/router'
-import { toast } from '@/hooks/useToast'
+import { emitUnauthorized } from '@/lib/sessionEvents'
 
 const baseURL =
   import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1'
@@ -42,8 +41,7 @@ api.interceptors.response.use(
     if (normalized.status === 401 && token.isAuthenticated()) {
       token.clearAutoLogoutTimer()
       token.clearSession()
-      toast.error('Session expired — please log in again')
-      router.navigate('/login')
+      emitUnauthorized()
     }
 
     return Promise.reject(normalized)

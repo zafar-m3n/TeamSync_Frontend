@@ -8,8 +8,8 @@ import {
 } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import api from '@/lib/axios'
-import router from '@/lib/router'
 import * as token from '@/lib/token'
+import { onUnauthorized } from '@/lib/sessionEvents'
 import { hasPermission } from '@/lib/permissions'
 import { toast } from '@/hooks/useToast'
 import Spinner from '@/components/ui/Spinner'
@@ -26,7 +26,6 @@ export function AuthProvider({ children }) {
   const handleSessionEnd = useCallback(({ silent } = {}) => {
     if (!silent) toast.error('Session expired — please log in again')
     setUser(null)
-    router.navigate('/login')
   }, [])
 
   useEffect(() => {
@@ -46,7 +45,12 @@ export function AuthProvider({ children }) {
       }
     }
 
-    return token.listenForCrossTabLogout(() => handleSessionEnd({ silent: true }))
+    const stopCrossTab = token.listenForCrossTabLogout(() => handleSessionEnd({ silent: true }))
+    const stopUnauthorized = onUnauthorized(() => handleSessionEnd())
+    return () => {
+      stopCrossTab()
+      stopUnauthorized()
+    }
   }, [handleSessionEnd])
 
   // Refreshes the stored user (and its permissions) from the server on load.
@@ -76,7 +80,6 @@ export function AuthProvider({ children }) {
     token.clearAutoLogoutTimer()
     token.clearSession()
     setUser(null)
-    router.navigate('/login')
     // Best effort: revokes the token server-side. Sent after the local session is
     // cleared, so a failure here can't trigger the session-expired handling.
     if (jwt) {
