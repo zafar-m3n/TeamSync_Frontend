@@ -12,7 +12,7 @@ import { useEmployees, useDeleteEmployee } from '@/hooks/useEmployees'
 import { useMyTeam } from '@/hooks/useMyTeam'
 import { useDepartments } from '@/hooks/useDepartments'
 import { useAuth } from '@/store/AuthContext'
-import { hasPermission } from '@/lib/permissions'
+import { hasPermission, outranks } from '@/lib/permissions'
 import { toast } from '@/hooks/useToast'
 
 const LIMIT = 10
@@ -212,9 +212,12 @@ function AllList() {
   const debouncedSearch = useDebouncedValue(search.trim(), 300)
 
   // Omit delete entirely (never a disabled button) when it can't apply: no
-  // permission, or this is the current user's own employee record.
+  // permission, this is the current user's own employee record, or the target
+  // ranks at or above the current user.
   const deleteHandlerFor = (emp) =>
-    canDelete && emp.userId !== user.id ? () => setDeleteTarget(emp) : null
+    canDelete && emp.userId !== user.id && outranks(user.roleName, emp.user?.role)
+      ? () => setDeleteTarget(emp)
+      : null
 
   useEffect(() => {
     setPage(1)

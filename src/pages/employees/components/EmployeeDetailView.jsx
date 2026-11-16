@@ -10,7 +10,7 @@ import Tabs from '@/components/ui/Tabs'
 import ShiftAssignControl from '@/pages/employees/components/ShiftAssignControl'
 import EmployeeDocumentsList from '@/pages/employees/components/EmployeeDocumentsList'
 import { useAuth } from '@/store/AuthContext'
-import { hasPermission } from '@/lib/permissions'
+import { hasPermission, outranks } from '@/lib/permissions'
 import { useDeleteEmployee } from '@/hooks/useEmployees'
 import { toast } from '@/hooks/useToast'
 
@@ -192,7 +192,7 @@ export default function EmployeeDetailView({ data, canEdit, editHref, heading })
             </Link>
           )}
 
-          {canDelete && data.userId !== user.id && (
+          {canDelete && data.userId !== user.id && outranks(user.roleName, data.role) && (
             <Button
               variant="danger"
               className="w-full"

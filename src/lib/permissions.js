@@ -70,3 +70,9 @@ export const rankOf = (role) => (role && !role.isCustom && ROLE_RANK[role.name])
 // roles.manage may assign any role; everyone else only roles ranked strictly below their own.
 export const canAssignRole = (roleName, role) =>
   hasPermission(roleName, "roles", "manage") || rankOf(role) < rankOf({ name: roleName });
+
+// Admin may act on anyone; everyone else only on users ranked strictly below them.
+export const outranks = (roleName, targetRole) => {
+  const rank = rankOf({ name: roleName });
+  return rank === ROLE_RANK.Admin || rank > rankOf(targetRole);
+};

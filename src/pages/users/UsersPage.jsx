@@ -8,6 +8,7 @@ import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
 import IconButton from '@/components/ui/IconButton'
 import { useAuth } from '@/store/AuthContext'
+import { outranks } from '@/lib/permissions'
 import { useRoles } from '@/hooks/useRoles'
 import { useUsers } from '@/hooks/useUsers'
 import { useUpdateUserStatus } from '@/hooks/useUpdateUserStatus'
@@ -134,6 +135,7 @@ export default function UsersPage() {
             emptyMessage="No users found"
             renderRow={(row) => {
               const isSelf = String(row.id) === String(user.id)
+              const canAct = outranks(user.roleName, row.role)
               const pendingThisRow =
                 statusMutation.isPending && statusMutation.variables?.id === row.id
               return (
@@ -158,6 +160,14 @@ export default function UsersPage() {
                           <Icon icon="lucide:lock" width="12" height="12" aria-hidden />
                           Your account
                         </span>
+                      ) : !canAct ? (
+                        <span
+                          className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-500"
+                          title="Requires a higher role than this user's"
+                        >
+                          <Icon icon="lucide:lock" width="12" height="12" aria-hidden />
+                          Protected
+                        </span>
                       ) : (
                         <StatusToggle
                           checked={row.isActive}
@@ -168,13 +178,15 @@ export default function UsersPage() {
                           }
                         />
                       )}
-                      <IconButton
-                        icon="lucide:key-round"
-                        label="Reset password"
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => setResetTarget(row)}
-                      />
+                      {canAct && (
+                        <IconButton
+                          icon="lucide:key-round"
+                          label="Reset password"
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => setResetTarget(row)}
+                        />
+                      )}
                     </div>
                   </td>
                 </tr>
