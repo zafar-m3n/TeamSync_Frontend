@@ -13,6 +13,7 @@ import { useMyAssignments } from '@/hooks/useMyAssignments'
 import { useRemoveAssignment } from '@/hooks/useTrainingMutations'
 import UploadDocumentModal from '@/pages/training/components/UploadDocumentModal'
 import AssignDocumentModal from '@/pages/training/components/AssignDocumentModal'
+import DeleteDocumentModal from '@/pages/training/components/DeleteDocumentModal'
 
 const LIMIT = 10
 
@@ -75,6 +76,7 @@ function MyDocumentsTab() {
   const [page, setPage] = useState(1)
   const [showUpload, setShowUpload] = useState(false)
   const [assignTarget, setAssignTarget] = useState(null)
+  const [deleteTarget, setDeleteTarget] = useState(null)
 
   const params = useMemo(() => ({ page, limit: LIMIT }), [page])
   const { data, isLoading, isError, error, refetch } = useMyUploads(params)
@@ -138,6 +140,13 @@ function MyDocumentsTab() {
                       size="sm"
                       onClick={() => setAssignTarget(doc)}
                     />
+                    <IconButton
+                      icon="lucide:trash-2"
+                      label="Delete document"
+                      variant="ghost-danger"
+                      size="sm"
+                      onClick={() => setDeleteTarget(doc)}
+                    />
                   </div>
                 </td>
               </tr>
@@ -153,6 +162,9 @@ function MyDocumentsTab() {
           document={assignTarget}
           onClose={() => setAssignTarget(null)}
         />
+      )}
+      {deleteTarget && (
+        <DeleteDocumentModal document={deleteTarget} onClose={() => setDeleteTarget(null)} />
       )}
     </div>
   )

@@ -16,6 +16,7 @@ import { useAllTrainingDocuments } from '@/hooks/useAllTrainingDocuments'
 import { useAllTrainingAssignments } from '@/hooks/useAllTrainingAssignments'
 import { useRemoveAssignment } from '@/hooks/useTrainingMutations'
 import TrainingCategoriesTab from '@/pages/training/components/TrainingCategoriesTab'
+import DeleteDocumentModal from '@/pages/training/components/DeleteDocumentModal'
 
 const LIMIT = 10
 
@@ -86,6 +87,7 @@ const documentColumns = [
 function DocumentsTab() {
   const [page, setPage] = useState(1)
   const [category, setCategory] = useState(null)
+  const [deleteTarget, setDeleteTarget] = useState(null)
   const { data: categories = [] } = useTrainingCategories()
   const categoryOptions = categories.map((c) => ({ value: c.id, label: c.name }))
 
@@ -147,17 +149,30 @@ function DocumentsTab() {
                   {fmtDate(doc.uploadDate ?? doc.createdAt)}
                 </td>
                 <td className="px-4 py-3">
-                  <FileActions
-                    url={trainingDocumentDownloadUrl(doc.id)}
-                    mimeType={doc.mimeType}
-                    name={doc.title}
-                  />
+                  <div className="flex items-center gap-1">
+                    <FileActions
+                      url={trainingDocumentDownloadUrl(doc.id)}
+                      mimeType={doc.mimeType}
+                      name={doc.title}
+                    />
+                    <IconButton
+                      icon="lucide:trash-2"
+                      label="Delete document"
+                      variant="ghost-danger"
+                      size="sm"
+                      onClick={() => setDeleteTarget(doc)}
+                    />
+                  </div>
                 </td>
               </tr>
             )}
           />
           <Pagination page={page} meta={meta} totalPages={totalPages} onPage={setPage} />
         </>
+      )}
+
+      {deleteTarget && (
+        <DeleteDocumentModal document={deleteTarget} onClose={() => setDeleteTarget(null)} />
       )}
     </div>
   )

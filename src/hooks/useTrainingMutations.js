@@ -1,5 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { uploadDocument } from '@/services/trainingDocumentService'
+import {
+  uploadDocument,
+  deleteTrainingDocument,
+} from '@/services/trainingDocumentService'
 import {
   createAssignment,
   removeAssignment,
@@ -13,6 +16,18 @@ export function useUploadDocument() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['training'] })
       toast.success('Document uploaded')
+    },
+    onError: (error) => toast.error(error.message),
+  })
+}
+
+export function useDeleteTrainingDocument() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id) => deleteTrainingDocument(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['training'] })
+      toast.success('Document deleted')
     },
     onError: (error) => toast.error(error.message),
   })
