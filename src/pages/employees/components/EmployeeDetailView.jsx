@@ -4,6 +4,7 @@ import { format } from 'date-fns'
 import { Icon } from '@iconify/react'
 import clsx from 'clsx'
 import Badge from '@/components/ui/Badge'
+import { STATUS_TONE } from '@/pages/employees/utils/employmentStatus'
 import Button from '@/components/ui/Button'
 import Modal from '@/components/ui/Modal'
 import Tabs from '@/components/ui/Tabs'
@@ -154,6 +155,9 @@ export default function EmployeeDetailView({ data, canEdit, editHref, heading })
   }
 
   const headerBadges = [
+    data.employmentStatus
+      ? { key: 'status', tone: STATUS_TONE[data.employmentStatus], label: data.employmentStatus }
+      : null,
     data.role?.name ? { key: 'role', tone: 'info', label: data.role.name } : null,
     data.department?.name
       ? { key: 'department', tone: 'neutral', label: data.department.name }
@@ -205,6 +209,9 @@ export default function EmployeeDetailView({ data, canEdit, editHref, heading })
             <Field label="Employee Code" value={data.employeeCode} />
             <Field label="Manager" value={data.manager?.fullName} />
             <Field label="Date of Joining" value={fmtDate(data.dateOfJoining)} />
+            {data.terminationDate && (
+              <Field label="Termination Date" value={fmtDate(data.terminationDate)} />
+            )}
             <div>
               <dt className="text-xs uppercase tracking-wide text-gray-400">Shift</dt>
               <dd className="mt-1">
@@ -243,6 +250,10 @@ export default function EmployeeDetailView({ data, canEdit, editHref, heading })
               <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 <Field label="Designation" value={data.designation} />
                 <Field label="Employment Type" value={data.employmentType} />
+                <Field label="Status" value={data.employmentStatus} />
+                {data.terminationDate && (
+                  <Field label="Termination Date" value={fmtDate(data.terminationDate)} />
+                )}
               </dl>
             </Section>
           )}

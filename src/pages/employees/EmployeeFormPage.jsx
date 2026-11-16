@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Controller, useForm } from 'react-hook-form'
+import { Controller, useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Icon } from '@iconify/react'
@@ -20,8 +20,10 @@ import { useEmployees, useCreateEmployee } from '@/hooks/useEmployees'
 import { useEmployee, useUpdateEmployee } from '@/hooks/useEmployee'
 import ContactFields from '@/pages/employees/components/ContactFields'
 import BankingFields from '@/pages/employees/components/BankingFields'
+import { EMPLOYMENT_STATUSES, isLeaving } from '@/pages/employees/utils/employmentStatus'
 
-const EMPLOYMENT_TYPES = ['Full-time', 'Part-time', 'Contract', 'Intern', 'Probation']
+const EMPLOYMENT_TYPES = ['Full-time', 'Part-time', 'Contract', 'Intern']
+const STATUS_OPTIONS = EMPLOYMENT_STATUSES.map((s) => ({ value: s, label: s }))
 
 const GENDER_OPTIONS = [
   { value: 'Male', label: 'Male' },
@@ -74,9 +76,18 @@ function buildSchema(mode) {
     designation: optionalStr,
     dateOfJoining: optionalStr,
     employmentType: optionalStr,
+    employmentStatus: z.enum(EMPLOYMENT_STATUSES),
+    terminationDate: optionalStr,
     managerId: z.number().int().positive().nullable().optional(),
     contact: contactSchema,
     banking: bankingSchema,
+  }).superRefine((v, ctx) => {
+    if (!isLeaving(v.employmentStatus)) return
+    if (!v.terminationDate) {
+      ctx.addIssue({ code: 'custom', path: ['terminationDate'], message: `Required when ${v.employmentStatus}` })
+    } else if (v.dateOfJoining && v.terminationDate < v.dateOfJoining) {
+      ctx.addIssue({ code: 'custom', path: ['terminationDate'], message: 'Cannot be before the date of joining' })
+    }
   })
 }
 
@@ -114,6 +125,8 @@ function toFormValues(emp) {
     designation: emp.designation ?? '',
     dateOfJoining: (emp.dateOfJoining ?? '').slice(0, 10),
     employmentType: emp.employmentType ?? '',
+    employmentStatus: emp.employmentStatus ?? 'Active',
+    terminationDate: (emp.terminationDate ?? '').slice(0, 10),
     managerId: emp.manager?.id ?? emp.managerId ?? null,
     contact: toFormFields(EMPTY_CONTACT, emp.contact),
     banking: toFormFields(EMPTY_BANKING, emp.banking),
@@ -258,6 +271,7 @@ export default function EmployeeFormPage({ mode }) {
     handleSubmit,
     reset,
     setError,
+    setValue,
     trigger,
     formState: { errors, dirtyFields },
   } = useForm({
@@ -275,11 +289,15 @@ export default function EmployeeFormPage({ mode }) {
       designation: '',
       dateOfJoining: '',
       employmentType: '',
+      employmentStatus: 'Active',
+      terminationDate: '',
       managerId: null,
       contact: EMPTY_CONTACT,
       banking: EMPTY_BANKING,
     },
   })
+
+  const leaving = isLeaving(useWatch({ control, name: 'employmentStatus' }))
 
   useEffect(() => {
     if (isEdit && employee) {
@@ -316,7 +334,7 @@ export default function EmployeeFormPage({ mode }) {
       mode === 'create'
         ? ['email', 'initialPassword', 'roleId', 'fullName', 'employeeCode', 'dob', 'gender', 'phone']
         : ['email', 'roleId', 'fullName', 'employeeCode', 'dob', 'gender', 'phone'],
-    2: ['departmentId', 'designation', 'dateOfJoining', 'employmentType', 'managerId'],
+    2: ['departmentId', 'designation', 'dateOfJoining', 'employmentType', 'employmentStatus', 'terminationDate', 'managerId'],
     3: Object.keys(contactSchema.shape).map((k) => `contact.${k}`),
     4: Object.keys(bankingSchema.shape).map((k) => `banking.${k}`),
   }
@@ -371,8 +389,11 @@ export default function EmployeeFormPage({ mode }) {
       designation: values.designation,
       dateOfJoining: values.dateOfJoining,
       employmentType: values.employmentType,
+      employmentStatus: values.employmentStatus,
       managerId: values.managerId ?? undefined,
     })
+    // Always explicit: null tells the backend a non-leaving status has no date.
+    payload.terminationDate = isLeaving(values.employmentStatus) ? values.terminationDate : null
     const contact = cleanObject(values.contact)
     const banking = cleanObject(values.banking)
     if (isEdit) {
@@ -388,6 +409,9 @@ export default function EmployeeFormPage({ mode }) {
         setError('email', { message: error.message })
       } else if (error?.code === 'EMPLOYEE_CODE_TAKEN') {
         setError('employeeCode', { message: error.message })
+      } else if (error?.code?.startsWith('TERMINATION_')) {
+        setError('terminationDate', { message: error.message })
+        goToStep(2)
       } else {
         toast.error(error?.message || 'Something went wrong. Please try again.')
       }
@@ -650,6 +674,45 @@ export default function EmployeeFormPage({ mode }) {
                       )}
                     />
                   </FormField>
+                  <FormField label="Status" required error={errors.employmentStatus?.message}>
+                    <Controller
+                      control={control}
+                      name="employmentStatus"
+                      render={({ field }) => (
+                        <Select
+                          options={STATUS_OPTIONS}
+                          value={STATUS_OPTIONS.find((o) => o.value === field.value) ?? null}
+                          onChange={(opt) => {
+                            field.onChange(opt.value)
+                            if (!isLeaving(opt.value)) {
+                              setValue('terminationDate', '', { shouldValidate: true })
+                            }
+                          }}
+                          onBlur={field.onBlur}
+                        />
+                      )}
+                    />
+                  </FormField>
+                  {leaving && (
+                    <FormField
+                      label="Termination Date"
+                      required
+                      error={errors.terminationDate?.message}
+                    >
+                      <Controller
+                        control={control}
+                        name="terminationDate"
+                        render={({ field }) => (
+                          <DateField
+                            id={field.name}
+                            value={field.value}
+                            onChange={field.onChange}
+                            withDropdownNav
+                          />
+                        )}
+                      />
+                    </FormField>
+                  )}
                   <FormField label="Manager" error={errors.managerId?.message}>
                     <Controller
                       control={control}

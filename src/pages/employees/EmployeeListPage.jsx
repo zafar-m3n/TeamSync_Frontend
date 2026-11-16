@@ -14,8 +14,18 @@ import { useDepartments } from '@/hooks/useDepartments'
 import { useAuth } from '@/store/AuthContext'
 import { outranks } from '@/lib/permissions'
 import { toast } from '@/hooks/useToast'
+import EmploymentStatusBadge from '@/pages/employees/components/EmploymentStatusBadge'
+import { EMPLOYMENT_STATUSES } from '@/pages/employees/utils/employmentStatus'
 
 const LIMIT = 10
+
+// 'current' (the backend default) hides people whose leaving date has passed.
+const STATUS_FILTER_OPTIONS = [
+  { value: 'current', label: 'Current employees' },
+  { value: 'former', label: 'Former employees' },
+  { value: 'all', label: 'All employees' },
+  ...EMPLOYMENT_STATUSES.map((s) => ({ value: s, label: s })),
+]
 
 function useDebouncedValue(value, delay) {
   const [debounced, setDebounced] = useState(value)
@@ -117,6 +127,7 @@ const allColumns = [
   { key: 'employeeCode', header: 'Employee Code' },
   { key: 'department', header: 'Department' },
   { key: 'designation', header: 'Designation' },
+  { key: 'status', header: 'Status' },
   { key: 'shift', header: 'Shift' },
   { key: 'actions', header: '' },
 ]
@@ -209,6 +220,7 @@ function AllList() {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [departmentId, setDepartmentId] = useState('')
+  const [statusFilter, setStatusFilter] = useState('current')
   const debouncedSearch = useDebouncedValue(search.trim(), 300)
 
   // Omit delete entirely (never a disabled button) when it can't apply: no
@@ -221,7 +233,7 @@ function AllList() {
 
   useEffect(() => {
     setPage(1)
-  }, [debouncedSearch, departmentId])
+  }, [debouncedSearch, departmentId, statusFilter])
 
   const params = useMemo(
     () => ({
@@ -229,8 +241,9 @@ function AllList() {
       limit: LIMIT,
       ...(debouncedSearch ? { search: debouncedSearch } : {}),
       ...(departmentId ? { departmentId: Number(departmentId) } : {}),
+      ...(statusFilter !== 'current' ? { employmentStatus: statusFilter } : {}),
     }),
-    [page, debouncedSearch, departmentId],
+    [page, debouncedSearch, departmentId, statusFilter],
   )
 
   const { data, isLoading, isError, error, refetch } = useEmployees(params)
@@ -260,6 +273,13 @@ function AllList() {
               options={departmentOptions}
               value={departmentOptions.find((o) => o.value === departmentId) ?? null}
               onChange={(opt) => setDepartmentId(opt.value)}
+            />
+          </div>
+          <div className="w-56">
+            <Select
+              options={STATUS_FILTER_OPTIONS}
+              value={STATUS_FILTER_OPTIONS.find((o) => o.value === statusFilter) ?? null}
+              onChange={(opt) => setStatusFilter(opt.value)}
             />
           </div>
         </div>
@@ -309,6 +329,9 @@ function AllList() {
                     )}
                   </td>
                   <td className="px-4 py-3 text-text">{emp.designation ?? '—'}</td>
+                  <td className="px-4 py-3">
+                    <EmploymentStatusBadge status={emp.employmentStatus} />
+                  </td>
                   <td className="px-4 py-3 text-text">
                     {emp.shift?.name ? <Badge tone="neutral">{emp.shift.name}</Badge> : '—'}
                   </td>
@@ -364,8 +387,9 @@ function AllList() {
                   </div>
                   <div className="mt-3 space-y-2">
                     <p className="text-sm text-text">{emp.designation ?? '—'}</p>
-                    {(emp.department?.name || emp.shift?.name) && (
+                    {(emp.employmentStatus || emp.department?.name || emp.shift?.name) && (
                       <div className="flex flex-wrap gap-2">
+                        <EmploymentStatusBadge status={emp.employmentStatus} />
                         {emp.department?.name && (
                           <Badge tone="neutral">{emp.department.name}</Badge>
                         )}
