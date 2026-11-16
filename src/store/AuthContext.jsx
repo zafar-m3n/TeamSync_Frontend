@@ -72,10 +72,22 @@ export function AuthProvider({ children }) {
   }
 
   const logout = () => {
+    const jwt = token.getToken()
     token.clearAutoLogoutTimer()
     token.clearSession()
     setUser(null)
     router.navigate('/login')
+    // Best effort: revokes the token server-side. Sent after the local session is
+    // cleared, so a failure here can't trigger the session-expired handling.
+    if (jwt) {
+      api.post('/auth/logout', {}, { headers: { Authorization: `Bearer ${jwt}` } }).catch(() => {})
+    }
+  }
+
+  // A password change revokes every session and returns a fresh token for this one.
+  const replaceToken = (jwt) => {
+    token.setToken(jwt)
+    token.scheduleAutoLogout(handleSessionEnd)
   }
 
   const can = useCallback((module, action) => hasPermission(user, module, action), [user])
@@ -83,7 +95,10 @@ export function AuthProvider({ children }) {
   // A user stored before permissions were part of the session waits for /auth/me.
   const awaitingPermissions = Boolean(user) && !user.permissions && !me.isError
 
-  const value = useMemo(() => ({ user, isLoading, login, logout, can }), [user, isLoading, can])
+  const value = useMemo(
+    () => ({ user, isLoading, login, logout, replaceToken, can }),
+    [user, isLoading, can],
+  )
 
   return (
     <AuthContext.Provider value={value}>

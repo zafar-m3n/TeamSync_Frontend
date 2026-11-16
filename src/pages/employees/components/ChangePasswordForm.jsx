@@ -6,6 +6,7 @@ import Input from '@/components/form/Input'
 import Button from '@/components/ui/Button'
 import { useChangePassword } from '@/hooks/useChangePassword'
 import { toast } from '@/hooks/useToast'
+import { useAuth } from '@/store/AuthContext'
 
 const FIELDS = ['currentPassword', 'newPassword', 'confirmPassword']
 
@@ -24,6 +25,7 @@ const EMPTY = { currentPassword: '', newPassword: '', confirmPassword: '' }
 
 export default function ChangePasswordForm() {
   const mutation = useChangePassword()
+  const { replaceToken } = useAuth()
   const {
     register,
     handleSubmit,
@@ -36,9 +38,10 @@ export default function ChangePasswordForm() {
     mutation.mutate(
       { currentPassword, newPassword },
       {
-        onSuccess: () => {
+        onSuccess: (body) => {
+          replaceToken(body.data.token)
           reset(EMPTY)
-          toast.success('Password changed')
+          toast.success('Password changed. Other sessions have been signed out.')
         },
         onError: (error) => {
           const fieldErrors = (error.details ?? [])
