@@ -6,16 +6,21 @@ import {
   useMemo,
   useState,
 } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import api from '@/lib/axios'
 import router from '@/lib/router'
 import * as token from '@/lib/token'
+import { hasPermission } from '@/lib/permissions'
 import { toast } from '@/hooks/useToast'
 import Spinner from '@/components/ui/Spinner'
 
 const AuthContext = createContext(null)
 
+const meQueryKey = (userId) => ['me', userId]
+
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null)
+  const queryClient = useQueryClient()
+  const [storedUser, setUser] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
 
   const handleSessionEnd = useCallback(({ silent } = {}) => {
@@ -44,11 +49,24 @@ export function AuthProvider({ children }) {
     return token.listenForCrossTabLogout(() => handleSessionEnd({ silent: true }))
   }, [handleSessionEnd])
 
+  // Refreshes the stored user (and its permissions) from the server on load.
+  const me = useQuery({
+    queryKey: meQueryKey(storedUser?.id),
+    queryFn: () => api.get('/auth/me').then((body) => body.data),
+    enabled: Boolean(storedUser),
+  })
+  const user = (storedUser && me.data) || storedUser
+
+  useEffect(() => {
+    if (me.data && token.isAuthenticated()) token.setUser(me.data)
+  }, [me.data])
+
   const login = async (email, password) => {
     const body = await api.post('/auth/login', { email, password })
     const { token: jwt, user: nextUser } = body.data
     token.setToken(jwt)
     token.setUser(nextUser)
+    queryClient.setQueryData(meQueryKey(nextUser.id), nextUser)
     setUser(nextUser)
     token.scheduleAutoLogout(handleSessionEnd)
     return nextUser.roleName
@@ -61,11 +79,16 @@ export function AuthProvider({ children }) {
     router.navigate('/login')
   }
 
-  const value = useMemo(() => ({ user, isLoading, login, logout }), [user, isLoading])
+  const can = useCallback((module, action) => hasPermission(user, module, action), [user])
+
+  // A user stored before permissions were part of the session waits for /auth/me.
+  const awaitingPermissions = Boolean(user) && !user.permissions && !me.isError
+
+  const value = useMemo(() => ({ user, isLoading, login, logout, can }), [user, isLoading, can])
 
   return (
     <AuthContext.Provider value={value}>
-      {isLoading ? (
+      {isLoading || awaitingPermissions ? (
         <div className="flex min-h-screen items-center justify-center bg-gray-50">
           <Spinner size="lg" className="text-accent" />
         </div>

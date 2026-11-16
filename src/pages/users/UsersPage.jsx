@@ -57,7 +57,7 @@ function StatusToggle({ checked, disabled, onChange, label }) {
 }
 
 export default function UsersPage() {
-  const { user } = useAuth()
+  const { user, can } = useAuth()
   const { data: roles = [] } = useRoles()
   const statusMutation = useUpdateUserStatus()
 
@@ -135,7 +135,7 @@ export default function UsersPage() {
             emptyMessage="No users found"
             renderRow={(row) => {
               const isSelf = String(row.id) === String(user.id)
-              const canAct = outranks(user.roleName, row.role)
+              const canAct = outranks(user, row.role)
               const pendingThisRow =
                 statusMutation.isPending && statusMutation.variables?.id === row.id
               return (
@@ -168,7 +168,7 @@ export default function UsersPage() {
                           <Icon icon="lucide:lock" width="12" height="12" aria-hidden />
                           Protected
                         </span>
-                      ) : (
+                      ) : can('users', 'update_status') && (
                         <StatusToggle
                           checked={row.isActive}
                           disabled={pendingThisRow}
@@ -178,7 +178,7 @@ export default function UsersPage() {
                           }
                         />
                       )}
-                      {canAct && (
+                      {canAct && can('users', 'reset_password') && (
                         <IconButton
                           icon="lucide:key-round"
                           label="Reset password"

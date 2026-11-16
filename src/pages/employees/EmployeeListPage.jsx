@@ -12,7 +12,7 @@ import { useEmployees, useDeleteEmployee } from '@/hooks/useEmployees'
 import { useMyTeam } from '@/hooks/useMyTeam'
 import { useDepartments } from '@/hooks/useDepartments'
 import { useAuth } from '@/store/AuthContext'
-import { hasPermission, outranks } from '@/lib/permissions'
+import { outranks } from '@/lib/permissions'
 import { toast } from '@/hooks/useToast'
 
 const LIMIT = 10
@@ -202,8 +202,8 @@ function TeamList() {
 
 function AllList() {
   const navigate = useNavigate()
-  const { user } = useAuth()
-  const canDelete = hasPermission(user.roleName, 'employees', 'delete')
+  const { user, can } = useAuth()
+  const canDelete = can('employees', 'delete')
   const deleteMutation = useDeleteEmployee()
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [page, setPage] = useState(1)
@@ -215,7 +215,7 @@ function AllList() {
   // permission, this is the current user's own employee record, or the target
   // ranks at or above the current user.
   const deleteHandlerFor = (emp) =>
-    canDelete && emp.userId !== user.id && outranks(user.roleName, emp.user?.role)
+    canDelete && emp.userId !== user.id && outranks(user, emp.user?.role)
       ? () => setDeleteTarget(emp)
       : null
 

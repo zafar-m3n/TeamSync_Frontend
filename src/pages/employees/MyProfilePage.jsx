@@ -1,15 +1,14 @@
 import { useMyProfile } from '@/hooks/useMyProfile'
 import { useAuth } from '@/store/AuthContext'
-import { hasPermission } from '@/lib/permissions'
 import Spinner from '@/components/ui/Spinner'
 import Button from '@/components/ui/Button'
 import EmployeeDetailView from '@/pages/employees/components/EmployeeDetailView'
 
 export default function MyProfilePage() {
-  const { user } = useAuth()
+  const { user, can } = useAuth()
   const { data, isLoading, isError, error, refetch } = useMyProfile()
 
-  const canEdit = hasPermission(user.roleName, 'employees', 'edit')
+  const canEdit = can('employees', 'edit')
   const editHref = data?.id
     ? `/${user.roleName.toLowerCase()}/employees/${data.id}/edit`
     : null

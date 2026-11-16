@@ -10,7 +10,7 @@ import Tabs from '@/components/ui/Tabs'
 import ShiftAssignControl from '@/pages/employees/components/ShiftAssignControl'
 import EmployeeDocumentsList from '@/pages/employees/components/EmployeeDocumentsList'
 import { useAuth } from '@/store/AuthContext'
-import { hasPermission, outranks } from '@/lib/permissions'
+import { outranks } from '@/lib/permissions'
 import { useDeleteEmployee } from '@/hooks/useEmployees'
 import { toast } from '@/hooks/useToast'
 
@@ -109,11 +109,11 @@ export default function EmployeeDetailView({ data, canEdit, editHref, heading })
   // Detect on the payload, never on the current user's role or the route taken.
   const isFull = data && Array.isArray(data.documents)
 
-  const { user } = useAuth()
+  const { user, can } = useAuth()
   const navigate = useNavigate()
   const roleSeg = user.roleName.toLowerCase()
   // Gated independently of `canEdit` — same roles today, but a distinct check.
-  const canDelete = hasPermission(user.roleName, 'employees', 'delete')
+  const canDelete = can('employees', 'delete')
   const deleteMutation = useDeleteEmployee()
 
   const [activeKey, setActiveKey] = useState('basic')
@@ -192,7 +192,7 @@ export default function EmployeeDetailView({ data, canEdit, editHref, heading })
             </Link>
           )}
 
-          {canDelete && data.userId !== user.id && outranks(user.roleName, data.role) && (
+          {canDelete && data.userId !== user.id && outranks(user, data.role) && (
             <Button
               variant="danger"
               className="w-full"

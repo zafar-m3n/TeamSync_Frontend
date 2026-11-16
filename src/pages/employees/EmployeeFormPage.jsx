@@ -329,9 +329,9 @@ export default function EmployeeFormPage({ mode }) {
 
   // A current role the user can't assign stays visible but locked.
   const currentRole = isEdit ? employee?.role : null
-  const roleLocked = Boolean(currentRole) && !canAssignRole(user.roleName, currentRole)
+  const roleLocked = Boolean(currentRole) && !canAssignRole(user, currentRole)
   const roleOptions = roles
-    .filter((r) => r.id === currentRole?.id || canAssignRole(user.roleName, r))
+    .filter((r) => r.id === currentRole?.id || canAssignRole(user, r))
     .map((r) => ({ value: r.id, label: r.name }))
   const departmentOptions = departments.map((d) => ({ value: d.id, label: d.name }))
   const employmentOptions = EMPLOYMENT_TYPES.map((t) => ({ value: t, label: t }))

@@ -7,11 +7,11 @@ export const canCancelLeaveRequest = ({ request, currentUser, currentEmployeeId 
     ? request.employee.userId === currentUser.id
     : true
   const isManagerOfTarget = request.employee?.managerId === currentEmployeeId
-  const hasViewAll = hasPermission(currentUser.roleName, 'leave', 'view_all')
+  const hasViewAll = hasPermission(currentUser, 'leave', 'view_all')
 
   if (request.status === 'Pending') {
     const canCancelPending = hasPermission(
-      currentUser.roleName,
+      currentUser,
       'leave',
       'cancel_pending',
     )
@@ -21,7 +21,7 @@ export const canCancelLeaveRequest = ({ request, currentUser, currentEmployeeId 
 
   if (request.status === 'Approved') {
     const canCancelApproved = hasPermission(
-      currentUser.roleName,
+      currentUser,
       'leave',
       'cancel_approved',
     )

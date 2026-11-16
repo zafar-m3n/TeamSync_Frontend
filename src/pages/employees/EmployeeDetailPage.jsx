@@ -1,17 +1,16 @@
 import { useParams } from 'react-router-dom'
 import { useEmployee } from '@/hooks/useEmployee'
 import { useAuth } from '@/store/AuthContext'
-import { hasPermission } from '@/lib/permissions'
 import Spinner from '@/components/ui/Spinner'
 import Button from '@/components/ui/Button'
 import EmployeeDetailView from '@/pages/employees/components/EmployeeDetailView'
 
 export default function EmployeeDetailPage() {
   const { employeeId } = useParams()
-  const { user } = useAuth()
+  const { user, can } = useAuth()
   const { data, isLoading, isError, error, refetch } = useEmployee(employeeId)
 
-  const canEdit = hasPermission(user.roleName, 'employees', 'edit')
+  const canEdit = can('employees', 'edit')
   const editHref = `/${user.roleName.toLowerCase()}/employees/${employeeId}/edit`
 
   if (isLoading) {

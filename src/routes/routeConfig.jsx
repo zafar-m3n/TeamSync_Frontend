@@ -18,7 +18,8 @@ import AllGoalsPage from '@/pages/goals/AllGoalsPage'
 import MyTrainingPage from '@/pages/training/MyTrainingPage'
 import ManageTrainingPage from '@/pages/training/ManageTrainingPage'
 import TrainingPage from '@/pages/training/TrainingPage'
-import { SEEDED_ROLES } from '@/lib/permissions'
+// Role-prefixed URL trees; replaced by permission-gated routes in the next step.
+const SEEDED_ROLES = ['Admin', 'HR', 'Manager', 'Employee']
 
 export const moduleRoutes = [
   {

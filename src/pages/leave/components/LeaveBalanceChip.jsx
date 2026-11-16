@@ -1,12 +1,11 @@
 import { useState } from 'react'
 import { Icon } from '@iconify/react'
 import { useAuth } from '@/store/AuthContext'
-import { hasPermission } from '@/lib/permissions'
 import { useLeaveBalance } from '@/hooks/useLeaveBalance'
 import SetQuotaModal from '@/pages/leave/components/SetQuotaModal'
 
 export default function LeaveBalanceChip({ employeeId, year }) {
-  const { user } = useAuth()
+  const { can } = useAuth()
   const [expanded, setExpanded] = useState(false)
   const [showQuota, setShowQuota] = useState(false)
 
@@ -17,7 +16,7 @@ export default function LeaveBalanceChip({ employeeId, year }) {
     resolvedYear,
     expanded,
   )
-  const canSetQuota = hasPermission(user.roleName, 'leave', 'set_quota')
+  const canSetQuota = can('leave', 'set_quota')
 
   if (!expanded) {
     return (
