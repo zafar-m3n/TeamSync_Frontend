@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react'
-import { format } from 'date-fns'
 import Tabs from '@/components/ui/Tabs'
 import Table from '@/components/ui/Table'
 import TableSkeleton from '@/components/ui/TableSkeleton'
@@ -14,6 +13,8 @@ import { useRemoveAssignment } from '@/hooks/useTrainingMutations'
 import UploadDocumentModal from '@/pages/training/components/UploadDocumentModal'
 import AssignDocumentModal from '@/pages/training/components/AssignDocumentModal'
 import DeleteDocumentModal from '@/pages/training/components/DeleteDocumentModal'
+import PageControls from '@/pages/training/components/PageControls'
+import { fmtDate, renderTarget } from '@/pages/training/utils/trainingFormat'
 
 const LIMIT = 10
 
@@ -21,48 +22,6 @@ const TABS = [
   { key: 'documents', label: 'My Documents' },
   { key: 'assignments', label: 'My Assignments' },
 ]
-
-function fmtDate(value) {
-  if (!value) return '—'
-  const d = new Date(value)
-  return Number.isNaN(d.getTime()) ? '—' : format(d, 'PP')
-}
-
-// Shared with TrainingPage's Assignments tab — render whichever target fields
-// are non-null (employee, department, or both).
-function renderTarget(a) {
-  const emp = a.employee?.fullName
-  const dept = a.department?.name
-  if (emp && dept) return `${emp} · ${dept}`
-  return emp || dept || '—'
-}
-
-function Pagination({ page, meta, totalPages, onPage }) {
-  if (!meta || totalPages <= 1) return null
-  return (
-    <div className="flex items-center justify-between">
-      <Button
-        variant="secondary"
-        size="sm"
-        disabled={page <= 1}
-        onClick={() => onPage(Math.max(1, page - 1))}
-      >
-        Previous
-      </Button>
-      <span className="text-sm text-gray-500">
-        Page {meta.page} of {totalPages}
-      </span>
-      <Button
-        variant="secondary"
-        size="sm"
-        disabled={page >= totalPages}
-        onClick={() => onPage(page + 1)}
-      >
-        Next
-      </Button>
-    </div>
-  )
-}
 
 const documentColumns = [
   { key: 'title', header: 'Title' },
@@ -152,7 +111,7 @@ function MyDocumentsTab() {
               </tr>
             )}
           />
-          <Pagination page={page} meta={meta} totalPages={totalPages} onPage={setPage} />
+          <PageControls page={page} meta={meta} totalPages={totalPages} onPage={setPage} />
         </>
       )}
 
@@ -230,7 +189,7 @@ function MyAssignmentsTab() {
               </tr>
             )}
           />
-          <Pagination page={page} meta={meta} totalPages={totalPages} onPage={setPage} />
+          <PageControls page={page} meta={meta} totalPages={totalPages} onPage={setPage} />
         </>
       )}
 

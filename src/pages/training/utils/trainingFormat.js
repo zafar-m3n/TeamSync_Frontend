@@ -1,0 +1,14 @@
+import { format } from 'date-fns'
+
+export function fmtDate(value) {
+  if (!value) return '—'
+  const d = new Date(value)
+  return Number.isNaN(d.getTime()) ? '—' : format(d, 'PP')
+}
+
+export function renderTarget(a) {
+  const emp = a.employee?.fullName
+  const dept = a.department?.name
+  if (emp && dept) return `${emp} · ${dept}`
+  return emp || dept || '—'
+}

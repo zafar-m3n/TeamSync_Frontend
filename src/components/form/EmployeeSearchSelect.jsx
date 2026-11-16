@@ -3,8 +3,8 @@ import Select from '@/components/ui/Select'
 import { useEmployees } from '@/hooks/useEmployees'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 
-// Server-side employee search; `value` is the selected { value, label } option.
-export default function ManagerPicker({ value, onChange, onBlur }) {
+// Clearable employee picker with server-side search; `value` is a { value, label } option.
+export default function EmployeeSearchSelect({ value, onChange, onBlur, placeholder }) {
   const [query, setQuery] = useState('')
   const debouncedQuery = useDebouncedValue(query.trim(), 300)
   const { data } = useEmployees({
@@ -21,12 +21,12 @@ export default function ManagerPicker({ value, onChange, onBlur }) {
     <Select
       isClearable
       options={options}
-      placeholder="Search employees…"
       filterOption={() => true}
       onInputChange={(v) => setQuery(v)}
       value={value}
       onChange={onChange}
       onBlur={onBlur}
+      placeholder={placeholder}
     />
   )
 }

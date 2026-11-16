@@ -3,9 +3,9 @@ import Select from '@/components/ui/Select'
 import FormField from '@/components/form/FormField'
 import Input from '@/components/form/Input'
 import { DateField } from '@/components/form/DatePicker'
+import EmployeeSearchSelect from '@/components/form/EmployeeSearchSelect'
 import { isLeaving } from '@/pages/employees/utils/employmentStatus'
 import { EMPLOYMENT_OPTIONS, STATUS_OPTIONS } from '@/pages/employees/form/employeeFormSchema'
-import ManagerPicker from '@/pages/employees/form/ManagerPicker'
 
 export default function EmploymentStep({ form, departmentOptions, manager, onManagerChange }) {
   const {
@@ -125,7 +125,8 @@ export default function EmploymentStep({ form, departmentOptions, manager, onMan
             control={control}
             name="managerId"
             render={({ field }) => (
-              <ManagerPicker
+              <EmployeeSearchSelect
+                placeholder="Search employees…"
                 value={manager}
                 onChange={(opt) => {
                   onManagerChange(opt ?? null)
