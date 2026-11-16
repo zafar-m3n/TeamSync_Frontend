@@ -12,6 +12,7 @@ import { DateField } from '@/components/form/DatePicker'
 import Button from '@/components/ui/Button'
 import Spinner from '@/components/ui/Spinner'
 import { useAuth } from '@/store/AuthContext'
+import { canAssignRole } from '@/lib/permissions'
 import { toast } from '@/hooks/useToast'
 import { useRoles } from '@/hooks/useRoles'
 import { useDepartments } from '@/hooks/useDepartments'
@@ -326,7 +327,12 @@ export default function EmployeeFormPage({ mode }) {
 
   const handleBack = () => goToStep((s) => Math.max(1, s - 1))
 
-  const roleOptions = roles.map((r) => ({ value: r.id, label: r.name }))
+  // A current role the user can't assign stays visible but locked.
+  const currentRole = isEdit ? employee?.role : null
+  const roleLocked = Boolean(currentRole) && !canAssignRole(user.roleName, currentRole)
+  const roleOptions = roles
+    .filter((r) => r.id === currentRole?.id || canAssignRole(user.roleName, r))
+    .map((r) => ({ value: r.id, label: r.name }))
   const departmentOptions = departments.map((d) => ({ value: d.id, label: d.name }))
   const employmentOptions = EMPLOYMENT_TYPES.map((t) => ({ value: t, label: t }))
 
@@ -483,6 +489,7 @@ export default function EmployeeFormPage({ mode }) {
                           <Select
                             options={roleOptions}
                             placeholder="Select a role…"
+                            isDisabled={roleLocked}
                             value={
                               roleOptions.find((o) => o.value === field.value) ?? null
                             }

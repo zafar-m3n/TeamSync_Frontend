@@ -61,3 +61,12 @@ export const hasPermission = (roleName, module, action) => {
 };
 
 export const SEEDED_ROLES = ["Admin", "HR", "Manager", "Employee"];
+
+// Mirrors the backend: Admin > HR > Manager > Employee; custom roles rank as Employee.
+export const ROLE_RANK = { Admin: 4, HR: 3, Manager: 2, Employee: 1 };
+
+export const rankOf = (role) => (role && !role.isCustom && ROLE_RANK[role.name]) || ROLE_RANK.Employee;
+
+// roles.manage may assign any role; everyone else only roles ranked strictly below their own.
+export const canAssignRole = (roleName, role) =>
+  hasPermission(roleName, "roles", "manage") || rankOf(role) < rankOf({ name: roleName });
