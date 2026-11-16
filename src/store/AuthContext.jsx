@@ -18,15 +18,27 @@ const AuthContext = createContext(null)
 
 const meQueryKey = (userId) => ['me', userId]
 
+const SESSION_EXPIRED = 'Session expired — please log in again'
+
 export function AuthProvider({ children }) {
   const queryClient = useQueryClient()
   const [storedUser, setUser] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  const handleSessionEnd = useCallback(({ silent } = {}) => {
-    if (!silent) toast.error('Session expired — please log in again')
-    setUser(null)
-  }, [])
+  // Every way a session ends comes through here, so the next user never sees this
+  // one's cached data. Clearing the user makes AppLayout redirect to /login.
+  // `broadcast: false` is for cross-tab logout, where the other tab already cleared storage.
+  const endSession = useCallback(
+    ({ message, broadcast = true } = {}) => {
+      token.clearAutoLogoutTimer()
+      if (broadcast) token.clearSession()
+      queryClient.clear()
+      setUser(null)
+      if (message) toast.error(message)
+    },
+    [queryClient],
+  )
+  const expireSession = useCallback(() => endSession({ message: SESSION_EXPIRED }), [endSession])
 
   useEffect(() => {
     if (!token.isAuthenticated()) {
@@ -40,18 +52,18 @@ export function AuthProvider({ children }) {
         setIsLoading(false)
       } else {
         setUser(token.getUser())
-        token.scheduleAutoLogout(handleSessionEnd)
+        token.scheduleAutoLogout(expireSession)
         setIsLoading(false)
       }
     }
 
-    const stopCrossTab = token.listenForCrossTabLogout(() => handleSessionEnd({ silent: true }))
-    const stopUnauthorized = onUnauthorized(() => handleSessionEnd())
+    const stopCrossTab = token.listenForCrossTabLogout(() => endSession({ broadcast: false }))
+    const stopUnauthorized = onUnauthorized(expireSession)
     return () => {
       stopCrossTab()
       stopUnauthorized()
     }
-  }, [handleSessionEnd])
+  }, [endSession, expireSession])
 
   // Refreshes the stored user (and its permissions) from the server on load.
   const me = useQuery({
@@ -72,14 +84,12 @@ export function AuthProvider({ children }) {
     token.setUser(nextUser)
     queryClient.setQueryData(meQueryKey(nextUser.id), nextUser)
     setUser(nextUser)
-    token.scheduleAutoLogout(handleSessionEnd)
+    token.scheduleAutoLogout(expireSession)
   }
 
   const logout = () => {
     const jwt = token.getToken()
-    token.clearAutoLogoutTimer()
-    token.clearSession()
-    setUser(null)
+    endSession()
     // Best effort: revokes the token server-side. Sent after the local session is
     // cleared, so a failure here can't trigger the session-expired handling.
     if (jwt) {
@@ -90,7 +100,7 @@ export function AuthProvider({ children }) {
   // A password change revokes every session and returns a fresh token for this one.
   const replaceToken = (jwt) => {
     token.setToken(jwt)
-    token.scheduleAutoLogout(handleSessionEnd)
+    token.scheduleAutoLogout(expireSession)
   }
 
   const can = useCallback((module, action) => hasPermission(user, module, action), [user])

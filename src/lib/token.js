@@ -62,8 +62,7 @@ export function scheduleAutoLogout(onExpire) {
   const remaining = expiryMs - Date.now()
   if (remaining <= 0) return
   autoLogoutTimerId = setTimeout(() => {
-    clearAutoLogoutTimer()
-    clearSession()
+    autoLogoutTimerId = null
     onExpire()
   }, remaining)
 }

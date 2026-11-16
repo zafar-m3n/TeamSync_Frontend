@@ -39,8 +39,6 @@ api.interceptors.response.use(
     // session-expiry event. A 401 from the login call itself (bad credentials)
     // has no session and is handled by LoginPage's banner instead.
     if (normalized.status === 401 && token.isAuthenticated()) {
-      token.clearAutoLogoutTimer()
-      token.clearSession()
       emitUnauthorized()
     }
 
