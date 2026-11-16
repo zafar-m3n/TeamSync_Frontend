@@ -765,12 +765,14 @@ export default function EmployeeFormPage({ mode }) {
                 Back
               </Button>
             )}
+            {/* Distinct keys: reusing one <button> would flip it to type="submit"
+                mid-click on the last Next, submitting the form and skipping banking. */}
             {isLastStep ? (
-              <Button type="submit" variant="accent" isLoading={mutation.isPending}>
+              <Button key="submit" type="submit" variant="accent" isLoading={mutation.isPending}>
                 {isEdit ? 'Save changes' : 'Create employee'}
               </Button>
             ) : (
-              <Button type="button" variant="accent" onClick={handleNext}>
+              <Button key="next" type="button" variant="accent" onClick={handleNext}>
                 Next
               </Button>
             )}
