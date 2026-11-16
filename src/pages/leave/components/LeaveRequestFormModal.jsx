@@ -9,7 +9,7 @@ import Button from '@/components/ui/Button'
 import { DateField, DateRangeField, toYmd, parseYmd } from '@/components/form/DatePicker'
 import { useLeaveTypes } from '@/hooks/useLeaveTypes'
 import { useSubmitLeaveRequest } from '@/hooks/useLeaveRequestMutations'
-import { computeLeaveDays } from '@/pages/leave/utils/computeLeaveDays'
+import { useLeaveDaysPreview } from '@/hooks/useLeaveDaysPreview'
 import { useLeaveBalance } from '@/hooks/useLeaveBalance'
 import { findBalance } from '@/pages/leave/utils/leaveBalances'
 
@@ -72,10 +72,9 @@ export default function LeaveRequestFormModal({ onClose }) {
 
   const typeOptions = leaveTypes.map((t) => ({ value: t.id, label: t.name }))
 
-  const days =
-    startDate && endDate
-      ? computeLeaveDays(startDate, endDate, isHalfDay)
-      : null
+  const { data: preview } = useLeaveDaysPreview({ startDate, endDate, isHalfDay })
+  const days = startDate && endDate && preview ? preview.days : null
+  const years = preview ? Object.entries(preview.byYear) : []
 
   const onSubmit = (values) => {
     submit.mutate(
@@ -175,9 +174,16 @@ export default function LeaveRequestFormModal({ onClose }) {
           </FormField>
         )}
 
-        {days != null && (
+        {days === 0 && (
+          <p className="text-sm text-red-600">
+            These dates have no working days (weekends and holidays don&apos;t count).
+          </p>
+        )}
+        {days > 0 && (
           <p className="text-sm text-gray-500">
-            {days} day{days === 1 ? '' : 's'}
+            {days} working day{days === 1 ? '' : 's'}
+            {years.length > 1 &&
+              ` (${years.map(([year, n]) => `${n} in ${year}`).join(', ')})`}
           </p>
         )}
       </form>
