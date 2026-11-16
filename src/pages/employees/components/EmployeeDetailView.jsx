@@ -231,7 +231,7 @@ export default function EmployeeDetailView({ data, canEdit, editHref, heading })
               <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 <Field label="Full Name" value={data.fullName} />
                 <Field label="Email" value={data.email} />
-                <Field label="Date of Birth" value={fmtDate(data.dateOfBirth)} />
+                <Field label="Date of Birth" value={fmtDate(data.dob)} />
                 <Field label="Gender" value={data.gender} />
                 <Field label="Phone" value={data.phone} />
               </dl>

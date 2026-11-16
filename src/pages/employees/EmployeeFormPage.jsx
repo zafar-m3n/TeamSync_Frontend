@@ -67,7 +67,7 @@ function buildSchema(mode) {
       .positive('Role is required'),
     fullName: z.string().trim().min(1, 'Full name is required'),
     employeeCode: z.string().trim().min(1, 'Employee code is required'),
-    dateOfBirth: optionalStr,
+    dob: optionalStr,
     gender: optionalStr,
     phone: optionalStr,
     departmentId: z.number().int().positive().nullable().optional(),
@@ -103,7 +103,7 @@ function toFormValues(emp) {
     roleId: emp.role?.id ?? emp.roleId ?? undefined,
     fullName: emp.fullName ?? '',
     employeeCode: emp.employeeCode ?? '',
-    dateOfBirth: (emp.dateOfBirth ?? '').slice(0, 10),
+    dob: (emp.dob ?? '').slice(0, 10),
     gender: emp.gender ?? '',
     phone: emp.phone ?? '',
     departmentId: emp.department?.id ?? emp.departmentId ?? null,
@@ -250,7 +250,7 @@ export default function EmployeeFormPage({ mode }) {
       roleId: undefined,
       fullName: '',
       employeeCode: '',
-      dateOfBirth: '',
+      dob: '',
       gender: '',
       phone: '',
       departmentId: null,
@@ -296,8 +296,8 @@ export default function EmployeeFormPage({ mode }) {
   const STEP_FIELDS = {
     1:
       mode === 'create'
-        ? ['email', 'initialPassword', 'roleId', 'fullName', 'employeeCode', 'dateOfBirth', 'gender', 'phone']
-        : ['email', 'roleId', 'fullName', 'employeeCode', 'dateOfBirth', 'gender', 'phone'],
+        ? ['email', 'initialPassword', 'roleId', 'fullName', 'employeeCode', 'dob', 'gender', 'phone']
+        : ['email', 'roleId', 'fullName', 'employeeCode', 'dob', 'gender', 'phone'],
     2: ['departmentId', 'designation', 'dateOfJoining', 'employmentType', 'managerId'],
     3: Object.keys(contactSchema.shape).map((k) => `contact.${k}`),
     4: Object.keys(bankingSchema.shape).map((k) => `banking.${k}`),
@@ -346,7 +346,7 @@ export default function EmployeeFormPage({ mode }) {
       roleId: values.roleId,
       fullName: values.fullName,
       employeeCode: values.employeeCode,
-      dateOfBirth: values.dateOfBirth,
+      dob: values.dob,
       gender: values.gender,
       phone: values.phone,
       departmentId: values.departmentId ?? undefined,
@@ -520,11 +520,11 @@ export default function EmployeeFormPage({ mode }) {
                     </FormField>
                     <FormField
                       label="Date of Birth"
-                      error={errors.dateOfBirth?.message}
+                      error={errors.dob?.message}
                     >
                       <Controller
                         control={control}
-                        name="dateOfBirth"
+                        name="dob"
                         render={({ field }) => (
                           <DateField
                             id={field.name}
