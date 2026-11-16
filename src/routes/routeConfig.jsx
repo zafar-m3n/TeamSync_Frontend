@@ -18,13 +18,13 @@ import AllGoalsPage from '@/pages/goals/AllGoalsPage'
 import MyTrainingPage from '@/pages/training/MyTrainingPage'
 import ManageTrainingPage from '@/pages/training/ManageTrainingPage'
 import TrainingPage from '@/pages/training/TrainingPage'
-// Role-prefixed URL trees; replaced by permission-gated routes in the next step.
-const SEEDED_ROLES = ['Admin', 'HR', 'Manager', 'Employee']
+import { hasAnyPermission } from '@/lib/permissions'
 
+// `anyOf`: the user needs at least one of these permissions.
+// `employee`: the page shows the user's own records, so it needs an employee profile.
 export const moduleRoutes = [
   {
     path: 'dashboard',
-    roles: SEEDED_ROLES,
     element: <DashboardPage />,
     navLabel: 'Dashboard',
     navIcon: 'lucide:layout-dashboard',
@@ -32,7 +32,7 @@ export const moduleRoutes = [
   },
   {
     path: 'departments-shifts',
-    roles: ['HR', 'Admin'],
+    anyOf: ['departments.create', 'departments.edit', 'departments.delete', 'shifts.manage'],
     element: <DepartmentsShiftsPage />,
     navLabel: 'Departments & Shifts',
     navIcon: 'lucide:building-2',
@@ -40,7 +40,7 @@ export const moduleRoutes = [
   },
   {
     path: 'employees',
-    roles: ['HR', 'Admin'],
+    anyOf: ['employees.view_all'],
     element: <EmployeeListPage scope="all" />,
     navLabel: 'Employees',
     navIcon: 'lucide:users',
@@ -48,22 +48,22 @@ export const moduleRoutes = [
   },
   {
     path: 'employees/new',
-    roles: ['HR', 'Admin'],
+    anyOf: ['employees.create'],
     element: <EmployeeFormPage mode="create" />,
   },
   {
     path: 'employees/:employeeId',
-    roles: ['HR', 'Admin'],
+    anyOf: ['employees.view_all'],
     element: <EmployeeDetailPage />,
   },
   {
     path: 'employees/:employeeId/edit',
-    roles: ['HR', 'Admin'],
+    anyOf: ['employees.edit'],
     element: <EmployeeFormPage mode="edit" />,
   },
   {
     path: 'my-team',
-    roles: ['Manager'],
+    anyOf: ['employees.view_team'],
     element: <EmployeeListPage scope="team" />,
     navLabel: 'My Team',
     navIcon: 'lucide:users',
@@ -71,12 +71,12 @@ export const moduleRoutes = [
   },
   {
     path: 'my-team/:employeeId',
-    roles: ['Manager'],
+    anyOf: ['employees.view_team'],
     element: <EmployeeDetailPage />,
   },
   {
     path: 'users',
-    roles: ['HR', 'Admin'],
+    anyOf: ['users.view'],
     element: <UsersPage />,
     navLabel: 'Users',
     navIcon: 'lucide:user-cog',
@@ -84,7 +84,7 @@ export const moduleRoutes = [
   },
   {
     path: 'roles-permissions',
-    roles: ['Admin'],
+    anyOf: ['permissions.view'],
     element: <RolesPermissionsPage />,
     navLabel: 'Roles & Permissions',
     navIcon: 'lucide:shield-check',
@@ -92,7 +92,8 @@ export const moduleRoutes = [
   },
   {
     path: 'my-attendance',
-    roles: ['HR', 'Manager', 'Employee'],
+    anyOf: ['attendance.view_own'],
+    employee: true,
     element: <MyAttendancePage />,
     navLabel: 'My Attendance',
     navIcon: 'lucide:calendar-check',
@@ -100,7 +101,7 @@ export const moduleRoutes = [
   },
   {
     path: 'team-attendance',
-    roles: ['Manager'],
+    anyOf: ['attendance.view_team'],
     element: <TeamAttendancePage />,
     navLabel: 'Team Attendance',
     navIcon: 'lucide:calendar-check',
@@ -108,7 +109,7 @@ export const moduleRoutes = [
   },
   {
     path: 'attendance',
-    roles: ['HR', 'Admin'],
+    anyOf: ['attendance.view_all'],
     element: <AllAttendancePage />,
     navLabel: 'Attendance',
     navIcon: 'lucide:calendar-check',
@@ -116,7 +117,8 @@ export const moduleRoutes = [
   },
   {
     path: 'my-leave',
-    roles: ['HR', 'Manager', 'Employee'],
+    anyOf: ['leave.view_own'],
+    employee: true,
     element: <MyLeavePage />,
     navLabel: 'My Leave',
     navIcon: 'lucide:calendar-days',
@@ -124,7 +126,7 @@ export const moduleRoutes = [
   },
   {
     path: 'team-leave',
-    roles: ['Manager'],
+    anyOf: ['leave.view_team'],
     element: <TeamLeavePage />,
     navLabel: 'Team Leave',
     navIcon: 'lucide:calendar-days',
@@ -132,7 +134,7 @@ export const moduleRoutes = [
   },
   {
     path: 'leave',
-    roles: ['HR', 'Admin'],
+    anyOf: ['leave.view_all'],
     element: <AllLeavePage />,
     navLabel: 'Leave',
     navIcon: 'lucide:calendar-days',
@@ -140,7 +142,8 @@ export const moduleRoutes = [
   },
   {
     path: 'my-goals',
-    roles: ['HR', 'Manager', 'Employee'],
+    anyOf: ['goals.view_own'],
+    employee: true,
     element: <MyGoalsPage />,
     navLabel: 'My Goals',
     navIcon: 'lucide:target',
@@ -148,7 +151,7 @@ export const moduleRoutes = [
   },
   {
     path: 'team-goals',
-    roles: ['Manager'],
+    anyOf: ['goals.view_team'],
     element: <TeamGoalsPage />,
     navLabel: 'Team Goals',
     navIcon: 'lucide:target',
@@ -156,7 +159,7 @@ export const moduleRoutes = [
   },
   {
     path: 'goals',
-    roles: ['HR', 'Admin'],
+    anyOf: ['goals.view_all'],
     element: <AllGoalsPage />,
     navLabel: 'Goals',
     navIcon: 'lucide:target',
@@ -164,7 +167,8 @@ export const moduleRoutes = [
   },
   {
     path: 'my-training',
-    roles: ['HR', 'Manager', 'Employee'],
+    anyOf: ['training.view_assigned'],
+    employee: true,
     element: <MyTrainingPage />,
     navLabel: 'My Training',
     navIcon: 'lucide:graduation-cap',
@@ -172,7 +176,7 @@ export const moduleRoutes = [
   },
   {
     path: 'manage-training',
-    roles: ['Manager'],
+    anyOf: ['training.upload', 'training.assign', 'training.view_own_uploads'],
     element: <ManageTrainingPage />,
     navLabel: 'Manage Training',
     navIcon: 'lucide:graduation-cap',
@@ -180,7 +184,7 @@ export const moduleRoutes = [
   },
   {
     path: 'training',
-    roles: ['HR', 'Admin'],
+    anyOf: ['training.view_all'],
     element: <TrainingPage />,
     navLabel: 'Training',
     navIcon: 'lucide:graduation-cap',
@@ -188,21 +192,14 @@ export const moduleRoutes = [
   },
   {
     path: 'my-profile',
-    roles: SEEDED_ROLES,
+    anyOf: ['employees.view_own'],
     element: <MyProfilePage />,
   },
 ]
 
-export function buildRoleRoutes(routes) {
-  return routes.flatMap(({ path, roles, element, navLabel }) =>
-    roles.map((role) => ({
-      path: `/${role.toLowerCase()}/${path}`,
-      allowedRoles: [role],
-      element,
-      navLabel,
-    })),
-  )
-}
+export const canAccessRoute = (route, user) =>
+  (!route.anyOf || hasAnyPermission(user, route.anyOf)) &&
+  (!route.employee || user?.employeeId != null)
 
 // Sidebar-only label overrides. The route's navLabel still drives the Topbar
 // page title; only the nav item text changes here.
@@ -211,12 +208,12 @@ const SIDEBAR_LABEL_OVERRIDES = {
   Training: 'Training Documents',
 }
 
-export function buildNavItems(routes, roleName) {
+export function buildNavItems(routes, user) {
   return routes
-    .filter((r) => r.navLabel && r.roles.includes(roleName))
+    .filter((r) => r.navLabel && canAccessRoute(r, user))
     .sort((a, b) => a.navOrder - b.navOrder)
     .map((r) => ({
-      path: `/${roleName.toLowerCase()}/${r.path}`,
+      path: `/${r.path}`,
       label: SIDEBAR_LABEL_OVERRIDES[r.navLabel] ?? r.navLabel,
       icon: r.navIcon,
     }))

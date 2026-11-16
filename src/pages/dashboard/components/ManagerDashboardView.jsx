@@ -4,7 +4,6 @@ import { Icon } from '@iconify/react'
 import Badge from '@/components/ui/Badge'
 import Table from '@/components/ui/Table'
 import { CountUp } from '@/hooks/useCountUp'
-import { useAuth } from '@/store/AuthContext'
 
 const HEADER_LINK =
   'rounded text-sm font-medium text-accent transition-colors hover:text-accent/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent'
@@ -50,8 +49,6 @@ function SectionHeadingIcon({ icon }) {
 }
 
 export default function ManagerDashboardView({ data }) {
-  const { user } = useAuth()
-  const base = `/${user.roleName.toLowerCase()}`
 
   const {
     teamAttendanceToday = [],
@@ -72,7 +69,7 @@ export default function ManagerDashboardView({ data }) {
               <CountUp value={pendingLeaveApprovals.length} />
             </span>
           </div>
-          <Link to={`${base}/team-leave`} className={HEADER_LINK}>
+          <Link to={`/team-leave`} className={HEADER_LINK}>
             View all
           </Link>
         </div>
@@ -98,7 +95,7 @@ export default function ManagerDashboardView({ data }) {
             <SectionHeadingIcon icon="lucide:calendar-check" />
             Team attendance today
           </h2>
-          <Link to={`${base}/team-attendance`} className={HEADER_LINK}>
+          <Link to={`/team-attendance`} className={HEADER_LINK}>
             View all
           </Link>
         </div>
@@ -126,7 +123,7 @@ export default function ManagerDashboardView({ data }) {
             <SectionHeadingIcon icon="lucide:target" />
             Team goal progress
           </h2>
-          <Link to={`${base}/team-goals`} className={HEADER_LINK}>
+          <Link to={`/team-goals`} className={HEADER_LINK}>
             View all
           </Link>
         </div>

@@ -48,7 +48,8 @@ function datesLabel(req) {
 }
 
 export default function MyLeavePage() {
-  const { user } = useAuth()
+  const { user, can } = useAuth()
+  const canRequestLeave = can('leave', 'submit') && can('leave_types', 'view')
   const { data: profile } = useMyProfile()
   const currentEmployeeId = profile?.id ?? null
 
@@ -89,9 +90,11 @@ export default function MyLeavePage() {
             />
           </div>
         </div>
-        <Button variant="accent" className="ml-auto" onClick={() => setShowForm(true)}>
-          Request Leave
-        </Button>
+        {canRequestLeave && (
+          <Button variant="accent" className="ml-auto" onClick={() => setShowForm(true)}>
+            Request Leave
+          </Button>
+        )}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">

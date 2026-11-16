@@ -14,15 +14,23 @@ function getInitials(source) {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
+function ProfileLink({ enabled, className, children }) {
+  if (!enabled) return <span className={className}>{children}</span>;
+  return (
+    <Link to="/my-profile" className={className}>
+      {children}
+    </Link>
+  );
+}
+
 export default function Topbar({ onOpenDrawer }) {
-  const { user, logout } = useAuth();
+  const { user, logout, can } = useAuth();
   const { data: profile } = useMyProfile();
   const matches = useMatches();
 
   const pageTitle = [...matches].reverse().find((m) => m.handle?.title)?.handle?.title ?? "Dashboard";
   const displayName = profile?.fullName || user.email;
   const initials = getInitials(profile?.fullName || user.email.split("@")[0]);
-  const myProfilePath = `/${user.roleName.toLowerCase()}/my-profile`;
 
   return (
     <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-gray-200 bg-white px-4 sm:px-6">
@@ -39,15 +47,15 @@ export default function Topbar({ onOpenDrawer }) {
       </div>
 
       <div className="flex items-center gap-1">
-        <Link
-          to={myProfilePath}
+        <ProfileLink
+          enabled={can("employees", "view_own")}
           className="flex items-center gap-2 rounded-full py-1 pl-1 pr-2 transition-colors hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
         >
           <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-semibold text-white">
             {initials}
           </span>
           <span className="hidden max-w-48 truncate text-sm font-medium text-text sm:block">{displayName}</span>
-        </Link>
+        </ProfileLink>
 
         <Dropdown
           trigger={

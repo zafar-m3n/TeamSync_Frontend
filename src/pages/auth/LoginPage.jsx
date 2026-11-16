@@ -31,8 +31,8 @@ export default function LoginPage() {
   const onSubmit = async ({ email, password }) => {
     setFormError(null);
     try {
-      const roleName = await login(email, password);
-      navigate(`/${roleName.toLowerCase()}/dashboard`, { replace: true });
+      await login(email, password);
+      navigate("/dashboard", { replace: true });
     } catch (err) {
       setFormError(err.message || "Something went wrong. Please try again.");
     }

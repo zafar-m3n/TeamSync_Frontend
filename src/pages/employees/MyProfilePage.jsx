@@ -5,12 +5,12 @@ import Button from '@/components/ui/Button'
 import EmployeeDetailView from '@/pages/employees/components/EmployeeDetailView'
 
 export default function MyProfilePage() {
-  const { user, can } = useAuth()
+  const { can } = useAuth()
   const { data, isLoading, isError, error, refetch } = useMyProfile()
 
   const canEdit = can('employees', 'edit')
   const editHref = data?.id
-    ? `/${user.roleName.toLowerCase()}/employees/${data.id}/edit`
+    ? `/employees/${data.id}/edit`
     : null
 
   if (isLoading) {

@@ -7,11 +7,11 @@ import EmployeeDetailView from '@/pages/employees/components/EmployeeDetailView'
 
 export default function EmployeeDetailPage() {
   const { employeeId } = useParams()
-  const { user, can } = useAuth()
+  const { can } = useAuth()
   const { data, isLoading, isError, error, refetch } = useEmployee(employeeId)
 
   const canEdit = can('employees', 'edit')
-  const editHref = `/${user.roleName.toLowerCase()}/employees/${employeeId}/edit`
+  const editHref = `/employees/${employeeId}/edit`
 
   if (isLoading) {
     return (

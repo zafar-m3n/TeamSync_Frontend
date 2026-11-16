@@ -7,7 +7,6 @@ import ActivityFeedItem from '@/pages/dashboard/components/ActivityFeedItem'
 import SystemCards from '@/pages/dashboard/components/SystemSection'
 import WorkforceCards from '@/pages/dashboard/components/WorkforceSection'
 import { CountUp } from '@/hooks/useCountUp'
-import { useAuth } from '@/store/AuthContext'
 
 const CARD_LINK =
   'block rounded-lg transition-shadow hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2'
@@ -75,8 +74,6 @@ function TablePanel({ icon, title, to, children }) {
 }
 
 export default function AdminDashboardView({ data }) {
-  const { user } = useAuth()
-  const base = `/${user.roleName.toLowerCase()}`
 
   const {
     orgAttendanceSnapshot = [],
@@ -94,7 +91,7 @@ export default function AdminDashboardView({ data }) {
       {/* 1. Unified KPI strip */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {orgAttendanceSnapshot.map((s) => (
-          <Link key={s.status} to={`${base}/attendance`} className={CARD_LINK}>
+          <Link key={s.status} to={`/attendance`} className={CARD_LINK}>
             <StatCard
               value={<CountUp value={s.count} />}
               label={s.status}
@@ -102,7 +99,7 @@ export default function AdminDashboardView({ data }) {
             />
           </Link>
         ))}
-        <Link to={`${base}/leave`} className={CARD_LINK}>
+        <Link to={`/leave`} className={CARD_LINK}>
           <StatCard
             value={<CountUp value={pendingLeaveApprovals?.total ?? 0} />}
             label="Awaiting approval"
@@ -118,7 +115,7 @@ export default function AdminDashboardView({ data }) {
         <TablePanel
           icon="lucide:calendar-clock"
           title="Pending leave approvals"
-          to={`${base}/leave`}
+          to={`/leave`}
         >
           <Table
             columns={leaveColumns}
@@ -179,7 +176,7 @@ export default function AdminDashboardView({ data }) {
         <TablePanel
           icon="lucide:building-2"
           title="Employees by department"
-          to={`${base}/departments-shifts`}
+          to={`/departments-shifts`}
         >
           <Table
             columns={departmentColumns}
@@ -201,7 +198,7 @@ export default function AdminDashboardView({ data }) {
         {recentActivityFeed.length > 0 ? (
           <ul className="divide-y divide-gray-100 rounded-lg border border-gray-200 bg-white">
             {recentActivityFeed.map((item, i) => (
-              <ActivityFeedItem key={i} item={item} base={base} />
+              <ActivityFeedItem key={i} item={item} />
             ))}
           </ul>
         ) : (

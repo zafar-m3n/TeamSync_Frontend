@@ -4,6 +4,9 @@
 export const hasPermission = (user, module, action) =>
   Boolean(user?.permissions?.includes(`${module}.${action}`))
 
+// keys are "module.action" strings.
+export const hasAnyPermission = (user, keys) => keys.some((key) => user?.permissions?.includes(key))
+
 // Admin may act on anyone; everyone else only on users ranked strictly below them.
 export const outranks = (user, targetRole) =>
   Boolean(user?.outranksAll) || (targetRole != null && user.roleRank > targetRole.rank)

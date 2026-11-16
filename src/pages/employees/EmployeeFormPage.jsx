@@ -208,7 +208,6 @@ export default function EmployeeFormPage({ mode }) {
   const { employeeId } = useParams()
   const navigate = useNavigate()
   const { user } = useAuth()
-  const roleSeg = user.roleName.toLowerCase()
   const isEdit = mode === 'edit'
 
   const { data: employee, isLoading: loadingEmployee, isError: employeeError } =
@@ -377,7 +376,7 @@ export default function EmployeeFormPage({ mode }) {
         {
           onSuccess: () => {
             toast.success('Employee updated')
-            navigate(`/${roleSeg}/employees/${employeeId}`)
+            navigate(`/employees/${employeeId}`)
           },
           onError,
         },
@@ -386,7 +385,7 @@ export default function EmployeeFormPage({ mode }) {
       createMutation.mutate(payload, {
         onSuccess: () => {
           toast.success('Employee created')
-          navigate(`/${roleSeg}/employees`)
+          navigate(`/employees`)
         },
         onError,
       })
@@ -433,7 +432,7 @@ export default function EmployeeFormPage({ mode }) {
             type="button"
             onClick={() =>
               navigate(
-                isEdit ? `/${roleSeg}/employees/${employeeId}` : `/${roleSeg}/employees`,
+                isEdit ? `/employees/${employeeId}` : `/employees`,
               )
             }
             disabled={mutation.isPending}

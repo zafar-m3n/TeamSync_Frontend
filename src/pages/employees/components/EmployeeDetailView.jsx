@@ -111,7 +111,6 @@ export default function EmployeeDetailView({ data, canEdit, editHref, heading })
 
   const { user, can } = useAuth()
   const navigate = useNavigate()
-  const roleSeg = user.roleName.toLowerCase()
   // Gated independently of `canEdit` — same roles today, but a distinct check.
   const canDelete = can('employees', 'delete')
   const deleteMutation = useDeleteEmployee()
@@ -309,7 +308,7 @@ export default function EmployeeDetailView({ data, canEdit, editHref, heading })
                 deleteMutation.mutate(data.id, {
                   onSuccess: () => {
                     toast.success(`${data.fullName} deleted`)
-                    navigate(`/${roleSeg}/employees`)
+                    navigate('/employees')
                   },
                 })
               }

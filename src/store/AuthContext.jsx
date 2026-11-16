@@ -69,7 +69,6 @@ export function AuthProvider({ children }) {
     queryClient.setQueryData(meQueryKey(nextUser.id), nextUser)
     setUser(nextUser)
     token.scheduleAutoLogout(handleSessionEnd)
-    return nextUser.roleName
   }
 
   const logout = () => {

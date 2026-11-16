@@ -7,7 +7,6 @@ export function decodeToken(token) {
     return {
       userId: payload.userId,
       roleId: payload.roleId,
-      roleName: payload.roleName,
       exp: payload.exp,
       iat: payload.iat,
     }

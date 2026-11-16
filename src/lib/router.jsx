@@ -1,28 +1,26 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom'
+import { createBrowserRouter } from 'react-router-dom'
 import LoginPage from '@/pages/auth/LoginPage'
 import NotFoundPage from '@/pages/NotFoundPage'
 import ProtectedRoute from '@/routes/ProtectedRoute'
+import { RootRedirect, LegacyRoleRedirect } from '@/routes/Redirects'
 import AppLayout from '@/components/layout/AppLayout'
-import { moduleRoutes, buildRoleRoutes } from '@/routes/routeConfig'
-import { useAuth } from '@/store/AuthContext'
+import { moduleRoutes } from '@/routes/routeConfig'
 
-function RootRedirect() {
-  const { user } = useAuth()
-  if (!user) return <Navigate to="/login" replace />
-  return <Navigate to={`/${user.roleName.toLowerCase()}/dashboard`} replace />
-}
+const LEGACY_ROLE_PREFIXES = ['admin', 'hr', 'manager', 'employee']
 
-const roleRoutes = buildRoleRoutes(moduleRoutes).map(
-  ({ path, allowedRoles, element, navLabel }) => ({
-    path,
-    element: <ProtectedRoute allowedRoles={allowedRoles}>{element}</ProtectedRoute>,
-    handle: { title: navLabel },
-  }),
-)
+const appRoutes = moduleRoutes.map((route) => ({
+  path: route.path,
+  element: <ProtectedRoute route={route}>{route.element}</ProtectedRoute>,
+  handle: { title: route.navLabel },
+}))
 
 const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
-  { element: <AppLayout />, children: roleRoutes },
+  { element: <AppLayout />, children: appRoutes },
+  ...LEGACY_ROLE_PREFIXES.map((prefix) => ({
+    path: `/${prefix}/*`,
+    element: <LegacyRoleRedirect />,
+  })),
   { path: '/', element: <RootRedirect /> },
   { path: '*', element: <NotFoundPage /> },
 ])

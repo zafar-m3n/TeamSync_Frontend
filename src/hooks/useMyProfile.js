@@ -1,9 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
 import { getMyProfile } from '@/services/employeeService'
+import { useAuth } from '@/store/AuthContext'
 
 export function useMyProfile() {
+  const { can } = useAuth()
   return useQuery({
     queryKey: ['employees', 'me'],
+    enabled: can('employees', 'view_own'),
     queryFn: async () => {
       try {
         const res = await getMyProfile()

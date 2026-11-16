@@ -4,7 +4,6 @@ import { Icon } from '@iconify/react'
 import StatCard from '@/components/ui/StatCard'
 import Table from '@/components/ui/Table'
 import { CountUp } from '@/hooks/useCountUp'
-import { useAuth } from '@/store/AuthContext'
 
 const CARD_LINK =
   'block rounded-lg transition-shadow hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2'
@@ -33,8 +32,6 @@ const goalColumns = [
 ]
 
 export default function EmployeeDashboardView({ data }) {
-  const { user } = useAuth()
-  const base = `/${user.roleName.toLowerCase()}`
 
   const {
     clockInStatus,
@@ -54,14 +51,14 @@ export default function EmployeeDashboardView({ data }) {
   return (
     <div className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <Link to={`${base}/my-attendance`} className={CARD_LINK}>
+        <Link to={`/my-attendance`} className={CARD_LINK}>
           <div className="rounded-lg border border-gray-200 bg-white p-5">
             <p className="text-sm text-gray-500">Today&rsquo;s attendance</p>
             <p className="mt-1 text-lg font-medium text-text">{clockInText}</p>
           </div>
         </Link>
 
-        <Link to={`${base}/my-leave`} className={CARD_LINK}>
+        <Link to={`/my-leave`} className={CARD_LINK}>
           <StatCard
             value={<CountUp value={leaveBalance?.remaining ?? '—'} />}
             label="Leave days remaining"
@@ -71,7 +68,7 @@ export default function EmployeeDashboardView({ data }) {
           </StatCard>
         </Link>
 
-        <Link to={`${base}/my-training`} className={CARD_LINK}>
+        <Link to={`/my-training`} className={CARD_LINK}>
           <StatCard
             value={<CountUp value={assignedTraining?.count ?? 0} />}
             label="Assigned training"
@@ -95,7 +92,7 @@ export default function EmployeeDashboardView({ data }) {
             <Icon icon="lucide:target" width="20" height="20" className="text-gray-400" />
             This month&rsquo;s goals
           </h2>
-          <Link to={`${base}/my-goals`} className={HEADER_LINK}>
+          <Link to={`/my-goals`} className={HEADER_LINK}>
             View all
           </Link>
         </div>

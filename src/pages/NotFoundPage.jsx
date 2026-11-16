@@ -3,7 +3,7 @@ import { useAuth } from '@/store/AuthContext'
 
 export default function NotFoundPage() {
   const { user } = useAuth()
-  const to = user ? `/${user.roleName.toLowerCase()}/dashboard` : '/login'
+  const to = user ? '/dashboard' : '/login'
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-gray-50 px-4 text-center">

@@ -75,7 +75,7 @@ function DesktopBrand({ expanded }) {
 
 export default function Sidebar({ isOpen, onClose, onRailExpandedChange }) {
   const { user } = useAuth();
-  const navItems = buildNavItems(moduleRoutes, user.roleName);
+  const navItems = buildNavItems(moduleRoutes, user);
   const drawerRef = useRef(null);
 
   // Single source of truth for the desktop rail. Both the rail width and the

@@ -41,19 +41,19 @@ function relative(timestamp) {
 // Route each item by type. Only employee_created has a real per-record
 // destination; the other two land on their general list page (no per-request
 // or per-assignment detail route exists in the backend).
-function targetFor(item, base) {
+function targetFor(item) {
   if (item.type === 'employee_created' && item.data?.id != null) {
-    return `${base}/employees/${item.data.id}`
+    return `/employees/${item.data.id}`
   }
-  if (item.type === 'leave_requested') return `${base}/leave`
-  if (item.type === 'training_assigned') return `${base}/training`
+  if (item.type === 'leave_requested') return '/leave'
+  if (item.type === 'training_assigned') return '/training'
   return null
 }
 
-export default function ActivityFeedItem({ item, base }) {
+export default function ActivityFeedItem({ item }) {
   const meta =
     TYPES[item.type] ?? { icon: 'lucide:activity', tone: 'neutral', label: item.type }
-  const to = base ? targetFor(item, base) : null
+  const to = targetFor(item)
 
   const body = (
     <>
