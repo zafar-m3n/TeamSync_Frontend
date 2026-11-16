@@ -18,6 +18,7 @@ import {
 } from '@/hooks/useLeaveRequestMutations'
 import { computeLeaveDays } from '@/pages/leave/utils/computeLeaveDays'
 import { canCancelLeaveRequest } from '@/pages/leave/utils/canCancelLeaveRequest'
+import { canActOnLeaveRequest } from '@/pages/leave/utils/canActOnLeaveRequest'
 import LeaveStatusBadge from '@/pages/leave/components/LeaveStatusBadge'
 import LeaveBalanceChip from '@/pages/leave/components/LeaveBalanceChip'
 import ApproveLeaveModal from '@/pages/leave/components/ApproveLeaveModal'
@@ -173,7 +174,11 @@ function RequestsTab() {
                 currentUser: user,
                 currentEmployeeId,
               })
-              const isPending = req.status === 'Pending'
+              const canAct = canActOnLeaveRequest({
+                request: req,
+                currentUser: user,
+                currentEmployeeId,
+              })
               return (
                 <tr
                   key={req.id}
@@ -198,7 +203,7 @@ function RequestsTab() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-2">
-                      {isPending && (
+                      {canAct && (
                         <IconButton
                           icon="lucide:check"
                           label="Approve"
@@ -207,7 +212,7 @@ function RequestsTab() {
                           onClick={() => setApproveTarget(req)}
                         />
                       )}
-                      {isPending && (
+                      {canAct && (
                         <IconButton
                           icon="lucide:x"
                           label="Reject"
