@@ -6,8 +6,11 @@ import Button from '@/components/ui/Button'
 import IconButton from '@/components/ui/IconButton'
 import ProgressBar from '@/components/ui/ProgressBar'
 import { useTeamGoals } from '@/hooks/useTeamGoals'
+import { useAuth } from '@/store/AuthContext'
+import { canDeleteGoal } from '@/lib/permissions'
 import GoalFormModal from '@/pages/goals/components/GoalFormModal'
 import RecordActualModal from '@/pages/goals/components/RecordActualModal'
+import DeleteGoalModal from '@/pages/goals/components/DeleteGoalModal'
 
 const LIMIT = 10
 
@@ -36,6 +39,8 @@ export default function TeamGoalsPage() {
   const [page, setPage] = useState(1)
   const [formTarget, setFormTarget] = useState(undefined) // undefined = closed, null = create, record = edit
   const [actualTarget, setActualTarget] = useState(null)
+  const [deleteTarget, setDeleteTarget] = useState(null)
+  const { user } = useAuth()
 
   const params = useMemo(() => ({ page, limit: LIMIT }), [page])
   const { data, isLoading, isError, error, refetch } = useTeamGoals(params)
@@ -114,6 +119,15 @@ export default function TeamGoalsPage() {
                       size="sm"
                       onClick={() => setActualTarget(goal)}
                     />
+                    {canDeleteGoal(user, goal) && (
+                      <IconButton
+                        icon="lucide:trash-2"
+                        label="Delete goal"
+                        variant="danger"
+                        size="sm"
+                        onClick={() => setDeleteTarget(goal)}
+                      />
+                    )}
                   </div>
                 </td>
               </tr>
@@ -158,6 +172,15 @@ export default function TeamGoalsPage() {
         <RecordActualModal
           goal={actualTarget}
           onClose={() => setActualTarget(null)}
+        />
+      )}
+
+      {deleteTarget && (
+        <DeleteGoalModal
+          goal={deleteTarget}
+          onClose={() => setDeleteTarget(null)}
+          // Step back when the last row on a later page goes.
+          onDeleted={() => rows.length === 1 && page > 1 && setPage((p) => p - 1)}
         />
       )}
     </div>

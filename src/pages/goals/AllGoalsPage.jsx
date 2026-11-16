@@ -5,8 +5,12 @@ import Table from '@/components/ui/Table'
 import TableSkeleton from '@/components/ui/TableSkeleton'
 import Button from '@/components/ui/Button'
 import ProgressBar from '@/components/ui/ProgressBar'
+import IconButton from '@/components/ui/IconButton'
 import { useEmployees } from '@/hooks/useEmployees'
 import { useAllGoals } from '@/hooks/useAllGoals'
+import { useAuth } from '@/store/AuthContext'
+import { canDeleteGoal } from '@/lib/permissions'
+import DeleteGoalModal from '@/pages/goals/components/DeleteGoalModal'
 
 const LIMIT = 10
 const CURRENT_YEAR = new Date().getFullYear()
@@ -24,9 +28,9 @@ const MONTH_OPTIONS = [
   ...MONTHS.map((name, i) => ({ value: String(i + 1), label: name })),
 ]
 
-// No Actions column — HR/Admin have no edit or record-actual capability on any
-// goal, so this page is deliberately read-only oversight.
-const columns = [
+// HR/Admin can't edit goals or record actuals; with goals.delete they can remove
+// any goal (e.g. one left by a manager who has gone).
+const baseColumns = [
   { key: 'employee', header: 'Employee' },
   { key: 'title', header: 'Title' },
   { key: 'targetDate', header: 'Target Date' },
@@ -60,6 +64,11 @@ export default function AllGoalsPage() {
   const [employee, setEmployee] = useState(null)
   const [year, setYear] = useState('')
   const [month, setMonth] = useState('')
+  const [deleteTarget, setDeleteTarget] = useState(null)
+  const { user, can } = useAuth()
+  const columns = can('goals', 'delete')
+    ? [...baseColumns, { key: 'actions', header: 'Actions' }]
+    : baseColumns
 
   const [employeeQuery, setEmployeeQuery] = useState('')
   const debouncedEmployeeQuery = useDebouncedValue(employeeQuery.trim(), 300)
@@ -170,6 +179,19 @@ export default function AllGoalsPage() {
                 >
                   {goal.description || '—'}
                 </td>
+                {can('goals', 'delete') && (
+                  <td className="px-4 py-3">
+                    {canDeleteGoal(user, goal) && (
+                      <IconButton
+                        icon="lucide:trash-2"
+                        label="Delete goal"
+                        variant="danger"
+                        size="sm"
+                        onClick={() => setDeleteTarget(goal)}
+                      />
+                    )}
+                  </td>
+                )}
               </tr>
             )}
           />
@@ -198,6 +220,15 @@ export default function AllGoalsPage() {
             </div>
           )}
         </>
+      )}
+
+      {deleteTarget && (
+        <DeleteGoalModal
+          goal={deleteTarget}
+          onClose={() => setDeleteTarget(null)}
+          // Step back when the last row on a later page goes.
+          onDeleted={() => rows.length === 1 && page > 1 && setPage((p) => p - 1)}
+        />
       )}
     </div>
   )
