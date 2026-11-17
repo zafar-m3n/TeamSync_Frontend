@@ -20,7 +20,7 @@ function containerFor(anchor) {
  * not enough room. Closes on Escape (returning focus to the anchor), outside press,
  * or focus leaving both the anchor and the panel.
  */
-export default function Popover({ open, anchorRef, onClose, className, children, ...rest }) {
+export default function Popover({ open, anchorRef, onClose, align = 'start', className, children, ...rest }) {
   const panelRef = useRef(null)
   const onCloseRef = useRef(onClose)
   const [container, setContainer] = useState(null)
@@ -54,7 +54,8 @@ export default function Popover({ open, anchorRef, onClose, className, children,
     const below = window.innerHeight - a.bottom
     const flip = below < h + GAP + EDGE && a.top > below
     const top = flip ? a.top - h - GAP : a.bottom + GAP
-    const left = Math.max(EDGE, Math.min(a.left, window.innerWidth - w - EDGE))
+    const want = align === 'end' ? a.right - w : a.left
+    const left = Math.max(EDGE, Math.min(want, window.innerWidth - w - EDGE))
     const parent = panel.offsetParent ?? document.body
     const p = parent.getBoundingClientRect()
     setPos({
@@ -62,7 +63,7 @@ export default function Popover({ open, anchorRef, onClose, className, children,
       left: left - p.left - parent.clientLeft + (parent === document.body ? 0 : parent.scrollLeft),
       placement: flip ? 'top' : 'bottom',
     })
-  }, [anchorRef])
+  }, [anchorRef, align])
 
   useLayoutEffect(() => {
     if (open && container) place()

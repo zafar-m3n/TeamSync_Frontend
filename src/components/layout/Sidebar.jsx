@@ -1,152 +1,139 @@
-import { useEffect, useRef, useState } from "react";
-import { NavLink } from "react-router-dom";
-import { Icon } from "@iconify/react";
-import clsx from "clsx";
-import { useAuth } from "@/store/useAuth";
-import { moduleRoutes, buildNavItems } from "@/routes/routeConfig";
-import logo from "@/assets/logo.png";
-import favicon from "@/assets/favicon.png";
+import { NavLink } from 'react-router-dom'
+import { Icon } from '@iconify/react'
+import clsx from 'clsx'
+import { useAuth } from '@/store/useAuth'
+import { moduleRoutes, buildNavSections } from '@/routes/routeConfig'
+import {
+  selectMobileNavOpen,
+  selectSetMobileNavOpen,
+  selectSidebarCollapsed,
+  selectToggleSidebar,
+  useLayoutStore,
+} from '@/store/ui/layoutStore'
+import Drawer from '@/components/ui/Drawer'
+import IconButton from '@/components/ui/IconButton'
+import favicon from '@/assets/favicon.png'
 
-function NavItems({ items, expanded = true, onNavigate }) {
+function Brand({ collapsed }) {
   return (
-    <nav className="flex flex-col gap-1 px-3 py-4">
-      {items.map((item) => (
-        <NavLink
-          key={item.path}
-          to={item.path}
-          end
-          onClick={onNavigate}
-          title={item.label}
-          className={({ isActive }) =>
-            clsx(
-              "flex items-center gap-3 rounded-md border-l-2 px-3 py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent",
-              isActive
-                ? "border-accent bg-accent/10 text-primary"
-                : "border-transparent text-gray-600 hover:bg-gray-100 hover:text-text",
-            )
-          }
-        >
-          <Icon icon={item.icon} width="18" height="18" className="shrink-0" />
-          <span
-            className={clsx(
-              "whitespace-nowrap transition-opacity duration-200",
-              expanded ? "opacity-100" : "opacity-0",
-            )}
-          >
-            {item.label}
-          </span>
-        </NavLink>
+    <div className={clsx('flex h-16 shrink-0 items-center gap-2.5', collapsed ? 'justify-center px-0' : 'px-5')}>
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white p-1 shadow-xs">
+        <img src={favicon} alt="" className="h-full w-full object-contain" />
+      </span>
+      <span className={clsx('text-display text-lg font-semibold text-white', collapsed && 'sr-only')}>TeamSync</span>
+    </div>
+  )
+}
+
+function NavSections({ sections, collapsed = false, onNavigate }) {
+  return (
+    <nav aria-label="Main" className="flex flex-1 flex-col gap-5 overflow-y-auto px-3 py-3">
+      {sections.map((section) => (
+        <div key={section.key} className="flex flex-col gap-0.5">
+          {section.label &&
+            (collapsed ? (
+              <span aria-hidden className="mx-3 mb-1 h-px bg-white/10" />
+            ) : (
+              <p className="px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-ink-fg/60">{section.label}</p>
+            ))}
+          <ul className="flex flex-col gap-0.5">
+            {section.items.map((item) => (
+              <li key={item.path}>
+                <NavLink
+                  to={item.path}
+                  onClick={onNavigate}
+                  title={collapsed ? item.label : undefined}
+                  className={({ isActive }) =>
+                    clsx(
+                      'group relative flex h-9 items-center gap-3 rounded-md text-sm font-medium transition-colors duration-(--duration-fast) focus-visible:focus-ring',
+                      collapsed ? 'justify-center px-0' : 'px-3',
+                      isActive ? 'bg-white/[0.08] text-white' : 'text-ink-fg hover:bg-white/[0.05] hover:text-white',
+                    )
+                  }
+                >
+                  {({ isActive }) => (
+                    <>
+                      <span
+                        aria-hidden
+                        className={clsx(
+                          'absolute inset-y-1.5 left-0 w-[3px] rounded-r-full bg-ink-active transition-opacity duration-(--duration-fast)',
+                          isActive ? 'opacity-100' : 'opacity-0',
+                        )}
+                      />
+                      <Icon
+                        icon={item.icon}
+                        width="18"
+                        height="18"
+                        aria-hidden
+                        className={clsx('shrink-0', isActive ? 'text-ink-active' : 'opacity-80 group-hover:opacity-100')}
+                      />
+                      <span className={clsx('truncate', collapsed && 'sr-only')}>{item.label}</span>
+                    </>
+                  )}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+        </div>
       ))}
     </nav>
-  );
+  )
 }
 
-function Logo() {
-  return (
-    <div className="flex h-16 items-center border-b border-gray-200">
-      <img src={logo} alt="TeamSync" className="h-12 md:h-16 w-auto" />
-    </div>
-  );
-}
-
-// Desktop rail: favicon while collapsed, full logo while expanded (crossfade).
-function DesktopBrand({ expanded }) {
-  return (
-    <div className="relative flex h-16 shrink-0 items-center border-b border-l-2 border-transparent border-b-gray-200 px-3">
-      <img
-        src={favicon}
-        alt="TeamSync"
-        className={clsx(
-          "h-9 w-9 shrink-0 object-contain transition-opacity duration-200",
-          expanded ? "opacity-0" : "opacity-100",
-        )}
-      />
-      <img
-        src={logo}
-        alt="TeamSync"
-        className={clsx(
-          "pointer-events-none absolute left-3.5 top-1/2 h-12 w-auto max-w-none -translate-y-1/2 transition-opacity duration-200 md:h-16",
-          expanded ? "opacity-100" : "opacity-0",
-        )}
-      />
-    </div>
-  );
-}
-
-export default function Sidebar({ isOpen, onClose, onRailExpandedChange }) {
-  const { user } = useAuth();
-  const navItems = buildNavItems(moduleRoutes, user);
-  const drawerRef = useRef(null);
-
-  // Single source of truth for the desktop rail. Both the rail width and the
-  // AppLayout content offset read from this, so they can never desync.
-  const [railExpanded, setRailExpandedState] = useState(false);
-  const setRailExpanded = (value) => {
-    setRailExpandedState(value);
-    onRailExpandedChange?.(value);
-  };
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const onKeyDown = (event) => {
-      if (event.key === "Escape") onClose();
-    };
-    document.addEventListener("keydown", onKeyDown);
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    drawerRef.current?.querySelector("a")?.focus();
-    return () => {
-      document.removeEventListener("keydown", onKeyDown);
-      document.body.style.overflow = prevOverflow;
-    };
-  }, [isOpen, onClose]);
+export default function Sidebar() {
+  const { user } = useAuth()
+  const sections = buildNavSections(moduleRoutes, user)
+  const collapsed = useLayoutStore(selectSidebarCollapsed)
+  const toggleSidebar = useLayoutStore(selectToggleSidebar)
+  const mobileOpen = useLayoutStore(selectMobileNavOpen)
+  const setMobileOpen = useLayoutStore(selectSetMobileNavOpen)
 
   return (
     <>
-      {/* Desktop: an icon-only rail that expands to full width while hovered or
-          focused; AppLayout shifts the Topbar and outlet to match. Clicking a
-          nav item collapses it again. */}
       <aside
-        onMouseEnter={() => setRailExpanded(true)}
-        onMouseLeave={() => setRailExpanded(false)}
-        onFocus={() => setRailExpanded(true)}
-        onBlur={(event) => {
-          if (!event.currentTarget.contains(event.relatedTarget)) {
-            setRailExpanded(false);
-          }
-        }}
         className={clsx(
-          "fixed inset-y-0 left-0 z-30 hidden w-16 flex-col overflow-hidden border-r border-gray-200 bg-white transition-[width] duration-200 ease-in-out lg:flex",
-          railExpanded && "w-64 shadow-xl",
+          'fixed inset-y-0 left-0 z-30 hidden flex-col bg-ink transition-[width] duration-(--duration-slow) ease-out lg:flex',
+          collapsed ? 'w-16' : 'w-64',
         )}
       >
-        <DesktopBrand expanded={railExpanded} />
-        <NavItems
-          items={navItems}
-          expanded={railExpanded}
-          onNavigate={() => setRailExpanded(false)}
-        />
+        <Brand collapsed={collapsed} />
+        <NavSections sections={sections} collapsed={collapsed} />
+        <div className={clsx('flex shrink-0 border-t border-white/10 p-3', collapsed ? 'justify-center' : 'justify-end')}>
+          <button
+            type="button"
+            onClick={toggleSidebar}
+            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            aria-expanded={!collapsed}
+            className="flex h-8 w-8 items-center justify-center rounded-md text-ink-fg transition-colors hover:bg-white/[0.06] hover:text-white focus-visible:focus-ring"
+          >
+            <Icon icon={collapsed ? 'lucide:panel-left-open' : 'lucide:panel-left-close'} width="18" height="18" aria-hidden />
+          </button>
+        </div>
       </aside>
 
-      <div className={clsx("fixed inset-0 z-40 lg:hidden", !isOpen && "pointer-events-none")} aria-hidden={!isOpen}>
-        <div
-          className={clsx(
-            "absolute inset-0 bg-black/40 transition-opacity duration-200",
-            isOpen ? "opacity-100" : "opacity-0",
-          )}
-          onClick={onClose}
-        />
-        <aside
-          ref={drawerRef}
-          className={clsx(
-            "absolute inset-y-0 left-0 flex w-64 flex-col bg-white shadow-xl transition-transform duration-200",
-            isOpen ? "translate-x-0" : "-translate-x-full",
-          )}
-        >
-          <Logo />
-          <NavItems items={navItems} onNavigate={onClose} />
-        </aside>
-      </div>
+      <Drawer
+        isOpen={mobileOpen}
+        onClose={() => setMobileOpen(false)}
+        side="left"
+        size="sm"
+        hideHeader
+        ariaLabel="Navigation"
+        className="!border-ink !bg-ink"
+      >
+        <div className="relative flex h-full flex-col">
+          <Brand />
+          <NavSections sections={sections} onNavigate={() => setMobileOpen(false)} />
+          {/* After the nav in DOM order so focus lands on the first link when the drawer opens. */}
+          <IconButton
+            icon="lucide:x"
+            label="Close navigation"
+            variant="ghost"
+            onClick={() => setMobileOpen(false)}
+            className="absolute right-3 top-4 text-ink-fg hover:bg-white/[0.06] hover:text-white"
+          />
+        </div>
+      </Drawer>
     </>
-  );
+  )
 }

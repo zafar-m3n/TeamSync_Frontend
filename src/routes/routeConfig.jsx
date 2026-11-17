@@ -33,6 +33,7 @@ export const moduleRoutes = [
   },
   {
     path: 'departments-shifts',
+    navGroup: 'admin',
     anyOf: ['departments.create', 'departments.edit', 'departments.delete', 'shifts.manage'],
     element: <DepartmentsShiftsPage />,
     navLabel: 'Departments & Shifts',
@@ -41,6 +42,7 @@ export const moduleRoutes = [
   },
   {
     path: 'employees',
+    navGroup: 'people',
     anyOf: ['employees.view_all'],
     element: <EmployeeListPage scope="all" />,
     navLabel: 'Employees',
@@ -49,21 +51,28 @@ export const moduleRoutes = [
   },
   {
     path: 'employees/new',
+    title: 'New Employee',
+    parent: 'employees',
     anyOf: ['employees.create'],
     element: <EmployeeFormPage mode="create" />,
   },
   {
     path: 'employees/:employeeId',
+    title: 'Employee details',
+    parent: 'employees',
     anyOf: ['employees.view_all'],
     element: <EmployeeDetailPage />,
   },
   {
     path: 'employees/:employeeId/edit',
+    title: 'Edit Employee',
+    parent: 'employees',
     anyOf: ['employees.edit'],
     element: <EmployeeFormPage mode="edit" />,
   },
   {
     path: 'my-team',
+    navGroup: 'people',
     anyOf: ['employees.view_team'],
     element: <EmployeeListPage scope="team" />,
     navLabel: 'My Team',
@@ -72,11 +81,14 @@ export const moduleRoutes = [
   },
   {
     path: 'my-team/:employeeId',
+    title: 'Employee details',
+    parent: 'my-team',
     anyOf: ['employees.view_team'],
     element: <EmployeeDetailPage />,
   },
   {
     path: 'users',
+    navGroup: 'admin',
     anyOf: ['users.view'],
     element: <UsersPage />,
     navLabel: 'Users',
@@ -85,6 +97,7 @@ export const moduleRoutes = [
   },
   {
     path: 'roles-permissions',
+    navGroup: 'admin',
     anyOf: ['permissions.view'],
     element: <RolesPermissionsPage />,
     navLabel: 'Roles & Permissions',
@@ -93,6 +106,7 @@ export const moduleRoutes = [
   },
   {
     path: 'my-attendance',
+    navGroup: 'time',
     anyOf: ['attendance.view_own'],
     employee: true,
     element: <MyAttendancePage />,
@@ -102,6 +116,7 @@ export const moduleRoutes = [
   },
   {
     path: 'team-attendance',
+    navGroup: 'time',
     anyOf: ['attendance.view_team'],
     element: <TeamAttendancePage />,
     navLabel: 'Team Attendance',
@@ -110,6 +125,7 @@ export const moduleRoutes = [
   },
   {
     path: 'attendance',
+    navGroup: 'time',
     anyOf: ['attendance.view_all'],
     element: <AllAttendancePage />,
     navLabel: 'Attendance',
@@ -118,6 +134,7 @@ export const moduleRoutes = [
   },
   {
     path: 'my-leave',
+    navGroup: 'time',
     anyOf: ['leave.view_own'],
     employee: true,
     element: <MyLeavePage />,
@@ -127,6 +144,7 @@ export const moduleRoutes = [
   },
   {
     path: 'team-leave',
+    navGroup: 'time',
     anyOf: ['leave.view_team'],
     element: <TeamLeavePage />,
     navLabel: 'Team Leave',
@@ -135,6 +153,7 @@ export const moduleRoutes = [
   },
   {
     path: 'leave',
+    navGroup: 'time',
     anyOf: ['leave.view_all'],
     element: <AllLeavePage />,
     navLabel: 'Leave',
@@ -143,6 +162,7 @@ export const moduleRoutes = [
   },
   {
     path: 'holidays',
+    navGroup: 'time',
     anyOf: ['holidays.manage'],
     element: <HolidaysPage />,
     navLabel: 'Holidays',
@@ -151,6 +171,7 @@ export const moduleRoutes = [
   },
   {
     path: 'my-goals',
+    navGroup: 'growth',
     anyOf: ['goals.view_own'],
     employee: true,
     element: <MyGoalsPage />,
@@ -160,6 +181,7 @@ export const moduleRoutes = [
   },
   {
     path: 'team-goals',
+    navGroup: 'growth',
     anyOf: ['goals.view_team'],
     element: <TeamGoalsPage />,
     navLabel: 'Team Goals',
@@ -168,6 +190,7 @@ export const moduleRoutes = [
   },
   {
     path: 'goals',
+    navGroup: 'growth',
     anyOf: ['goals.view_all'],
     element: <AllGoalsPage />,
     navLabel: 'Goals',
@@ -176,6 +199,7 @@ export const moduleRoutes = [
   },
   {
     path: 'my-training',
+    navGroup: 'growth',
     anyOf: ['training.view_assigned'],
     employee: true,
     element: <MyTrainingPage />,
@@ -185,6 +209,7 @@ export const moduleRoutes = [
   },
   {
     path: 'manage-training',
+    navGroup: 'growth',
     anyOf: ['training.upload', 'training.assign', 'training.view_own_uploads'],
     element: <ManageTrainingPage />,
     navLabel: 'Manage Training',
@@ -193,6 +218,7 @@ export const moduleRoutes = [
   },
   {
     path: 'training',
+    navGroup: 'growth',
     anyOf: ['training.view_all'],
     element: <TrainingPage />,
     navLabel: 'Training',
@@ -201,6 +227,7 @@ export const moduleRoutes = [
   },
   {
     path: 'my-profile',
+    title: 'My Profile',
     anyOf: ['employees.view_own'],
     element: <MyProfilePage />,
   },
@@ -225,5 +252,33 @@ export function buildNavItems(routes, user) {
       path: `/${r.path}`,
       label: SIDEBAR_LABEL_OVERRIDES[r.navLabel] ?? r.navLabel,
       icon: r.navIcon,
+      group: r.navGroup ?? null,
     }))
+}
+
+// Sidebar sections, in display order. Items without a group (Dashboard) come first.
+export const NAV_GROUPS = [
+  { key: 'people', label: 'People' },
+  { key: 'time', label: 'Time & leave' },
+  { key: 'growth', label: 'Growth' },
+  { key: 'admin', label: 'Admin' },
+]
+
+// Permitted nav items split into sections; empty sections are dropped.
+export function buildNavSections(routes, user) {
+  const items = buildNavItems(routes, user)
+  return [
+    { key: 'main', label: null, items: items.filter((i) => !i.group) },
+    ...NAV_GROUPS.map((g) => ({ ...g, items: items.filter((i) => i.group === g.key) })),
+  ].filter((section) => section.items.length > 0)
+}
+
+const routeByPath = Object.fromEntries(moduleRoutes.map((r) => [r.path, r]))
+
+// Page title for the topbar, plus an optional parent crumb ({ label, path }).
+export function routeTitle(route) {
+  const title = route.title ?? route.navLabel ?? 'TeamSync'
+  const parentRoute = route.parent ? routeByPath[route.parent] : null
+  const parent = parentRoute ? { label: parentRoute.navLabel, path: `/${parentRoute.path}` } : null
+  return { title, parent }
 }
