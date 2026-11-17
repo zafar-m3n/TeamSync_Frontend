@@ -1,46 +1,45 @@
 import { useMemo, useState } from 'react'
+import { Icon } from '@iconify/react'
+import clsx from 'clsx'
 import Select from '@/components/ui/Select'
 import Table from '@/components/ui/Table'
-import TableSkeleton from '@/components/ui/TableSkeleton'
 import Button from '@/components/ui/Button'
 import IconButton from '@/components/ui/IconButton'
-import Modal from '@/components/ui/Modal'
 import StatCard from '@/components/ui/StatCard'
+import FormField from '@/components/form/FormField'
+import { CountUp } from '@/hooks/useMotion'
 import { useAuth } from '@/store/useAuth'
 import { useMyProfile } from '@/hooks/useMyProfile'
 import { useListFilters } from '@/hooks/useListFilters'
 import { useLeaveBalance } from '@/hooks/useLeaveBalance'
 import { useMyLeaveRequests } from '@/hooks/useMyLeaveRequests'
-import { useCancelLeaveRequest } from '@/hooks/useLeaveRequestMutations'
 import { canCancelLeaveRequest } from '@/pages/leave/utils/canCancelLeaveRequest'
 import LeaveStatusBadge from '@/pages/leave/components/LeaveStatusBadge'
 import LeaveRequestFormModal from '@/pages/leave/components/LeaveRequestFormModal'
 import LeaveBalanceSummary from '@/pages/leave/components/LeaveBalanceSummary'
+import { CancelLeaveModal } from '@/pages/leave/components/LeaveDecisionModals'
 import { sumBalances } from '@/pages/leave/utils/leaveBalances'
 import HolidayList from '@/pages/holidays/components/HolidayList'
 import { datesLabel } from '@/pages/leave/utils/leaveDates'
+import { LIMIT } from '@/pages/leave/utils/leaveRequestList'
 
-const LIMIT = 10
 const STATUSES = ['Pending', 'Approved', 'Rejected', 'Cancelled']
 const CURRENT_YEAR = new Date().getFullYear()
 const YEARS = [CURRENT_YEAR + 1, CURRENT_YEAR, CURRENT_YEAR - 1, CURRENT_YEAR - 2]
 const YEAR_OPTIONS = YEARS.map((y) => ({ value: y, label: String(y) }))
-const STATUS_OPTIONS = [
-  { value: 'all', label: 'All' },
-  ...STATUSES.map((s) => ({ value: s, label: s })),
-]
+const STATUS_OPTIONS = [{ value: 'all', label: 'All' }, ...STATUSES.map((s) => ({ value: s, label: s }))]
 
 const columns = [
-  { key: 'leaveType', header: 'Leave Type' },
-  { key: 'dates', header: 'Dates' },
-  { key: 'days', header: 'Days' },
-  { key: 'status', header: 'Status' },
-  { key: 'actions', header: 'Actions' },
+  { key: 'leaveType', header: 'Leave Type', className: 'font-medium', render: (r) => r.leaveType?.name ?? '—' },
+  { key: 'dates', header: 'Dates', className: 'whitespace-nowrap tabular-nums', render: datesLabel },
+  { key: 'days', header: 'Days', align: 'right', className: 'tabular-nums' },
+  { key: 'status', header: 'Status', render: (r) => <LeaveStatusBadge status={r.status} /> },
 ]
 
 export default function MyLeavePage() {
   const { user, can } = useAuth()
   const canRequestLeave = can('leave', 'submit') && can('leave_types', 'view')
+  const canViewHolidays = can('holidays', 'view')
   const { data: profile } = useMyProfile()
   const currentEmployeeId = profile?.id ?? null
 
@@ -54,175 +53,77 @@ export default function MyLeavePage() {
   const { data: balances, isLoading: balancesLoading } = useLeaveBalance(currentEmployeeId, year)
   const balance = balances ? sumBalances(balances) : null
 
-  const params = useMemo(
-    () => ({ page, limit: LIMIT, ...(status !== 'all' ? { status } : {}) }),
-    [page, status],
-  )
-
-  const { data, isLoading, isError, error, refetch } = useMyLeaveRequests(params)
-  const cancelMutation = useCancelLeaveRequest()
-
-  const rows = data?.rows ?? []
-  const meta = data?.meta
-  const totalPages = meta?.totalPages ?? 1
+  const params = useMemo(() => ({ page, limit: LIMIT, ...(status !== 'all' ? { status } : {}) }), [page, status])
+  const { data, isLoading, isFetching, isError, error, refetch } = useMyLeaveRequests(params)
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center gap-3">
-        <div>
-          <label className="mb-1 block text-xs font-medium text-gray-500">Year</label>
-          <div className="w-40">
+      <div className="flex flex-wrap items-end gap-3">
+        <div className="w-40">
+          <FormField label="Year">
             <Select
               options={YEAR_OPTIONS}
               value={YEAR_OPTIONS.find((o) => o.value === year) ?? null}
               onChange={(opt) => setYear(opt.value)}
             />
-          </div>
+          </FormField>
         </div>
         {canRequestLeave && (
-          <Button variant="accent" className="ml-auto" onClick={() => setShowForm(true)}>
+          <Button variant="primary" className="ml-auto" onClick={() => setShowForm(true)}>
+            <Icon icon="lucide:plus" width="16" height="16" aria-hidden />
             Request Leave
           </Button>
         )}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard value={balance?.remaining ?? '—'} label="Remaining" tone="success" />
-        <StatCard value={balance?.usedDays ?? '—'} label="Used" />
-        <StatCard value={balance?.totalDays ?? '—'} label="Total" />
+        <StatCard value={<CountUp value={balance?.remaining ?? '—'} />} label="Remaining" tone="success" icon="lucide:calendar-check" />
+        <StatCard value={<CountUp value={balance?.usedDays ?? '—'} />} label="Used" icon="lucide:calendar-minus" />
+        <StatCard value={<CountUp value={balance?.totalDays ?? '—'} />} label="Total" icon="lucide:calendar-days" />
       </div>
 
-      <LeaveBalanceSummary
-        balances={balances}
-        year={year}
-        isLoading={currentEmployeeId != null && balancesLoading}
-      />
+      <div className={clsx('grid items-start gap-6', canViewHolidays && 'lg:grid-cols-3')}>
+        <div className={clsx(canViewHolidays && 'lg:col-span-2')}>
+          <LeaveBalanceSummary balances={balances} year={year} isLoading={currentEmployeeId != null && balancesLoading} />
+        </div>
+        {canViewHolidays && <HolidayList year={year} />}
+      </div>
 
-      {can('holidays', 'view') && <HolidayList year={year} />}
-
-      <div className="space-y-4">
-        <div>
-          <label className="mb-1 block text-xs font-medium text-gray-500">Status</label>
-          <div className="w-40">
+      <section className="space-y-4">
+        <div className="w-40">
+          <FormField label="Status">
             <Select
               options={STATUS_OPTIONS}
               value={STATUS_OPTIONS.find((o) => o.value === status) ?? null}
               onChange={(opt) => setFilter('status', opt.value)}
             />
-          </div>
+          </FormField>
         </div>
 
-        {isLoading ? (
-          <TableSkeleton columns={columns} rows={LIMIT} />
-        ) : isError ? (
-          <div className="flex flex-col items-center gap-3 rounded-lg border border-gray-200 bg-white py-12 text-center">
-            <p className="text-sm text-gray-600">
-              {error?.message || 'Could not load your leave requests.'}
-            </p>
-            <Button variant="secondary" size="sm" onClick={() => refetch()}>
-              Try again
-            </Button>
-          </div>
-        ) : (
-          <>
-            <Table
-              columns={columns}
-              rows={rows}
-              emptyMessage="No leave requests yet"
-              renderRow={(req) => {
-                const showCancel = canCancelLeaveRequest({
-                  request: req,
-                  currentUser: user,
-                  currentEmployeeId,
-                })
-                return (
-                  <tr
-                    key={req.id}
-                    className="border-b border-gray-100 last:border-0 hover:bg-gray-50"
-                  >
-                    <td className="px-4 py-3 text-text">{req.leaveType?.name ?? '—'}</td>
-                    <td className="px-4 py-3 text-text">{datesLabel(req)}</td>
-                    <td className="px-4 py-3 text-text">
-                      {req.days}
-                    </td>
-                    <td className="px-4 py-3">
-                      <LeaveStatusBadge status={req.status} />
-                    </td>
-                    <td className="px-4 py-3">
-                      {showCancel && (
-                        <IconButton
-                          icon="lucide:ban"
-                          label="Cancel request"
-                          variant="danger"
-                          size="sm"
-                          onClick={() => setCancelTarget(req)}
-                        />
-                      )}
-                    </td>
-                  </tr>
-                )
-              }}
-            />
-
-            {meta && totalPages > 1 && (
-              <div className="flex items-center justify-between">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  disabled={page <= 1}
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                >
-                  Previous
-                </Button>
-                <span className="text-sm text-gray-500">
-                  Page {meta.page} of {totalPages}
-                </span>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  disabled={page >= totalPages}
-                  onClick={() => setPage((p) => p + 1)}
-                >
-                  Next
-                </Button>
-              </div>
-            )}
-          </>
-        )}
-      </div>
+        <Table
+          caption="My leave requests"
+          columns={columns}
+          rows={data?.rows ?? []}
+          meta={data?.meta}
+          onPageChange={setPage}
+          isLoading={isLoading}
+          isFetching={isFetching}
+          loadingRows={LIMIT}
+          error={isError ? error?.message || 'Could not load your leave requests.' : null}
+          onRetry={() => refetch()}
+          emptyIcon="lucide:calendar-x"
+          emptyMessage="No leave requests yet"
+          rowActions={(req) =>
+            canCancelLeaveRequest({ request: req, currentUser: user, currentEmployeeId }) && (
+              <IconButton icon="lucide:ban" label="Cancel request" variant="ghost-danger" size="sm" onClick={() => setCancelTarget(req)} />
+            )
+          }
+        />
+      </section>
 
       {showForm && <LeaveRequestFormModal onClose={() => setShowForm(false)} />}
 
-      <Modal
-        centered
-        isOpen={Boolean(cancelTarget)}
-        onClose={() => setCancelTarget(null)}
-        title="Cancel leave request"
-        footer={
-          <>
-            <Button
-              variant="secondary"
-              onClick={() => setCancelTarget(null)}
-              disabled={cancelMutation.isPending}
-            >
-              Keep it
-            </Button>
-            <Button
-              variant="danger"
-              isLoading={cancelMutation.isPending}
-              onClick={() =>
-                cancelMutation.mutate(cancelTarget.id, {
-                  onSuccess: () => setCancelTarget(null),
-                })
-              }
-            >
-              Cancel request
-            </Button>
-          </>
-        }
-      >
-        <p>Cancel this leave request? This can&rsquo;t be undone.</p>
-      </Modal>
+      <CancelLeaveModal request={cancelTarget} onClose={() => setCancelTarget(null)} />
     </div>
   )
 }

@@ -1,69 +1,30 @@
 import { useMemo, useState } from 'react'
 import Select from '@/components/ui/Select'
-import Table from '@/components/ui/Table'
-import TableSkeleton from '@/components/ui/TableSkeleton'
-import Button from '@/components/ui/Button'
-import IconButton from '@/components/ui/IconButton'
-import Modal from '@/components/ui/Modal'
-import Pagination from '@/components/ui/Pagination'
-import { useAuth } from '@/store/useAuth'
-import { useMyProfile } from '@/hooks/useMyProfile'
+import FormField from '@/components/form/FormField'
 import { useTeamLeaveRequests } from '@/hooks/useTeamLeaveRequests'
-import {
-  useRejectLeaveRequest,
-  useCancelLeaveRequest,
-} from '@/hooks/useLeaveRequestMutations'
-import { canCancelLeaveRequest } from '@/pages/leave/utils/canCancelLeaveRequest'
-import { canActOnLeaveRequest } from '@/pages/leave/utils/canActOnLeaveRequest'
-import LeaveStatusBadge from '@/pages/leave/components/LeaveStatusBadge'
-import LeaveBalanceChip from '@/pages/leave/components/LeaveBalanceChip'
+import LeaveRequestsTable from '@/pages/leave/components/LeaveRequestsTable'
 import ApproveLeaveModal from '@/pages/leave/components/ApproveLeaveModal'
-import { datesLabel } from '@/pages/leave/utils/leaveDates'
+import { CancelLeaveModal, RejectLeaveModal } from '@/pages/leave/components/LeaveDecisionModals'
+import { LIMIT } from '@/pages/leave/utils/leaveRequestList'
 
 const STATUSES = ['Pending', 'Approved', 'Rejected', 'Cancelled']
-const STATUS_OPTIONS = [
-  { value: 'all', label: 'All' },
-  ...STATUSES.map((s) => ({ value: s, label: s })),
-]
-
-const LIMIT = 10
-
-const columns = [
-  { key: 'employee', header: 'Employee' },
-  { key: 'leaveType', header: 'Leave Type' },
-  { key: 'dates', header: 'Dates' },
-  { key: 'days', header: 'Days' },
-  { key: 'status', header: 'Status' },
-  { key: 'balance', header: 'Balance' },
-  { key: 'actions', header: 'Actions' },
-]
+const STATUS_OPTIONS = [{ value: 'all', label: 'All' }, ...STATUSES.map((s) => ({ value: s, label: s }))]
 
 export default function TeamLeavePage() {
-  const { user } = useAuth()
-  const { data: profile } = useMyProfile()
-  const currentEmployeeId = profile?.id ?? null
-
   const [status, setStatus] = useState('all')
   const [page, setPage] = useState(1)
-  const [approveTarget, setApproveTarget] = useState(null)
-  const [rejectTarget, setRejectTarget] = useState(null)
-  const [cancelTarget, setCancelTarget] = useState(null)
+  // { kind: 'approve' | 'reject' | 'cancel', request } while a dialog is open.
+  const [dialog, setDialog] = useState(null)
+  const closeDialog = () => setDialog(null)
+  const dialogRequest = (kind) => (dialog?.kind === kind ? dialog.request : null)
 
-  const params = useMemo(
-    () => ({ page, limit: LIMIT, ...(status !== 'all' ? { status } : {}) }),
-    [page, status],
-  )
-
-  const { data, isLoading, isError, error, refetch } = useTeamLeaveRequests(params)
-  const rows = data?.rows ?? []
-  const rejectMutation = useRejectLeaveRequest()
-  const cancelMutation = useCancelLeaveRequest()
+  const params = useMemo(() => ({ page, limit: LIMIT, ...(status !== 'all' ? { status } : {}) }), [page, status])
+  const { data, isLoading, isFetching, isError, error, refetch } = useTeamLeaveRequests(params)
 
   return (
-    <div className="space-y-4">
-      <div>
-        <label className="mb-1 block text-xs font-medium text-gray-500">Status</label>
-        <div className="w-40">
+    <div className="space-y-5">
+      <div className="w-full sm:w-48">
+        <FormField label="Status">
           <Select
             options={STATUS_OPTIONS}
             value={STATUS_OPTIONS.find((o) => o.value === status) ?? null}
@@ -72,169 +33,25 @@ export default function TeamLeavePage() {
               setPage(1)
             }}
           />
-        </div>
+        </FormField>
       </div>
 
-      {isLoading ? (
-        <TableSkeleton columns={columns} rows={LIMIT} />
-      ) : isError ? (
-        <div className="flex flex-col items-center gap-3 rounded-lg border border-gray-200 bg-white py-12 text-center">
-          <p className="text-sm text-gray-600">
-            {error?.message || 'Could not load team leave requests.'}
-          </p>
-          <Button variant="secondary" size="sm" onClick={() => refetch()}>
-            Try again
-          </Button>
-        </div>
-      ) : (
-        <>
-          <Table
-            columns={columns}
-            rows={rows}
-            emptyMessage="No leave requests from your team"
-            renderRow={(req) => {
-              const showCancel = canCancelLeaveRequest({
-                request: req,
-                currentUser: user,
-                currentEmployeeId,
-              })
-              const canAct = canActOnLeaveRequest({
-                request: req,
-                currentUser: user,
-                currentEmployeeId,
-              })
-              return (
-                <tr
-                  key={req.id}
-                  className="border-b border-gray-100 last:border-0 hover:bg-gray-50"
-                >
-                  <td className="px-4 py-3 text-text">{req.employee?.fullName ?? '—'}</td>
-                  <td className="px-4 py-3 text-text">{req.leaveType?.name ?? '—'}</td>
-                  <td className="px-4 py-3 text-text">{datesLabel(req)}</td>
-                  <td className="px-4 py-3 text-text">
-                    {req.days}
-                  </td>
-                  <td className="px-4 py-3">
-                    <LeaveStatusBadge status={req.status} />
-                  </td>
-                  <td className="px-4 py-3">
-                    {req.employee?.id != null && (
-                      <LeaveBalanceChip
-                        employeeId={req.employee.id}
-                        year={new Date(req.startDate).getFullYear()}
-                      />
-                    )}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex flex-wrap gap-2">
-                      {canAct && (
-                        <IconButton
-                          icon="lucide:check"
-                          label="Approve"
-                          variant="success"
-                          size="sm"
-                          onClick={() => setApproveTarget(req)}
-                        />
-                      )}
-                      {canAct && (
-                        <IconButton
-                          icon="lucide:x"
-                          label="Reject"
-                          variant="secondary"
-                          size="sm"
-                          onClick={() => setRejectTarget(req)}
-                        />
-                      )}
-                      {showCancel && (
-                        <IconButton
-                          icon="lucide:ban"
-                          label="Cancel request"
-                          variant="danger"
-                          size="sm"
-                          onClick={() => setCancelTarget(req)}
-                        />
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              )
-            }}
-          />
-          <Pagination meta={data?.meta} onPageChange={setPage} />
-        </>
-      )}
+      <LeaveRequestsTable
+        caption="Team leave requests"
+        rows={data?.rows ?? []}
+        meta={data?.meta}
+        onPageChange={setPage}
+        isLoading={isLoading}
+        isFetching={isFetching}
+        error={isError ? error?.message || 'Could not load team leave requests.' : null}
+        onRetry={() => refetch()}
+        emptyMessage="No leave requests from your team"
+        onAction={(kind, request) => setDialog({ kind, request })}
+      />
 
-      {approveTarget && (
-        <ApproveLeaveModal
-          request={approveTarget}
-          onClose={() => setApproveTarget(null)}
-        />
-      )}
-
-      <Modal
-        centered
-        isOpen={Boolean(rejectTarget)}
-        onClose={() => setRejectTarget(null)}
-        title="Reject leave request"
-        footer={
-          <>
-            <Button
-              variant="secondary"
-              onClick={() => setRejectTarget(null)}
-              disabled={rejectMutation.isPending}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="danger"
-              isLoading={rejectMutation.isPending}
-              onClick={() =>
-                rejectMutation.mutate(rejectTarget.id, {
-                  onSuccess: () => setRejectTarget(null),
-                })
-              }
-            >
-              Reject
-            </Button>
-          </>
-        }
-      >
-        <p>
-          Reject this leave request from{' '}
-          <strong>{rejectTarget?.employee?.fullName ?? 'this employee'}</strong>?
-        </p>
-      </Modal>
-
-      <Modal
-        centered
-        isOpen={Boolean(cancelTarget)}
-        onClose={() => setCancelTarget(null)}
-        title="Cancel leave request"
-        footer={
-          <>
-            <Button
-              variant="secondary"
-              onClick={() => setCancelTarget(null)}
-              disabled={cancelMutation.isPending}
-            >
-              Keep it
-            </Button>
-            <Button
-              variant="danger"
-              isLoading={cancelMutation.isPending}
-              onClick={() =>
-                cancelMutation.mutate(cancelTarget.id, {
-                  onSuccess: () => setCancelTarget(null),
-                })
-              }
-            >
-              Cancel request
-            </Button>
-          </>
-        }
-      >
-        <p>Cancel this leave request? This can&rsquo;t be undone.</p>
-      </Modal>
+      {dialog?.kind === 'approve' && <ApproveLeaveModal request={dialog.request} onClose={closeDialog} />}
+      <RejectLeaveModal request={dialogRequest('reject')} onClose={closeDialog} />
+      <CancelLeaveModal request={dialogRequest('cancel')} onClose={closeDialog} />
     </div>
   )
 }

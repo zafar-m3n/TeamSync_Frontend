@@ -4,6 +4,8 @@ import { z } from 'zod'
 import Modal from '@/components/ui/Modal'
 import Input from '@/components/form/Input'
 import Button from '@/components/ui/Button'
+import EmptyState from '@/components/ui/EmptyState'
+import Skeleton, { LoadingRegion } from '@/components/ui/Skeleton'
 import { useLeaveBalance, useSetLeaveQuota } from '@/hooks/useLeaveBalance'
 
 const schema = z.object({
@@ -39,21 +41,21 @@ function QuotaForm({ employeeId, year, balances, onClose, mutation }) {
   return (
     <form id="set-quota-form" onSubmit={handleSubmit(onSubmit)} noValidate>
       <table className="w-full text-sm">
-        <thead className="text-left text-xs font-medium uppercase text-gray-500">
+        <thead className="border-b border-line text-left text-xs font-semibold uppercase tracking-wide text-fg-muted">
           <tr>
             <th className="py-2">Leave type</th>
             <th className="py-2 text-right">Used</th>
             <th className="w-32 py-2 pl-4">Total days</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-100 text-text">
+        <tbody className="divide-y divide-line text-fg">
           {balances.map((b) => {
             const error = errors.quotas?.[fieldKey(b.leaveTypeId)]?.message
             return (
               <tr key={b.leaveTypeId}>
-                <td className="py-2">{b.leaveTypeName}</td>
-                <td className="py-2 text-right text-gray-500">{b.usedDays}</td>
-                <td className="py-2 pl-4">
+                <td className="py-2.5 font-medium">{b.leaveTypeName}</td>
+                <td className="py-2.5 text-right tabular-nums text-fg-muted">{b.usedDays}</td>
+                <td className="py-2.5 pl-4">
                   <Input
                     type="number"
                     min="0"
@@ -61,7 +63,7 @@ function QuotaForm({ employeeId, year, balances, onClose, mutation }) {
                     aria-label={`${b.leaveTypeName} total days`}
                     {...register(`quotas.${fieldKey(b.leaveTypeId)}`)}
                   />
-                  {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+                  {error && <p className="mt-1 text-xs text-danger">{error}</p>}
                 </td>
               </tr>
             )
@@ -89,7 +91,7 @@ export default function SetQuotaModal({ employeeId, year, onClose }) {
           <Button
             type="submit"
             form="set-quota-form"
-            variant="accent"
+            variant="primary"
             isLoading={mutation.isPending}
             disabled={!balances?.length}
           >
@@ -99,9 +101,13 @@ export default function SetQuotaModal({ employeeId, year, onClose }) {
       }
     >
       {isLoading ? (
-        <p className="text-sm text-gray-400">Loading…</p>
+        <LoadingRegion label="Loading quotas" className="space-y-3">
+          <Skeleton className="h-3 w-full" />
+          <Skeleton className="h-9 w-full" />
+          <Skeleton className="h-9 w-full" />
+        </LoadingRegion>
       ) : !balances?.length ? (
-        <p className="text-sm text-gray-500">Create a leave type before setting quotas.</p>
+        <EmptyState compact icon="lucide:tags" message="Create a leave type before setting quotas." />
       ) : (
         <QuotaForm
           employeeId={employeeId}

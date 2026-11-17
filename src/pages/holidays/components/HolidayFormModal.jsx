@@ -47,7 +47,7 @@ export default function HolidayFormModal({ holiday, onClose }) {
           <Button variant="secondary" onClick={onClose} disabled={mutation.isPending}>
             Cancel
           </Button>
-          <Button type="submit" form="holiday-form" variant="accent" isLoading={mutation.isPending}>
+          <Button type="submit" form="holiday-form" variant="primary" isLoading={mutation.isPending}>
             {isEdit ? 'Save changes' : 'Add holiday'}
           </Button>
         </>

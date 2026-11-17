@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import Tabs from '@/components/ui/Tabs'
+import Tabs, { TabPanel } from '@/components/ui/Tabs'
 import LeaveRequestsTab from '@/pages/leave/components/LeaveRequestsTab'
 import LeaveTypesTab from '@/pages/leave/components/LeaveTypesTab'
 
@@ -12,9 +12,11 @@ export default function AllLeavePage() {
   const [activeKey, setActiveKey] = useState('requests')
 
   return (
-    <div className="space-y-6">
-      <Tabs tabs={TABS} activeKey={activeKey} onChange={setActiveKey} />
-      {activeKey === 'requests' ? <LeaveRequestsTab /> : <LeaveTypesTab />}
+    <div className="space-y-5">
+      <Tabs id="all-leave" tabs={TABS} activeKey={activeKey} onChange={setActiveKey} />
+      <TabPanel id="all-leave" activeKey={activeKey}>
+        {activeKey === 'requests' ? <LeaveRequestsTab /> : <LeaveTypesTab />}
+      </TabPanel>
     </div>
   )
 }

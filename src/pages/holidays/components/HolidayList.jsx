@@ -1,3 +1,8 @@
+import { Icon } from '@iconify/react'
+import Card from '@/components/ui/Card'
+import Skeleton, { LoadingRegion } from '@/components/ui/Skeleton'
+import EmptyState from '@/components/ui/EmptyState'
+import ErrorState from '@/components/ui/ErrorState'
 import { useHolidays } from '@/hooks/useHolidays'
 import { formatHolidayDate } from '@/pages/holidays/utils/formatHolidayDate'
 
@@ -6,24 +11,34 @@ export default function HolidayList({ year }) {
   const { data: holidays = [], isLoading, isError } = useHolidays(year)
 
   return (
-    <section className="space-y-2">
-      <h2 className="text-sm font-medium text-text">Holidays in {year}</h2>
+    <Card
+      padding="none"
+      title={
+        <span className="flex items-center gap-2">
+          <Icon icon="lucide:party-popper" width="16" height="16" className="text-fg-muted" aria-hidden />
+          Holidays in {year}
+        </span>
+      }
+    >
       {isLoading ? (
-        <p className="text-sm text-gray-400">Loading holidays…</p>
+        <LoadingRegion label="Loading holidays" className="space-y-3 px-5 py-4">
+          <Skeleton className="h-3 w-48" />
+          <Skeleton className="h-3 w-40" />
+        </LoadingRegion>
       ) : isError ? (
-        <p className="text-sm text-gray-500">Could not load holidays.</p>
+        <ErrorState compact message="Could not load holidays." />
       ) : holidays.length === 0 ? (
-        <p className="text-sm text-gray-500">No holidays listed for {year}.</p>
+        <EmptyState compact icon="lucide:calendar" message={`No holidays listed for ${year}.`} />
       ) : (
-        <ul className="divide-y divide-gray-100 rounded-lg border border-gray-200 bg-white text-sm">
+        <ul className="divide-y divide-line text-sm">
           {holidays.map((h) => (
-            <li key={h.id} className="flex justify-between gap-4 px-4 py-2">
-              <span className="text-text">{h.name}</span>
-              <span className="whitespace-nowrap text-gray-500">{formatHolidayDate(h.date)}</span>
+            <li key={h.id} className="flex justify-between gap-4 px-5 py-2.5">
+              <span className="font-medium text-fg">{h.name}</span>
+              <span className="whitespace-nowrap tabular-nums text-fg-muted">{formatHolidayDate(h.date)}</span>
             </li>
           ))}
         </ul>
       )}
-    </section>
+    </Card>
   )
 }

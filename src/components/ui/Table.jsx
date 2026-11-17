@@ -139,7 +139,7 @@ export default function Table({
 
   return (
     <div className={clsx('flex flex-col gap-3', className)}>
-      <div className="overflow-x-auto overflow-y-hidden rounded-lg border border-line bg-surface shadow-sm">
+      <div className="relative overflow-x-auto overflow-y-hidden rounded-lg border border-line bg-surface shadow-sm">
         <table className="w-full border-collapse text-left text-cell" aria-busy={isLoading || isFetching || undefined}>
           {caption && <caption className="sr-only">{caption}</caption>}
           <thead>

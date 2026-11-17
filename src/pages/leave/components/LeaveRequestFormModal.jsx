@@ -6,6 +6,9 @@ import Select from '@/components/ui/Select'
 import Modal from '@/components/ui/Modal'
 import FormField from '@/components/form/FormField'
 import Button from '@/components/ui/Button'
+import Checkbox from '@/components/ui/Checkbox'
+import { Icon } from '@iconify/react'
+import clsx from 'clsx'
 import { DateField, DateRangeField, toYmd, parseYmd } from '@/components/form/DatePicker'
 import { useLeaveTypes } from '@/hooks/useLeaveTypes'
 import { useSubmitLeaveRequest } from '@/hooks/useLeaveRequestMutations'
@@ -38,7 +41,6 @@ export default function LeaveRequestFormModal({ onClose }) {
 
   const {
     control,
-    register,
     handleSubmit,
     watch,
     setValue,
@@ -101,7 +103,7 @@ export default function LeaveRequestFormModal({ onClose }) {
           <Button
             type="submit"
             form="leave-request-form"
-            variant="accent"
+            variant="primary"
             isLoading={submit.isPending}
           >
             Submit request
@@ -130,16 +132,31 @@ export default function LeaveRequestFormModal({ onClose }) {
             )}
           />
           {typeBalance && (
-            <p className="mt-1 text-xs text-gray-500">
-              {typeBalance.remaining} of {typeBalance.totalDays} days remaining in {balanceYear}
+            <p className="mt-1.5 flex items-center gap-1.5 text-xs text-fg-muted">
+              <Icon icon="lucide:wallet" width="13" height="13" aria-hidden />
+              <span>
+                <span className="font-medium tabular-nums text-fg">{typeBalance.remaining}</span> of{' '}
+                <span className="tabular-nums">{typeBalance.totalDays}</span> days remaining in {balanceYear}
+              </span>
             </p>
           )}
         </FormField>
 
-        <label className="flex items-center gap-2 text-sm text-text">
-          <input type="checkbox" className="h-4 w-4 accent-accent" {...register('isHalfDay')} />
-          Half day
-        </label>
+        <Controller
+          control={control}
+          name="isHalfDay"
+          render={({ field }) => (
+            <label className="-ml-1 flex w-fit cursor-pointer items-center gap-1.5 text-sm text-fg">
+              <Checkbox
+                name={field.name}
+                checked={field.value}
+                onChange={(e) => field.onChange(e.target.checked)}
+                onBlur={field.onBlur}
+              />
+              Half day
+            </label>
+          )}
+        />
 
         {isHalfDay ? (
           <FormField label="Date" required error={errors.startDate?.message || errors.endDate?.message}>
@@ -174,17 +191,39 @@ export default function LeaveRequestFormModal({ onClose }) {
           </FormField>
         )}
 
-        {days === 0 && (
-          <p className="text-sm text-red-600">
-            These dates have no working days (weekends and holidays don&apos;t count).
-          </p>
-        )}
-        {days > 0 && (
-          <p className="text-sm text-gray-500">
-            {days} working day{days === 1 ? '' : 's'}
-            {years.length > 1 &&
-              ` (${years.map(([year, n]) => `${n} in ${year}`).join(', ')})`}
-          </p>
+        {days != null && (
+          <div
+            role="status"
+            className={clsx(
+              'flex items-start gap-3 rounded-lg border px-3.5 py-3',
+              days === 0 ? 'border-danger/30 bg-danger-soft' : 'border-brand-100 bg-brand-50',
+            )}
+          >
+            <span
+              className={clsx(
+                'flex h-9 w-9 shrink-0 items-center justify-center rounded-md',
+                days === 0 ? 'bg-surface text-danger' : 'bg-surface text-brand-700',
+              )}
+            >
+              <Icon icon={days === 0 ? 'lucide:calendar-off' : 'lucide:calendar-check'} width="18" height="18" aria-hidden />
+            </span>
+            {days === 0 ? (
+              <p className="pt-2 text-sm text-danger">
+                These dates have no working days (weekends and holidays don&apos;t count).
+              </p>
+            ) : (
+              <div className="min-w-0">
+                <p className="text-sm text-fg">
+                  <span className="font-display text-xl font-semibold tabular-nums">{days}</span> working day
+                  {days === 1 ? '' : 's'}
+                </p>
+                {years.length > 1 && (
+                  <p className="text-xs text-fg-muted">{years.map(([year, n]) => `${n} in ${year}`).join(', ')}</p>
+                )}
+                <p className="text-xs text-fg-muted">Weekends and holidays aren&apos;t counted.</p>
+              </div>
+            )}
+          </div>
         )}
       </form>
     </Modal>

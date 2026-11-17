@@ -8,5 +8,9 @@ const TONE = {
 }
 
 export default function LeaveStatusBadge({ status }) {
-  return <Badge tone={TONE[status] ?? 'neutral'}>{status ?? '—'}</Badge>
+  return (
+    <Badge dot tone={TONE[status] ?? 'neutral'}>
+      {status ?? '—'}
+    </Badge>
+  )
 }
