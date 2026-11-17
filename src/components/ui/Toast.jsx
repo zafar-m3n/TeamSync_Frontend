@@ -8,7 +8,7 @@ import {
 import gsap from 'gsap'
 import { Icon } from '@iconify/react'
 import clsx from 'clsx'
-import { ToastContext, registerToast } from '@/hooks/useToast'
+import { registerToast } from '@/hooks/useToast'
 
 const AUTO_DISMISS_MS = 4000
 
@@ -115,7 +115,7 @@ export function ToastProvider({ children }) {
   }, [toast])
 
   return (
-    <ToastContext.Provider value={toast}>
+    <>
       {children}
       <div className="pointer-events-none fixed right-4 top-4 z-100 flex flex-col gap-2">
         {toasts.map((t) => (
@@ -127,8 +127,6 @@ export function ToastProvider({ children }) {
           />
         ))}
       </div>
-    </ToastContext.Provider>
+    </>
   )
 }
-
-export default Toast

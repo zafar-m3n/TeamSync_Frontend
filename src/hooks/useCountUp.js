@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 // Animates 0 -> target on mount via requestAnimationFrame (ease-out cubic).
 // Non-numeric targets (e.g. the "82.5%" strings some StatCards show) are
 // returned unchanged with no animation.
-export default function useCountUp(target, duration = 800) {
+function useCountUp(target, duration = 800) {
   const numeric = typeof target === 'number' ? target : Number(target)
   const animatable =
     target != null && target !== '' && Number.isFinite(numeric)

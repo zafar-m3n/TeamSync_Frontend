@@ -1,15 +1,6 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { getShift, createShift, updateShift, deleteShift } from '@/services/shiftService'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { createShift, updateShift, deleteShift } from '@/services/shiftService'
 import { toast } from '@/hooks/useToast'
-
-export function useShift(id) {
-  return useQuery({
-    queryKey: ['shifts', id],
-    queryFn: () => getShift(id),
-    enabled: id != null,
-    select: (res) => res.data,
-  })
-}
 
 export function useCreateShift() {
   const qc = useQueryClient()
