@@ -1,128 +1,93 @@
-import { useEffect, useRef, useState } from 'react'
-import { Icon } from '@iconify/react'
+import { useEffect, useId, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import clsx from 'clsx'
+import OverlayHeader from '@/components/ui/overlay/OverlayHeader'
+import { useOverlay } from '@/components/ui/overlay/useOverlay'
 
-const FOCUSABLE =
-  'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+const SIZES = {
+  sm: 'max-w-md',
+  md: 'max-w-lg',
+  lg: 'max-w-2xl',
+  xl: 'max-w-4xl',
+}
 
 export default function Modal({
   isOpen,
   onClose,
   title,
+  description,
   children,
   footer,
   centered = false,
+  size = 'md',
+  initialFocusRef,
+  closeOnBackdrop = true,
 }) {
   const panelRef = useRef(null)
-  const openerRef = useRef(null)
-  const onCloseRef = useRef(onClose)
+  const bodyRef = useRef(null)
+  const titleRef = useRef(null)
+  const titleId = useId()
+  const descriptionId = useId()
   const [entered, setEntered] = useState(false)
 
-  useEffect(() => {
-    onCloseRef.current = onClose
-  })
+  useOverlay({ isOpen, onClose, panelRef, bodyRef, titleRef, initialFocusRef })
 
   useEffect(() => {
     if (!isOpen) return
-
-    openerRef.current = document.activeElement
     const raf = requestAnimationFrame(() => setEntered(true))
-    const prevOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-
-    const focusTarget =
-      panelRef.current?.querySelector(FOCUSABLE) ?? panelRef.current
-    focusTarget?.focus()
-
-    const onKeyDown = (event) => {
-      if (event.key === 'Escape') {
-        event.preventDefault()
-        onCloseRef.current?.()
-        return
-      }
-      if (event.key === 'Tab') {
-        const nodes = panelRef.current
-          ? [...panelRef.current.querySelectorAll(FOCUSABLE)]
-          : []
-        if (nodes.length === 0) {
-          event.preventDefault()
-          return
-        }
-        const first = nodes[0]
-        const last = nodes[nodes.length - 1]
-        if (event.shiftKey && document.activeElement === first) {
-          event.preventDefault()
-          last.focus()
-        } else if (!event.shiftKey && document.activeElement === last) {
-          event.preventDefault()
-          first.focus()
-        }
-      }
-    }
-
-    document.addEventListener('keydown', onKeyDown, true)
-
     return () => {
       cancelAnimationFrame(raf)
-      document.removeEventListener('keydown', onKeyDown, true)
-      document.body.style.overflow = prevOverflow
       setEntered(false)
-      const opener = openerRef.current
-      if (opener && typeof opener.focus === 'function') opener.focus()
     }
   }, [isOpen])
 
   if (!isOpen) return null
 
-  return (
+  return createPortal(
     <div
       className={clsx(
-        'fixed inset-0 z-50 flex justify-center px-4 transition-opacity duration-200',
-        // centered: vertically centered (unchanged). default: near the top, below
-        // the topbar, still comfortably off the edge on small screens.
-        centered ? 'items-center py-4' : 'items-start pt-[10vh] pb-4',
+        'fixed inset-0 z-50 flex justify-center px-4 transition-opacity duration-(--duration-base)',
+        centered ? 'items-center py-4' : 'items-start pb-4 pt-[10vh]',
         entered ? 'opacity-100' : 'opacity-0',
       )}
     >
       <div
-        className="absolute inset-0 bg-black/40"
+        className="absolute inset-0 bg-overlay"
         aria-hidden="true"
-        onClick={() => onClose?.()}
+        onClick={() => closeOnBackdrop && onClose?.()}
       />
       <div
         ref={panelRef}
         role="dialog"
         aria-modal="true"
-        aria-label={title}
+        aria-labelledby={title ? titleId : undefined}
+        aria-describedby={description ? descriptionId : undefined}
         tabIndex={-1}
         className={clsx(
-          'relative z-10 flex w-full max-w-lg flex-col rounded-lg bg-white shadow-xl transition-all duration-200 focus:outline-none',
-          centered ? 'max-h-[calc(100vh-2rem)]' : 'max-h-[85vh]',
-          entered ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0',
+          'relative z-10 flex w-full flex-col rounded-xl border border-line bg-surface shadow-lg transition-transform duration-(--duration-base) ease-out focus:outline-none',
+          SIZES[size] ?? SIZES.md,
+          centered ? 'max-h-[calc(100dvh-2rem)]' : 'max-h-[85dvh]',
+          entered ? 'translate-y-0 scale-100' : 'translate-y-2 scale-[0.98]',
         )}
       >
-        <div className="flex items-start justify-between gap-4 border-b border-gray-200 px-5 py-4">
-          {title && (
-            <h2 className="text-xl leading-tight text-primary">
-              {title}
-            </h2>
-          )}
-          <button
-            type="button"
-            onClick={() => onClose?.()}
-            aria-label="Close dialog"
-            className="-mr-1 -mt-1 shrink-0 rounded-md p-1 text-gray-500 transition-colors hover:bg-gray-100 hover:text-text focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-          >
-            <Icon icon="lucide:x" width="20" height="20" />
-          </button>
+        <OverlayHeader
+          ref={titleRef}
+          titleId={titleId}
+          title={title}
+          descriptionId={descriptionId}
+          description={description}
+          onClose={onClose}
+        />
+        <div ref={bodyRef} className="overflow-y-auto px-5 py-4 text-sm text-fg">
+          {children}
         </div>
-        <div className="overflow-y-auto px-5 py-4 text-sm text-text">{children}</div>
         {footer && (
-          <div className="flex justify-end gap-2 border-t border-gray-200 px-5 py-4">
+          <div className="flex flex-wrap justify-end gap-2 rounded-b-xl border-t border-line bg-surface-subtle/60 px-5 py-3">
             {footer}
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

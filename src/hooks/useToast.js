@@ -1,14 +1,11 @@
-// Module-level reference to the mounted ToastProvider's queue functions, so
-// non-React code (e.g. lib/axios.js's 401 handler) can raise toasts too.
-let activeToast = null
+import { useToastStore } from '@/store/ui/toastStore'
 
-export function registerToast(api) {
-  activeToast = api
-}
+const push = (tone) => (message) => useToastStore.getState().push(tone, message)
 
+// Callable from anywhere, inside or outside React.
 export const toast = {
-  success: (message) => activeToast?.success(message),
-  error: (message) => activeToast?.error(message),
-  info: (message) => activeToast?.info(message),
-  warning: (message) => activeToast?.warning(message),
+  success: push('success'),
+  error: push('danger'),
+  info: push('info'),
+  warning: push('warning'),
 }

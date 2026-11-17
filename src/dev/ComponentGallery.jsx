@@ -2,10 +2,12 @@ import { useState } from 'react'
 import clsx from 'clsx'
 import TokensSection from '@/dev/sections/TokensSection'
 import FormControlsSection from '@/dev/sections/FormControlsSection'
+import OverlaysSection from '@/dev/sections/OverlaysSection'
 
 const SECTIONS = [
   { id: 'tokens', label: 'Tokens', Component: TokensSection },
   { id: 'form-controls', label: 'Form controls', Component: FormControlsSection },
+  { id: 'overlays', label: 'Overlays & feedback', Component: OverlaysSection },
 ]
 
 export default function ComponentGallery() {

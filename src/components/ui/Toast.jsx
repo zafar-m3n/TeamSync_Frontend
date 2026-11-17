@@ -1,55 +1,47 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import { useCallback, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import gsap from 'gsap'
 import { Icon } from '@iconify/react'
 import clsx from 'clsx'
-import { registerToast } from '@/hooks/useToast'
+import { selectDismiss, selectToasts, useToastStore } from '@/store/ui/toastStore'
 
 const AUTO_DISMISS_MS = 4000
 
-const toneConfig = {
-  success: { icon: 'lucide:circle-check', accent: 'border-emerald-500', iconColor: 'text-emerald-600' },
-  danger: { icon: 'lucide:circle-x', accent: 'border-red-500', iconColor: 'text-red-600' },
-  warning: { icon: 'lucide:triangle-alert', accent: 'border-amber-500', iconColor: 'text-amber-600' },
-  info: { icon: 'lucide:info', accent: 'border-sky-500', iconColor: 'text-sky-600' },
-  neutral: { icon: 'lucide:bell', accent: 'border-gray-400', iconColor: 'text-gray-600' },
+const TONES = {
+  success: { icon: 'lucide:circle-check', iconColor: 'text-success', bar: 'bg-success' },
+  danger: { icon: 'lucide:circle-x', iconColor: 'text-danger', bar: 'bg-danger' },
+  warning: { icon: 'lucide:triangle-alert', iconColor: 'text-warning', bar: 'bg-warning' },
+  info: { icon: 'lucide:info', iconColor: 'text-info', bar: 'bg-info' },
 }
 
-function Toast({ tone = 'info', message, onDismiss }) {
+const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+function Toast({ id, tone, message }) {
+  const dismiss = useToastStore(selectDismiss)
   const ref = useRef(null)
   const timerRef = useRef(null)
   const leavingRef = useRef(false)
-  const config = toneConfig[tone] ?? toneConfig.info
+  const t = TONES[tone] ?? TONES.info
 
   const leave = useCallback(() => {
     if (leavingRef.current) return
     leavingRef.current = true
     clearTimeout(timerRef.current)
-    gsap.to(ref.current, {
-      x: 24,
-      autoAlpha: 0,
-      duration: 0.25,
-      ease: 'power2.in',
-      onComplete: onDismiss,
-    })
-  }, [onDismiss])
+    if (reducedMotion()) return dismiss(id)
+    gsap.to(ref.current, { x: 24, autoAlpha: 0, duration: 0.2, ease: 'power2.in', onComplete: () => dismiss(id) })
+  }, [dismiss, id])
 
   const startTimer = useCallback(() => {
     clearTimeout(timerRef.current)
     timerRef.current = setTimeout(leave, AUTO_DISMISS_MS)
   }, [leave])
 
+  const pause = () => clearTimeout(timerRef.current)
+
   useEffect(() => {
-    gsap.fromTo(
-      ref.current,
-      { x: 24, autoAlpha: 0 },
-      { x: 0, autoAlpha: 1, duration: 0.3, ease: 'power2.out' },
-    )
+    if (!reducedMotion()) {
+      gsap.fromTo(ref.current, { x: 24, autoAlpha: 0 }, { x: 0, autoAlpha: 1, duration: 0.22, ease: 'power2.out' })
+    }
     startTimer()
     return () => clearTimeout(timerRef.current)
   }, [startTimer])
@@ -57,76 +49,43 @@ function Toast({ tone = 'info', message, onDismiss }) {
   return (
     <div
       ref={ref}
-      role="status"
-      aria-live="polite"
-      onMouseEnter={() => clearTimeout(timerRef.current)}
+      role={tone === 'danger' ? 'alert' : undefined}
+      onMouseEnter={pause}
       onMouseLeave={startTimer}
-      className={clsx(
-        'pointer-events-auto flex w-80 max-w-[calc(100vw-2rem)] items-start gap-3 rounded-lg border-l-4 bg-white px-4 py-3 shadow-lg',
-        config.accent,
-      )}
+      onFocus={pause}
+      onBlur={startTimer}
+      className="pointer-events-auto relative flex w-80 max-w-[calc(100vw-2rem)] items-start gap-3 overflow-hidden rounded-lg border border-line bg-surface py-3 pl-4 pr-3 shadow-lg"
     >
-      <Icon
-        icon={config.icon}
-        width="20"
-        height="20"
-        className={clsx('mt-0.5 shrink-0', config.iconColor)}
-      />
-      <p className="flex-1 text-sm text-text">{message}</p>
+      <span className={clsx('absolute inset-y-0 left-0 w-1', t.bar)} aria-hidden />
+      <Icon icon={t.icon} width="20" height="20" className={clsx('mt-px shrink-0', t.iconColor)} aria-hidden />
+      <p className="flex-1 text-sm text-fg">{message}</p>
       <button
         type="button"
         onClick={leave}
         aria-label="Dismiss notification"
-        className="-mr-1 shrink-0 rounded p-0.5 text-gray-400 transition-colors hover:text-text focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+        className="shrink-0 rounded-md p-0.5 text-fg-subtle transition-colors hover:bg-surface-hover hover:text-fg focus-visible:focus-ring"
       >
-        <Icon icon="lucide:x" width="16" height="16" />
+        <Icon icon="lucide:x" width="16" height="16" aria-hidden />
       </button>
     </div>
   )
 }
 
-export function ToastProvider({ children }) {
-  const [toasts, setToasts] = useState([])
-  const idRef = useRef(0)
-
-  const remove = useCallback((id) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id))
-  }, [])
-
-  const add = useCallback((tone, message) => {
-    const id = (idRef.current += 1)
-    setToasts((prev) => [{ id, tone, message }, ...prev])
-    return id
-  }, [])
-
-  const toast = useMemo(
-    () => ({
-      success: (message) => add('success', message),
-      error: (message) => add('danger', message),
-      info: (message) => add('info', message),
-      warning: (message) => add('warning', message),
-    }),
-    [add],
-  )
-
-  useEffect(() => {
-    registerToast(toast)
-    return () => registerToast(null)
-  }, [toast])
-
-  return (
-    <>
-      {children}
-      <div className="pointer-events-none fixed right-4 top-4 z-100 flex flex-col gap-2">
-        {toasts.map((t) => (
-          <Toast
-            key={t.id}
-            tone={t.tone}
-            message={t.message}
-            onDismiss={() => remove(t.id)}
-          />
-        ))}
-      </div>
-    </>
+// Rendered once, outside the app root, so toasts stay reachable while a modal
+// makes the root inert.
+export function Toaster() {
+  const toasts = useToastStore(selectToasts)
+  return createPortal(
+    <div
+      aria-live="polite"
+      aria-label="Notifications"
+      role="region"
+      className="pointer-events-none fixed right-4 top-4 z-100 flex flex-col gap-2"
+    >
+      {toasts.map((t) => (
+        <Toast key={t.id} id={t.id} tone={t.tone} message={t.message} />
+      ))}
+    </div>,
+    document.body,
   )
 }
