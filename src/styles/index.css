@@ -12,7 +12,7 @@
   --color-line-strong: #8a979d;
   --color-fg: #1c2124;
   --color-fg-muted: #5a6670;
-  --color-fg-subtle: #7b8790;
+  --color-fg-subtle: #636d74;
   --color-overlay: rgb(15 19 21 / 0.45);
 
   --color-brand-50: #e8f6f5;
@@ -38,11 +38,6 @@
   --color-ink-hover: #232a2e;
   --color-ink-fg: #c3cdd0;
   --color-ink-active: #5ed3cb;
-
-  /* Legacy names used by pages not yet redesigned; removed in 10.17. */
-  --color-primary: var(--color-fg);
-  --color-accent: var(--color-brand-600);
-  --color-text: var(--color-fg);
 
   --text-cell: 0.8125rem;
   --text-cell--line-height: 1.25rem;
@@ -84,7 +79,7 @@
   --color-line-strong: #4a565c;
   --color-fg: #e6ebec;
   --color-fg-muted: #9aa7ad;
-  --color-fg-subtle: #7d8a90;
+  --color-fg-subtle: #85939a;
   --color-overlay: rgb(0 0 0 / 0.6);
   --color-brand-50: #12302e;
   --color-brand-100: #17403d;

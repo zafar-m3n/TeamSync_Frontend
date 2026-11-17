@@ -2,6 +2,8 @@ import { cloneElement, isValidElement, useId, useMemo } from 'react'
 import { Icon } from '@iconify/react'
 import { FieldContext } from '@/components/form/fieldContext'
 
+const LABELABLE = new Set(['input', 'select', 'textarea', 'button'])
+
 export default function FormField({ label, error, hint, required = false, className, children }) {
   const autoId = useId()
   const fieldId = (isValidElement(children) && children.props.id) || autoId
@@ -15,7 +17,12 @@ export default function FormField({ label, error, hint, required = false, classN
     [fieldId, hasError, describedBy, errorId],
   )
 
-  const field = isValidElement(children)
+  // A plain wrapper element (e.g. <div> around an input and a button) must not take the
+  // field's id — the control inside reads it from context, so the label points at it.
+  const isWrapper =
+    isValidElement(children) && typeof children.type === 'string' && !LABELABLE.has(children.type)
+
+  const field = isValidElement(children) && !isWrapper
     ? cloneElement(children, {
         id: fieldId,
         invalid: hasError || undefined,
