@@ -13,7 +13,11 @@ const LIMIT = 10
 
 const columns = [
   { key: 'name', header: 'Name', className: 'font-medium' },
-  { key: 'head', header: 'Department Head', render: () => <span className="text-fg-subtle">—</span> },
+  {
+    key: 'head',
+    header: 'Department Head',
+    render: (d) => d.departmentHead?.fullName ?? <span className="text-fg-subtle">—</span>,
+  },
 ]
 
 export default function DepartmentsTab() {
