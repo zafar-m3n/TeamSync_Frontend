@@ -29,8 +29,10 @@ export function useAssignShift() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: ({ id, shiftId }) => assignShift(id, shiftId),
-    onSuccess: (_res, { id }) => {
-      qc.invalidateQueries({ queryKey: ['employees', id] })
+    // Whole 'employees' prefix: the record is cached under the URL id (a string)
+    // or 'me' (My Profile), neither of which matches the numeric id here.
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['employees'] })
       toast.success('Shift assigned')
     },
     onError: (error) => toast.error(error.message),
@@ -41,8 +43,10 @@ export function useUploadDocument() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: ({ id, formData }) => uploadDocument(id, formData),
-    onSuccess: (_res, { id }) => {
-      qc.invalidateQueries({ queryKey: ['employees', id] })
+    // Whole 'employees' prefix: the record is cached under the URL id (a string)
+    // or 'me' (My Profile), neither of which matches the numeric id here.
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['employees'] })
       toast.success('Document uploaded')
     },
     onError: (error) => toast.error(error.message),
@@ -53,8 +57,10 @@ export function useDeleteDocument() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: ({ id, documentId }) => deleteDocument(id, documentId),
-    onSuccess: (_res, { id }) => {
-      qc.invalidateQueries({ queryKey: ['employees', id] })
+    // Whole 'employees' prefix: the record is cached under the URL id (a string)
+    // or 'me' (My Profile), neither of which matches the numeric id here.
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['employees'] })
       toast.success('Document deleted')
     },
     onError: (error) => toast.error(error.message),
