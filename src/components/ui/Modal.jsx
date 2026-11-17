@@ -1,8 +1,10 @@
-import { useEffect, useId, useRef, useState } from 'react'
+import { useId, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import clsx from 'clsx'
 import OverlayHeader from '@/components/ui/overlay/OverlayHeader'
 import { useOverlay } from '@/components/ui/overlay/useOverlay'
+import { usePresence } from '@/hooks/useMotion'
+import { overlayEnter, overlayExit } from '@/lib/motion'
 
 const SIZES = {
   sm: 'max-w-md',
@@ -23,35 +25,33 @@ export default function Modal({
   initialFocusRef,
   closeOnBackdrop = true,
 }) {
+  const backdropRef = useRef(null)
   const panelRef = useRef(null)
   const bodyRef = useRef(null)
   const titleRef = useRef(null)
   const titleId = useId()
   const descriptionId = useId()
-  const [entered, setEntered] = useState(false)
+  const parts = () => ({ backdrop: backdropRef.current, panel: panelRef.current })
+  const present = usePresence(
+    isOpen,
+    () => overlayEnter(parts()),
+    (done) => overlayExit(parts(), done),
+  )
 
   useOverlay({ isOpen, onClose, panelRef, bodyRef, titleRef, initialFocusRef })
 
-  useEffect(() => {
-    if (!isOpen) return
-    const raf = requestAnimationFrame(() => setEntered(true))
-    return () => {
-      cancelAnimationFrame(raf)
-      setEntered(false)
-    }
-  }, [isOpen])
-
-  if (!isOpen) return null
+  if (!present) return null
 
   return createPortal(
     <div
       className={clsx(
-        'fixed inset-0 z-50 flex justify-center px-4 transition-opacity duration-(--duration-base)',
+        'fixed inset-0 z-50 flex justify-center px-4',
         centered ? 'items-center py-4' : 'items-start pb-4 pt-[10vh]',
-        entered ? 'opacity-100' : 'opacity-0',
+        !isOpen && 'pointer-events-none',
       )}
     >
       <div
+        ref={backdropRef}
         className="absolute inset-0 bg-overlay"
         aria-hidden="true"
         onClick={() => closeOnBackdrop && onClose?.()}
@@ -64,10 +64,9 @@ export default function Modal({
         aria-describedby={description ? descriptionId : undefined}
         tabIndex={-1}
         className={clsx(
-          'relative z-10 flex w-full flex-col rounded-xl border border-line bg-surface shadow-lg transition-transform duration-(--duration-base) ease-out focus:outline-none',
+          'relative z-10 flex w-full flex-col rounded-xl border border-line bg-surface shadow-lg focus:outline-none',
           SIZES[size] ?? SIZES.md,
           centered ? 'max-h-[calc(100dvh-2rem)]' : 'max-h-[85dvh]',
-          entered ? 'translate-y-0 scale-100' : 'translate-y-2 scale-[0.98]',
         )}
       >
         <OverlayHeader

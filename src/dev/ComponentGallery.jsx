@@ -4,12 +4,14 @@ import TokensSection from '@/dev/sections/TokensSection'
 import FormControlsSection from '@/dev/sections/FormControlsSection'
 import OverlaysSection from '@/dev/sections/OverlaysSection'
 import DataDisplaySection from '@/dev/sections/DataDisplaySection'
+import MotionSection from '@/dev/sections/MotionSection'
 
 const SECTIONS = [
   { id: 'tokens', label: 'Tokens', Component: TokensSection },
   { id: 'form-controls', label: 'Form controls', Component: FormControlsSection },
   { id: 'overlays', label: 'Overlays & feedback', Component: OverlaysSection },
   { id: 'data', label: 'Data display', Component: DataDisplaySection },
+  { id: 'motion', label: 'Motion', Component: MotionSection },
 ]
 
 export default function ComponentGallery() {

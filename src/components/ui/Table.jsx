@@ -1,10 +1,11 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { Icon } from '@iconify/react'
 import clsx from 'clsx'
 import EmptyState from '@/components/ui/EmptyState'
 import ErrorState from '@/components/ui/ErrorState'
 import Pagination from '@/components/ui/Pagination'
 import { SkeletonRows } from '@/components/ui/TableSkeleton'
+import { useStaggerIn } from '@/hooks/useMotion'
 
 const ALIGN = { left: 'text-left', center: 'text-center', right: 'text-right' }
 
@@ -69,6 +70,7 @@ export default function Table({
   loadingRows = 5,
   className,
 }) {
+  const tbodyRef = useRef(null)
   const [localSort, setLocalSort] = useState(null)
   const controlled = typeof onSort === 'function'
   const sort = controlled ? sortState : localSort
@@ -93,6 +95,8 @@ export default function Table({
     ? [...columns, { key: '__actions', header: <span className="sr-only">Actions</span>, align: 'right' }]
     : columns
   const colSpan = allColumns.length
+  useStaggerIn(tbodyRef, !isLoading && !error && rows.length > 0, ':scope > tr')
+
   const showPager = meta && onPageChange && !isLoading && !error && sortedRows.length > 0
 
   const body = () => {
@@ -174,7 +178,7 @@ export default function Table({
               })}
             </tr>
           </thead>
-          <tbody className={clsx('transition-opacity duration-(--duration-base)', isFetching && !isLoading && 'opacity-60')}>
+          <tbody ref={tbodyRef} className={clsx('transition-opacity duration-(--duration-base)', isFetching && !isLoading && 'opacity-60')}>
             {body()}
           </tbody>
         </table>

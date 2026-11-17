@@ -1,8 +1,10 @@
-import { useEffect, useId, useRef, useState } from 'react'
+import { useId, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import clsx from 'clsx'
 import OverlayHeader from '@/components/ui/overlay/OverlayHeader'
 import { useOverlay } from '@/components/ui/overlay/useOverlay'
+import { usePresence } from '@/hooks/useMotion'
+import { overlayEnter, overlayExit } from '@/lib/motion'
 
 const SIZES = {
   sm: 'max-w-xs',
@@ -26,36 +28,31 @@ export default function Drawer({
   hideHeader = false,
   className,
 }) {
+  const backdropRef = useRef(null)
   const panelRef = useRef(null)
   const bodyRef = useRef(null)
   const titleRef = useRef(null)
   const titleId = useId()
   const descriptionId = useId()
-  const [entered, setEntered] = useState(false)
+  const parts = () => ({ backdrop: backdropRef.current, panel: panelRef.current, kind: 'drawer', side })
+  const present = usePresence(
+    isOpen,
+    () => overlayEnter(parts()),
+    (done) => overlayExit(parts(), done),
+  )
 
   useOverlay({ isOpen, onClose, panelRef, bodyRef, titleRef, initialFocusRef })
 
-  useEffect(() => {
-    if (!isOpen) return
-    const raf = requestAnimationFrame(() => setEntered(true))
-    return () => {
-      cancelAnimationFrame(raf)
-      setEntered(false)
-    }
-  }, [isOpen])
-
-  if (!isOpen) return null
+  if (!present) return null
 
   const fromLeft = side === 'left'
   const labelled = title && !hideHeader
 
   return createPortal(
-    <div className="fixed inset-0 z-50">
+    <div className={clsx('fixed inset-0 z-50', !isOpen && 'pointer-events-none')}>
       <div
-        className={clsx(
-          'absolute inset-0 bg-overlay transition-opacity duration-(--duration-slow)',
-          entered ? 'opacity-100' : 'opacity-0',
-        )}
+        ref={backdropRef}
+        className="absolute inset-0 bg-overlay"
         aria-hidden="true"
         onClick={() => onClose?.()}
       />
@@ -68,10 +65,9 @@ export default function Drawer({
         aria-describedby={description && !hideHeader ? descriptionId : undefined}
         tabIndex={-1}
         className={clsx(
-          'absolute inset-y-0 flex w-full flex-col bg-surface shadow-lg transition-transform duration-(--duration-slow) ease-out focus:outline-none',
+          'absolute inset-y-0 flex w-full flex-col bg-surface shadow-lg focus:outline-none',
           fromLeft ? 'left-0 border-r border-line' : 'right-0 border-l border-line',
           SIZES[size] ?? SIZES.md,
-          entered ? 'translate-x-0' : fromLeft ? '-translate-x-full' : 'translate-x-full',
           className,
         )}
       >

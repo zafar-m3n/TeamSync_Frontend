@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
-import gsap from 'gsap'
 import { Icon } from '@iconify/react'
 import clsx from 'clsx'
 import { selectDismiss, selectToasts, useToastStore } from '@/store/ui/toastStore'
+import { toastEnter, toastExit } from '@/lib/motion'
 
 const AUTO_DISMISS_MS = 4000
 
@@ -13,8 +13,6 @@ const TONES = {
   warning: { icon: 'lucide:triangle-alert', iconColor: 'text-warning', bar: 'bg-warning' },
   info: { icon: 'lucide:info', iconColor: 'text-info', bar: 'bg-info' },
 }
-
-const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
 function Toast({ id, tone, message }) {
   const dismiss = useToastStore(selectDismiss)
@@ -27,8 +25,7 @@ function Toast({ id, tone, message }) {
     if (leavingRef.current) return
     leavingRef.current = true
     clearTimeout(timerRef.current)
-    if (reducedMotion()) return dismiss(id)
-    gsap.to(ref.current, { x: 24, autoAlpha: 0, duration: 0.2, ease: 'power2.in', onComplete: () => dismiss(id) })
+    toastExit(ref.current, () => dismiss(id))
   }, [dismiss, id])
 
   const startTimer = useCallback(() => {
@@ -39,11 +36,12 @@ function Toast({ id, tone, message }) {
   const pause = () => clearTimeout(timerRef.current)
 
   useEffect(() => {
-    if (!reducedMotion()) {
-      gsap.fromTo(ref.current, { x: 24, autoAlpha: 0 }, { x: 0, autoAlpha: 1, duration: 0.22, ease: 'power2.out' })
-    }
+    const tween = toastEnter(ref.current)
     startTimer()
-    return () => clearTimeout(timerRef.current)
+    return () => {
+      tween?.kill()
+      clearTimeout(timerRef.current)
+    }
   }, [startTimer])
 
   return (
