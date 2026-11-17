@@ -74,7 +74,7 @@ export default function DocumentsTab() {
                 <td className="px-4 py-3 text-text">{doc.title}</td>
                 <td className="px-4 py-3 text-text">{doc.category?.name ?? '—'}</td>
                 <td className="px-4 py-3 text-text">
-                  {doc.uploadedBy?.fullName ?? '—'}
+                  {doc.uploadedByUser?.employee?.fullName ?? '—'}
                 </td>
                 <td className="px-4 py-3 text-text">
                   {fmtDate(doc.uploadDate ?? doc.createdAt)}
