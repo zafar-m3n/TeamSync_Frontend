@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
+import { Icon } from '@iconify/react'
 import Table from '@/components/ui/Table'
-import TableSkeleton from '@/components/ui/TableSkeleton'
-import Modal from '@/components/ui/Modal'
+import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import Button from '@/components/ui/Button'
 import IconButton from '@/components/ui/IconButton'
 import Input from '@/components/form/Input'
@@ -12,9 +12,8 @@ import DepartmentFormModal from '@/pages/departments-shifts/components/Departmen
 const LIMIT = 10
 
 const columns = [
-  { key: 'name', header: 'Name' },
-  { key: 'head', header: 'Department Head' },
-  { key: 'actions', header: 'Actions' },
+  { key: 'name', header: 'Name', className: 'font-medium' },
+  { key: 'head', header: 'Department Head', render: () => <span className="text-fg-subtle">—</span> },
 ]
 
 export default function DepartmentsTab() {
@@ -32,149 +31,91 @@ export default function DepartmentsTab() {
     [page, debouncedSearch],
   )
 
-  const { data, isLoading, isError, error, refetch } = useDepartments(params)
+  const { data, isLoading, isFetching, isError, error, refetch } = useDepartments(params)
   const deleteMutation = useDeleteDepartment()
 
   const [formTarget, setFormTarget] = useState(undefined) // undefined = closed, null = create, record = edit
   const [deleteTarget, setDeleteTarget] = useState(null)
-
-  const rows = data?.rows ?? []
-  const meta = data?.meta
-  const totalPages = meta?.totalPages ?? 1
+  // Keeps the name on screen while the delete dialog animates out.
+  const [shownDelete, setShownDelete] = useState(null)
+  if (deleteTarget && deleteTarget !== shownDelete) setShownDelete(deleteTarget)
 
   const openCreate = () => setFormTarget(null)
+  const newButton = (size) => (
+    <Button variant="primary" size={size} onClick={openCreate}>
+      <Icon icon="lucide:plus" width={size === 'sm' ? 14 : 16} height={size === 'sm' ? 14 : 16} aria-hidden />
+      New Department
+    </Button>
+  )
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Input
-          type="search"
-          placeholder="Search departments…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="max-w-xs"
-        />
-        <Button variant="accent" onClick={openCreate}>
-          New Department
-        </Button>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative w-full sm:max-w-xs">
+          <Icon
+            icon="lucide:search"
+            width="16"
+            height="16"
+            aria-hidden
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-fg-subtle"
+          />
+          <Input
+            type="search"
+            aria-label="Search departments"
+            placeholder="Search departments…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        {newButton()}
       </div>
 
-      {isLoading ? (
-        <TableSkeleton columns={columns} rows={LIMIT} />
-      ) : isError ? (
-        <div className="flex flex-col items-center gap-3 rounded-lg border border-gray-200 bg-white py-12 text-center">
-          <p className="text-sm text-gray-600">
-            {error?.message || 'Could not load departments.'}
-          </p>
-          <Button variant="secondary" size="sm" onClick={() => refetch()}>
-            Try again
-          </Button>
-        </div>
-      ) : (
-        <>
-          <Table
-            columns={columns}
-            rows={rows}
-            emptyMessage="No departments yet — add your first department"
-            emptyAction={
-              <Button variant="accent" size="sm" onClick={openCreate}>
-                New Department
-              </Button>
-            }
-            renderRow={(dept) => (
-              <tr
-                key={dept.id}
-                className="border-b border-gray-100 last:border-0 hover:bg-gray-50"
-              >
-                <td className="px-4 py-3 text-text">{dept.name}</td>
-                <td className="px-4 py-3 text-gray-400">—</td>
-                <td className="px-4 py-3">
-                  <div className="flex gap-2">
-                    <IconButton
-                      icon="lucide:pencil"
-                      label="Edit department"
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => setFormTarget(dept)}
-                    />
-                    <IconButton
-                      icon="lucide:trash-2"
-                      label="Delete department"
-                      variant="danger"
-                      size="sm"
-                      onClick={() => setDeleteTarget(dept)}
-                    />
-                  </div>
-                </td>
-              </tr>
-            )}
-          />
-
-          {meta && totalPages > 1 && (
-            <div className="flex items-center justify-between">
-              <Button
-                variant="secondary"
-                size="sm"
-                disabled={page <= 1}
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-              >
-                Previous
-              </Button>
-              <span className="text-sm text-gray-500">
-                Page {meta.page} of {totalPages}
-              </span>
-              <Button
-                variant="secondary"
-                size="sm"
-                disabled={page >= totalPages}
-                onClick={() => setPage((p) => p + 1)}
-              >
-                Next
-              </Button>
-            </div>
-          )}
-        </>
-      )}
+      <Table
+        caption="Departments"
+        columns={columns}
+        rows={data?.rows ?? []}
+        meta={data?.meta}
+        onPageChange={setPage}
+        isLoading={isLoading}
+        isFetching={isFetching}
+        loadingRows={LIMIT}
+        error={isError ? error?.message || 'Could not load departments.' : null}
+        onRetry={() => refetch()}
+        emptyIcon="lucide:building-2"
+        emptyMessage="No departments yet — add your first department"
+        emptyAction={newButton('sm')}
+        rowActions={(dept) => (
+          <>
+            <IconButton icon="lucide:pencil" label="Edit department" variant="ghost" size="sm" onClick={() => setFormTarget(dept)} />
+            <IconButton
+              icon="lucide:trash-2"
+              label="Delete department"
+              variant="ghost-danger"
+              size="sm"
+              onClick={() => setDeleteTarget(dept)}
+            />
+          </>
+        )}
+      />
 
       {formTarget !== undefined && (
-        <DepartmentFormModal
-          key={formTarget?.id ?? 'new'}
-          department={formTarget}
-          onClose={() => setFormTarget(undefined)}
-        />
+        <DepartmentFormModal key={formTarget?.id ?? 'new'} department={formTarget} onClose={() => setFormTarget(undefined)} />
       )}
 
-      <Modal
+      <ConfirmDialog
         isOpen={Boolean(deleteTarget)}
         onClose={() => setDeleteTarget(null)}
         title="Delete department"
-        footer={
-          <>
-            <Button
-              variant="secondary"
-              onClick={() => setDeleteTarget(null)}
-              disabled={deleteMutation.isPending}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="danger"
-              isLoading={deleteMutation.isPending}
-              onClick={() =>
-                deleteMutation.mutate(deleteTarget.id, {
-                  onSuccess: () => setDeleteTarget(null),
-                })
-              }
-            >
-              Delete
-            </Button>
-          </>
-        }
+        confirmLabel="Delete"
+        tone="danger"
+        isLoading={deleteMutation.isPending}
+        onConfirm={() => deleteMutation.mutate(deleteTarget.id, { onSuccess: () => setDeleteTarget(null) })}
       >
         <p>
-          Delete <strong>{deleteTarget?.name}</strong>? This can&rsquo;t be undone.
+          Delete <strong className="font-semibold text-fg">{shownDelete?.name}</strong>? This can&rsquo;t be undone.
         </p>
-      </Modal>
+      </ConfirmDialog>
     </div>
   )
 }

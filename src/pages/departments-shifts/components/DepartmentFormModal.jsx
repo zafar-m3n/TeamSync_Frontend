@@ -63,7 +63,7 @@ export default function DepartmentFormModal({ department, onClose }) {
           <Button
             type="submit"
             form="department-form"
-            variant="accent"
+            variant="primary"
             isLoading={mutation.isPending}
           >
             {isEdit ? 'Save changes' : 'Create department'}

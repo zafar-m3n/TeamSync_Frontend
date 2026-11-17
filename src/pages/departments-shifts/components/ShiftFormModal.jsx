@@ -81,7 +81,7 @@ export default function ShiftFormModal({ shift, onClose }) {
           <Button
             type="submit"
             form="shift-form"
-            variant="accent"
+            variant="primary"
             isLoading={mutation.isPending}
           >
             {isEdit ? 'Save changes' : 'Create shift'}

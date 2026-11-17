@@ -7,6 +7,7 @@ import FormField from '@/components/form/FormField'
 import Input from '@/components/form/Input'
 import Button from '@/components/ui/Button'
 import { useUpdateAttendance } from '@/hooks/useUpdateAttendance'
+import { fmtDate } from '@/pages/attendance/utils/attendanceFormat'
 
 const STATUS_OPTIONS = ['Present', 'Late', 'Half-day', 'Absent'].map((s) => ({
   value: s,
@@ -78,6 +79,7 @@ export default function AttendanceEditModal({ record, onClose }) {
       isOpen
       onClose={onClose}
       title="Edit attendance record"
+      description={`${record.employee?.fullName ?? 'Employee'} · ${fmtDate(record.date)}`}
       footer={
         <>
           <Button variant="secondary" onClick={onClose} disabled={mutation.isPending}>
@@ -86,7 +88,7 @@ export default function AttendanceEditModal({ record, onClose }) {
           <Button
             type="submit"
             form="attendance-edit-form"
-            variant="accent"
+            variant="primary"
             isLoading={mutation.isPending}
           >
             Save changes
@@ -104,13 +106,9 @@ export default function AttendanceEditModal({ record, onClose }) {
           <div className="flex items-center gap-2">
             <Input type="datetime-local" {...register('clockIn')} />
             {clockIn && (
-              <button
-                type="button"
-                onClick={() => setValue('clockIn', '', { shouldDirty: true })}
-                className="shrink-0 text-xs text-gray-400 hover:text-text"
-              >
+              <Button type="button" variant="ghost" size="sm" onClick={() => setValue('clockIn', '', { shouldDirty: true })}>
                 Clear
-              </button>
+              </Button>
             )}
           </div>
         </FormField>
@@ -119,13 +117,9 @@ export default function AttendanceEditModal({ record, onClose }) {
           <div className="flex items-center gap-2">
             <Input type="datetime-local" {...register('clockOut')} />
             {clockOut && (
-              <button
-                type="button"
-                onClick={() => setValue('clockOut', '', { shouldDirty: true })}
-                className="shrink-0 text-xs text-gray-400 hover:text-text"
-              >
+              <Button type="button" variant="ghost" size="sm" onClick={() => setValue('clockOut', '', { shouldDirty: true })}>
                 Clear
-              </button>
+              </Button>
             )}
           </div>
         </FormField>

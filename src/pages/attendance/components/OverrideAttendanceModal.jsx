@@ -6,6 +6,8 @@ import Modal from '@/components/ui/Modal'
 import FormField from '@/components/form/FormField'
 import Button from '@/components/ui/Button'
 import { useOverrideAttendance } from '@/hooks/useOverrideAttendance'
+import AttendanceStatusBadge from '@/pages/attendance/components/AttendanceStatusBadge'
+import { fmtDate } from '@/pages/attendance/utils/attendanceFormat'
 
 // Absent is intentionally excluded — this endpoint can only move a record
 // out of Absent, never back into it.
@@ -42,6 +44,7 @@ export default function OverrideAttendanceModal({ record, onClose }) {
       isOpen
       onClose={onClose}
       title="Correct attendance"
+      description={`${record.employee?.fullName ?? 'Employee'} · ${fmtDate(record.date)}`}
       footer={
         <>
           <Button variant="secondary" onClick={onClose} disabled={mutation.isPending}>
@@ -50,7 +53,7 @@ export default function OverrideAttendanceModal({ record, onClose }) {
           <Button
             type="submit"
             form="attendance-override-form"
-            variant="accent"
+            variant="primary"
             isLoading={mutation.isPending}
           >
             Confirm
@@ -64,9 +67,8 @@ export default function OverrideAttendanceModal({ record, onClose }) {
         className="flex flex-col gap-4"
         noValidate
       >
-        <p className="text-sm text-gray-500">
-          Change this record from <span className="font-medium text-text">Absent</span> to
-          the correct status.
+        <p className="flex items-center gap-2 text-sm text-fg-muted">
+          Change this record from <AttendanceStatusBadge status="Absent" /> to the correct status.
         </p>
         <FormField label="Status" required error={errors.status?.message}>
           <Controller

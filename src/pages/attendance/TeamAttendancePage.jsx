@@ -1,32 +1,22 @@
 import { useMemo, useState } from 'react'
-import { format } from 'date-fns'
 import Table from '@/components/ui/Table'
-import TableSkeleton from '@/components/ui/TableSkeleton'
-import Button from '@/components/ui/Button'
 import IconButton from '@/components/ui/IconButton'
-import Pagination from '@/components/ui/Pagination'
+import FormField from '@/components/form/FormField'
 import { DateField, toYmd } from '@/components/form/DatePicker'
 import { useTeamAttendance } from '@/hooks/useTeamAttendance'
 import { useMyTeam } from '@/hooks/useMyTeam'
 import AttendanceStatusBadge from '@/pages/attendance/components/AttendanceStatusBadge'
 import OverrideAttendanceModal from '@/pages/attendance/components/OverrideAttendanceModal'
+import { fmtTime } from '@/pages/attendance/utils/attendanceFormat'
 
 const LIMIT = 20
 
 const columns = [
-  { key: 'employee', header: 'Employee' },
-  { key: 'status', header: 'Status' },
-  { key: 'clockIn', header: 'Clock In' },
-  { key: 'clockOut', header: 'Clock Out' },
-  { key: 'actions', header: 'Actions' },
+  { key: 'employee', header: 'Employee', className: 'font-medium', render: (r) => r.employee?.fullName ?? '—' },
+  { key: 'status', header: 'Status', render: (r) => <AttendanceStatusBadge status={r.status} isManualOverride={r.isManualOverride} /> },
+  { key: 'clockIn', header: 'Clock In', className: 'tabular-nums', render: (r) => fmtTime(r.clockIn) },
+  { key: 'clockOut', header: 'Clock Out', className: 'tabular-nums', render: (r) => fmtTime(r.clockOut) },
 ]
-
-function fmtTime(value) {
-  if (!value) return '—'
-  const d = new Date(value)
-  return Number.isNaN(d.getTime()) ? '—' : format(d, 'p')
-}
-
 
 export default function TeamAttendancePage() {
   const [date, setDate] = useState(() => toYmd(new Date()))
@@ -34,18 +24,15 @@ export default function TeamAttendancePage() {
   const [correctTarget, setCorrectTarget] = useState(null)
 
   const params = useMemo(() => ({ date, page, limit: LIMIT }), [date, page])
-  const { data, isLoading, isError, error, refetch } = useTeamAttendance(params)
-  const rows = data?.rows ?? []
+  const { data, isLoading, isFetching, isError, error, refetch } = useTeamAttendance(params)
   const { data: team = [] } = useMyTeam()
 
-  const emptyMessage =
-    team.length === 0 ? 'No direct reports' : 'No attendance records for this date'
+  const emptyMessage = team.length === 0 ? 'No direct reports' : 'No attendance records for this date'
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-end gap-3">
-        <div>
-          <label className="mb-1 block text-xs font-medium text-gray-500">Date</label>
+    <div className="space-y-5">
+      <div className="w-full sm:w-56">
+        <FormField label="Date">
           <DateField
             value={date}
             onChange={(value) => {
@@ -53,66 +40,30 @@ export default function TeamAttendancePage() {
               setPage(1)
             }}
             placeholder="Pick a date"
-            className="w-56"
           />
-        </div>
+        </FormField>
       </div>
 
-      {isLoading ? (
-        <TableSkeleton columns={columns} rows={LIMIT} />
-      ) : isError ? (
-        <div className="flex flex-col items-center gap-3 rounded-lg border border-gray-200 bg-white py-12 text-center">
-          <p className="text-sm text-gray-600">
-            {error?.message || 'Could not load team attendance.'}
-          </p>
-          <Button variant="secondary" size="sm" onClick={() => refetch()}>
-            Try again
-          </Button>
-        </div>
-      ) : (
-        <>
-          <Table
-            columns={columns}
-            rows={rows}
-            emptyMessage={emptyMessage}
-            renderRow={(rec) => (
-              <tr
-                key={rec.id}
-                className="border-b border-gray-100 last:border-0 hover:bg-gray-50"
-              >
-                <td className="px-4 py-3 text-text">{rec.employee?.fullName ?? '—'}</td>
-                <td className="px-4 py-3">
-                  <AttendanceStatusBadge
-                    status={rec.status}
-                    isManualOverride={rec.isManualOverride}
-                  />
-                </td>
-                <td className="px-4 py-3 text-text">{fmtTime(rec.clockIn)}</td>
-                <td className="px-4 py-3 text-text">{fmtTime(rec.clockOut)}</td>
-                <td className="px-4 py-3">
-                  {rec.status === 'Absent' ? (
-                    <IconButton
-                      icon="lucide:pencil"
-                      label="Correct attendance"
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => setCorrectTarget(rec)}
-                    />
-                  ) : null}
-                </td>
-              </tr>
-            )}
-          />
-          <Pagination meta={data?.meta} onPageChange={setPage} />
-        </>
-      )}
+      <Table
+        caption="Team attendance"
+        columns={columns}
+        rows={data?.rows ?? []}
+        meta={data?.meta}
+        onPageChange={setPage}
+        isLoading={isLoading}
+        isFetching={isFetching}
+        error={isError ? error?.message || 'Could not load team attendance.' : null}
+        onRetry={() => refetch()}
+        emptyIcon="lucide:calendar-x"
+        emptyMessage={emptyMessage}
+        rowActions={(rec) =>
+          rec.status === 'Absent' && (
+            <IconButton icon="lucide:pencil" label="Correct attendance" variant="ghost" size="sm" onClick={() => setCorrectTarget(rec)} />
+          )
+        }
+      />
 
-      {correctTarget && (
-        <OverrideAttendanceModal
-          record={correctTarget}
-          onClose={() => setCorrectTarget(null)}
-        />
-      )}
+      {correctTarget && <OverrideAttendanceModal record={correctTarget} onClose={() => setCorrectTarget(null)} />}
     </div>
   )
 }

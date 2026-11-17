@@ -1,35 +1,22 @@
 import { useMemo } from 'react'
-import { format } from 'date-fns'
 import Table from '@/components/ui/Table'
-import TableSkeleton from '@/components/ui/TableSkeleton'
-import Button from '@/components/ui/Button'
+import FormField from '@/components/form/FormField'
 import { DateRangeField, toYmd } from '@/components/form/DatePicker'
 import { useMyAttendance } from '@/hooks/useMyAttendance'
 import { useListFilters } from '@/hooks/useListFilters'
 import AttendanceStatusBadge from '@/pages/attendance/components/AttendanceStatusBadge'
 import ClockPanel from '@/pages/attendance/components/ClockPanel'
+import { fmtDate, fmtTime } from '@/pages/attendance/utils/attendanceFormat'
 import { useAuth } from '@/store/useAuth'
 
 const LIMIT = 10
 
 const columns = [
-  { key: 'date', header: 'Date' },
-  { key: 'status', header: 'Status' },
-  { key: 'clockIn', header: 'Clock In' },
-  { key: 'clockOut', header: 'Clock Out' },
+  { key: 'date', header: 'Date', className: 'whitespace-nowrap font-medium tabular-nums', render: (r) => fmtDate(r.date) },
+  { key: 'status', header: 'Status', render: (r) => <AttendanceStatusBadge status={r.status} isManualOverride={r.isManualOverride} /> },
+  { key: 'clockIn', header: 'Clock In', className: 'tabular-nums', render: (r) => fmtTime(r.clockIn) },
+  { key: 'clockOut', header: 'Clock Out', className: 'tabular-nums', render: (r) => fmtTime(r.clockOut) },
 ]
-
-function fmtDate(value) {
-  if (!value) return '—'
-  const d = new Date(value)
-  return Number.isNaN(d.getTime()) ? '—' : format(d, 'PP')
-}
-
-function fmtTime(value) {
-  if (!value) return '—'
-  const d = new Date(value)
-  return Number.isNaN(d.getTime()) ? '—' : format(d, 'p')
-}
 
 export default function MyAttendancePage() {
   const { can } = useAuth()
@@ -46,87 +33,34 @@ export default function MyAttendancePage() {
     [page, range],
   )
 
-  const { data, isLoading, isError, error, refetch } = useMyAttendance(params)
-  const rows = data?.rows ?? []
-  const meta = data?.meta
-  const totalPages = meta?.totalPages ?? 1
+  const { data, isLoading, isFetching, isError, error, refetch } = useMyAttendance(params)
 
   return (
-    <div className="space-y-4">
-      {can('attendance', 'clock') && <ClockPanel />}
+    <div className="space-y-6">
+      {can('attendance', 'clock') && <ClockPanel prominent />}
 
-      <div className="flex flex-wrap items-end gap-3">
-        <div>
-          <label className="mb-1 block text-xs font-medium text-gray-500">Date range</label>
-          <DateRangeField
-            value={range}
-            onChange={(next) => setFilter('range', next)}
-            placeholder="Any dates"
-            className="w-72"
-          />
+      <section className="space-y-4">
+        <div className="w-full sm:w-72">
+          <FormField label="Date range">
+            <DateRangeField value={range} onChange={(next) => setFilter('range', next)} placeholder="Any dates" />
+          </FormField>
         </div>
-      </div>
 
-      {isLoading ? (
-        <TableSkeleton columns={columns} rows={LIMIT} />
-      ) : isError ? (
-        <div className="flex flex-col items-center gap-3 rounded-lg border border-gray-200 bg-white py-12 text-center">
-          <p className="text-sm text-gray-600">
-            {error?.message || 'Could not load your attendance.'}
-          </p>
-          <Button variant="secondary" size="sm" onClick={() => refetch()}>
-            Try again
-          </Button>
-        </div>
-      ) : (
-        <>
-          <Table
-            columns={columns}
-            rows={rows}
-            emptyMessage="No attendance records yet"
-            renderRow={(rec) => (
-              <tr
-                key={rec.id}
-                className="border-b border-gray-100 last:border-0 hover:bg-gray-50"
-              >
-                <td className="px-4 py-3 text-text">{fmtDate(rec.date)}</td>
-                <td className="px-4 py-3">
-                  <AttendanceStatusBadge
-                    status={rec.status}
-                    isManualOverride={rec.isManualOverride}
-                  />
-                </td>
-                <td className="px-4 py-3 text-text">{fmtTime(rec.clockIn)}</td>
-                <td className="px-4 py-3 text-text">{fmtTime(rec.clockOut)}</td>
-              </tr>
-            )}
-          />
-
-          {meta && totalPages > 1 && (
-            <div className="flex items-center justify-between">
-              <Button
-                variant="secondary"
-                size="sm"
-                disabled={page <= 1}
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-              >
-                Previous
-              </Button>
-              <span className="text-sm text-gray-500">
-                Page {meta.page} of {totalPages}
-              </span>
-              <Button
-                variant="secondary"
-                size="sm"
-                disabled={page >= totalPages}
-                onClick={() => setPage((p) => p + 1)}
-              >
-                Next
-              </Button>
-            </div>
-          )}
-        </>
-      )}
+        <Table
+          caption="My attendance records"
+          columns={columns}
+          rows={data?.rows ?? []}
+          meta={data?.meta}
+          onPageChange={setPage}
+          isLoading={isLoading}
+          isFetching={isFetching}
+          loadingRows={LIMIT}
+          error={isError ? error?.message || 'Could not load your attendance.' : null}
+          onRetry={() => refetch()}
+          emptyIcon="lucide:calendar-x"
+          emptyMessage="No attendance records yet"
+        />
+      </section>
     </div>
   )
 }

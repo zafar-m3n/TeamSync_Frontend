@@ -1,145 +1,114 @@
 import { useState } from 'react'
+import { Icon } from '@iconify/react'
+import clsx from 'clsx'
 import Table from '@/components/ui/Table'
-import TableSkeleton from '@/components/ui/TableSkeleton'
+import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import Button from '@/components/ui/Button'
 import IconButton from '@/components/ui/IconButton'
-import Modal from '@/components/ui/Modal'
 import { useShifts } from '@/hooks/useShifts'
 import { useDeleteShift } from '@/hooks/useShift'
 import ShiftFormModal from '@/pages/departments-shifts/components/ShiftFormModal'
 
 const DAY_ORDER = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
-const columns = [
-  { key: 'name', header: 'Name' },
-  { key: 'startTime', header: 'Start Time' },
-  { key: 'endTime', header: 'End Time' },
-  { key: 'grace', header: 'Grace Period' },
-  { key: 'days', header: 'Working Days' },
-  { key: 'actions', header: 'Actions' },
-]
-
 function formatDays(days) {
   if (!days?.length) return '—'
   return DAY_ORDER.filter((d) => days.includes(d)).join(', ')
 }
 
+// Seven day pills with the working ones filled; the text list is kept for screen readers.
+function WorkingDays({ days }) {
+  if (!days?.length) return <span className="text-fg-subtle">—</span>
+  return (
+    <>
+      <span className="sr-only">{formatDays(days)}</span>
+      <span aria-hidden className="flex gap-1">
+        {DAY_ORDER.map((d) => {
+          const on = days.includes(d)
+          return (
+            <span
+              key={d}
+              className={clsx(
+                'flex h-6 w-7 items-center justify-center rounded text-[11px] font-medium',
+                on ? 'bg-brand-50 text-brand-700 ring-1 ring-brand-100' : 'text-fg-subtle',
+              )}
+            >
+              {d.slice(0, 2)}
+            </span>
+          )
+        })}
+      </span>
+    </>
+  )
+}
+
+const hhmm = (t) => (t ?? '').slice(0, 5) || '—'
+
+const columns = [
+  { key: 'name', header: 'Name', className: 'font-medium' },
+  { key: 'startTime', header: 'Start Time', className: 'tabular-nums', render: (s) => hhmm(s.startTime) },
+  { key: 'endTime', header: 'End Time', className: 'tabular-nums', render: (s) => hhmm(s.endTime) },
+  { key: 'grace', header: 'Grace Period', className: 'tabular-nums text-fg-muted', render: (s) => `${s.gracePeriodMinutes ?? 0} min` },
+  { key: 'days', header: 'Working Days', render: (s) => <WorkingDays days={s.workingDays} /> },
+]
+
 export default function ShiftsTab() {
   const { data: shifts, isLoading, isError, error, refetch } = useShifts()
   const [formTarget, setFormTarget] = useState(undefined) // undefined = closed, null = create, record = edit
   const [deleteTarget, setDeleteTarget] = useState(null)
+  // Keeps the name on screen while the delete dialog animates out.
+  const [shownDelete, setShownDelete] = useState(null)
+  if (deleteTarget && deleteTarget !== shownDelete) setShownDelete(deleteTarget)
   const deleteMutation = useDeleteShift()
 
   const openCreate = () => setFormTarget(null)
+  const newButton = (size) => (
+    <Button variant="primary" size={size} onClick={openCreate}>
+      <Icon icon="lucide:plus" width={size === 'sm' ? 14 : 16} height={size === 'sm' ? 14 : 16} aria-hidden />
+      New Shift
+    </Button>
+  )
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end">
-        <Button variant="accent" onClick={openCreate}>
-          New Shift
-        </Button>
-      </div>
+      <div className="flex justify-end">{newButton()}</div>
 
-      {isLoading ? (
-        <TableSkeleton columns={columns} rows={5} />
-      ) : isError ? (
-        <div className="flex flex-col items-center gap-3 rounded-lg border border-gray-200 bg-white py-12 text-center">
-          <p className="text-sm text-gray-600">
-            {error?.message || 'Could not load shifts.'}
-          </p>
-          <Button variant="secondary" size="sm" onClick={() => refetch()}>
-            Try again
-          </Button>
-        </div>
-      ) : (
-        <Table
-          columns={columns}
-          rows={shifts ?? []}
-          emptyMessage="No shifts yet — add your first shift"
-          emptyAction={
-            <Button variant="accent" size="sm" onClick={openCreate}>
-              New Shift
-            </Button>
-          }
-          renderRow={(shift) => (
-            <tr
-              key={shift.id}
-              className="border-b border-gray-100 last:border-0 hover:bg-gray-50"
-            >
-              <td className="px-4 py-3 text-text">{shift.name}</td>
-              <td className="px-4 py-3 text-text">
-                {(shift.startTime ?? '').slice(0, 5) || '—'}
-              </td>
-              <td className="px-4 py-3 text-text">
-                {(shift.endTime ?? '').slice(0, 5) || '—'}
-              </td>
-              <td className="px-4 py-3 text-text">
-                {shift.gracePeriodMinutes ?? 0} min
-              </td>
-              <td className="px-4 py-3 text-text">{formatDays(shift.workingDays)}</td>
-              <td className="px-4 py-3">
-                <div className="flex gap-2">
-                  <IconButton
-                    icon="lucide:pencil"
-                    label="Edit shift"
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => setFormTarget(shift)}
-                  />
-                  <IconButton
-                    icon="lucide:trash-2"
-                    label="Delete shift"
-                    variant="danger"
-                    size="sm"
-                    onClick={() => setDeleteTarget(shift)}
-                  />
-                </div>
-              </td>
-            </tr>
-          )}
-        />
-      )}
+      <Table
+        caption="Shifts"
+        columns={columns}
+        rows={shifts ?? []}
+        isLoading={isLoading}
+        error={isError ? error?.message || 'Could not load shifts.' : null}
+        onRetry={() => refetch()}
+        emptyIcon="lucide:clock"
+        emptyMessage="No shifts yet — add your first shift"
+        emptyAction={newButton('sm')}
+        rowActions={(shift) => (
+          <>
+            <IconButton icon="lucide:pencil" label="Edit shift" variant="ghost" size="sm" onClick={() => setFormTarget(shift)} />
+            <IconButton icon="lucide:trash-2" label="Delete shift" variant="ghost-danger" size="sm" onClick={() => setDeleteTarget(shift)} />
+          </>
+        )}
+      />
 
       {formTarget !== undefined && (
-        <ShiftFormModal
-          key={formTarget?.id ?? 'new'}
-          shift={formTarget}
-          onClose={() => setFormTarget(undefined)}
-        />
+        <ShiftFormModal key={formTarget?.id ?? 'new'} shift={formTarget} onClose={() => setFormTarget(undefined)} />
       )}
 
-      <Modal
+      <ConfirmDialog
         isOpen={Boolean(deleteTarget)}
         onClose={() => setDeleteTarget(null)}
         title="Delete shift"
-        footer={
-          <>
-            <Button
-              variant="secondary"
-              onClick={() => setDeleteTarget(null)}
-              disabled={deleteMutation.isPending}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="danger"
-              isLoading={deleteMutation.isPending}
-              onClick={() =>
-                deleteMutation.mutate(deleteTarget.id, {
-                  onSuccess: () => setDeleteTarget(null),
-                })
-              }
-            >
-              Delete
-            </Button>
-          </>
-        }
+        confirmLabel="Delete"
+        tone="danger"
+        isLoading={deleteMutation.isPending}
+        onConfirm={() => deleteMutation.mutate(deleteTarget.id, { onSuccess: () => setDeleteTarget(null) })}
       >
         <p>
-          Delete <strong>{deleteTarget?.name}</strong>? Shifts still assigned to employees can&rsquo;t
-          be deleted. This can&rsquo;t be undone.
+          Delete <strong className="font-semibold text-fg">{shownDelete?.name}</strong>? Shifts still assigned to employees
+          can&rsquo;t be deleted. This can&rsquo;t be undone.
         </p>
-      </Modal>
+      </ConfirmDialog>
     </div>
   )
 }

@@ -11,14 +11,16 @@ const TONE = {
 export default function AttendanceStatusBadge({ status, isManualOverride }) {
   return (
     <span className="inline-flex items-center gap-1.5">
-      <Badge tone={TONE[status] ?? 'neutral'}>{status ?? '—'}</Badge>
+      <Badge dot tone={TONE[status] ?? 'neutral'}>
+        {status ?? '—'}
+      </Badge>
       {isManualOverride && (
         <span
           title="Manually adjusted"
           aria-label="Manually adjusted"
-          className="text-gray-400"
+          className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-surface-hover text-fg-muted"
         >
-          <Icon icon="lucide:pencil" width="14" height="14" />
+          <Icon icon="lucide:pencil" width="11" height="11" aria-hidden />
         </span>
       )}
     </span>
