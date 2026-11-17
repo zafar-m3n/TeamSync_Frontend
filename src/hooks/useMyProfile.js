@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { getMyProfile } from '@/services/employeeService'
-import { useAuth } from '@/store/AuthContext'
+import { useAuth } from '@/store/useAuth'
 
 export function useMyProfile() {
   const { can } = useAuth()

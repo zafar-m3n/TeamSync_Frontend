@@ -1,11 +1,4 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import api from '@/lib/axios'
 import * as token from '@/lib/token'
@@ -13,17 +6,27 @@ import { onUnauthorized } from '@/lib/sessionEvents'
 import { hasPermission } from '@/lib/permissions'
 import { toast } from '@/hooks/useToast'
 import Spinner from '@/components/ui/Spinner'
-
-const AuthContext = createContext(null)
+import { AuthContext } from '@/store/useAuth'
 
 const meQueryKey = (userId) => ['me', userId]
 
 const SESSION_EXPIRED = 'Session expired — please log in again'
 
+// The signed-in user from storage, or null. A stale token found on load is
+// cleared quietly (not a live interruption, so no toast).
+function readStoredUser() {
+  if (!token.isAuthenticated()) return null
+  const expiryMs = token.getExpiryMs()
+  if (!expiryMs || expiryMs <= Date.now()) {
+    token.clearSession()
+    return null
+  }
+  return token.getUser()
+}
+
 export function AuthProvider({ children }) {
   const queryClient = useQueryClient()
-  const [storedUser, setUser] = useState(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [storedUser, setUser] = useState(readStoredUser)
 
   // Every way a session ends comes through here, so the next user never sees this
   // one's cached data. Clearing the user makes AppLayout redirect to /login.
@@ -41,21 +44,8 @@ export function AuthProvider({ children }) {
   const expireSession = useCallback(() => endSession({ message: SESSION_EXPIRED }), [endSession])
 
   useEffect(() => {
-    if (!token.isAuthenticated()) {
-      setIsLoading(false)
-    } else {
-      const expiryMs = token.getExpiryMs()
-      if (!expiryMs || expiryMs <= Date.now()) {
-        // Stale token found on load — not a live interruption, so no toast.
-        token.clearSession()
-        setUser(null)
-        setIsLoading(false)
-      } else {
-        setUser(token.getUser())
-        token.scheduleAutoLogout(expireSession)
-        setIsLoading(false)
-      }
-    }
+    // readStoredUser already cleared a stale token, so a remaining one is live.
+    if (token.isAuthenticated()) token.scheduleAutoLogout(expireSession)
 
     const stopCrossTab = token.listenForCrossTabLogout(() => endSession({ broadcast: false }))
     const stopUnauthorized = onUnauthorized(expireSession)
@@ -77,17 +67,20 @@ export function AuthProvider({ children }) {
     if (me.data && token.isAuthenticated()) token.setUser(me.data)
   }, [me.data])
 
-  const login = async (email, password) => {
-    const body = await api.post('/auth/login', { email, password })
-    const { token: jwt, user: nextUser } = body.data
-    token.setToken(jwt)
-    token.setUser(nextUser)
-    queryClient.setQueryData(meQueryKey(nextUser.id), nextUser)
-    setUser(nextUser)
-    token.scheduleAutoLogout(expireSession)
-  }
+  const login = useCallback(
+    async (email, password) => {
+      const body = await api.post('/auth/login', { email, password })
+      const { token: jwt, user: nextUser } = body.data
+      token.setToken(jwt)
+      token.setUser(nextUser)
+      queryClient.setQueryData(meQueryKey(nextUser.id), nextUser)
+      setUser(nextUser)
+      token.scheduleAutoLogout(expireSession)
+    },
+    [queryClient, expireSession],
+  )
 
-  const logout = () => {
+  const logout = useCallback(() => {
     const jwt = token.getToken()
     endSession()
     // Best effort: revokes the token server-side. Sent after the local session is
@@ -95,13 +88,16 @@ export function AuthProvider({ children }) {
     if (jwt) {
       api.post('/auth/logout', {}, { headers: { Authorization: `Bearer ${jwt}` } }).catch(() => {})
     }
-  }
+  }, [endSession])
 
   // A password change revokes every session and returns a fresh token for this one.
-  const replaceToken = (jwt) => {
-    token.setToken(jwt)
-    token.scheduleAutoLogout(expireSession)
-  }
+  const replaceToken = useCallback(
+    (jwt) => {
+      token.setToken(jwt)
+      token.scheduleAutoLogout(expireSession)
+    },
+    [expireSession],
+  )
 
   const can = useCallback((module, action) => hasPermission(user, module, action), [user])
 
@@ -109,13 +105,13 @@ export function AuthProvider({ children }) {
   const awaitingPermissions = Boolean(user) && !user.permissions && !me.isError
 
   const value = useMemo(
-    () => ({ user, isLoading, login, logout, replaceToken, can }),
-    [user, isLoading, can],
+    () => ({ user, login, logout, replaceToken, can }),
+    [user, login, logout, replaceToken, can],
   )
 
   return (
     <AuthContext.Provider value={value}>
-      {isLoading || awaitingPermissions ? (
+      {awaitingPermissions ? (
         <div className="flex min-h-screen items-center justify-center bg-gray-50">
           <Spinner size="lg" className="text-accent" />
         </div>
@@ -124,12 +120,4 @@ export function AuthProvider({ children }) {
       )}
     </AuthContext.Provider>
   )
-}
-
-export function useAuth() {
-  const ctx = useContext(AuthContext)
-  if (!ctx) {
-    throw new Error('useAuth must be used within an AuthProvider')
-  }
-  return ctx
 }

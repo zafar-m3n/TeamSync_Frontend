@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import Select from '@/components/ui/Select'
 import Table from '@/components/ui/Table'
 import TableSkeleton from '@/components/ui/TableSkeleton'
@@ -6,8 +6,9 @@ import Button from '@/components/ui/Button'
 import IconButton from '@/components/ui/IconButton'
 import Modal from '@/components/ui/Modal'
 import StatCard from '@/components/ui/StatCard'
-import { useAuth } from '@/store/AuthContext'
+import { useAuth } from '@/store/useAuth'
 import { useMyProfile } from '@/hooks/useMyProfile'
+import { useListFilters } from '@/hooks/useListFilters'
 import { useLeaveBalance } from '@/hooks/useLeaveBalance'
 import { useMyLeaveRequests } from '@/hooks/useMyLeaveRequests'
 import { useCancelLeaveRequest } from '@/hooks/useLeaveRequestMutations'
@@ -44,17 +45,14 @@ export default function MyLeavePage() {
   const currentEmployeeId = profile?.id ?? null
 
   const [year, setYear] = useState(CURRENT_YEAR)
-  const [status, setStatus] = useState('all')
-  const [page, setPage] = useState(1)
+  // The year only drives the balance cards; the status filter pages the request list.
+  const { filters, page, setFilter, setPage } = useListFilters({ status: 'all' })
+  const { status } = filters
   const [showForm, setShowForm] = useState(false)
   const [cancelTarget, setCancelTarget] = useState(null)
 
   const { data: balances, isLoading: balancesLoading } = useLeaveBalance(currentEmployeeId, year)
   const balance = balances ? sumBalances(balances) : null
-
-  useEffect(() => {
-    setPage(1)
-  }, [status])
 
   const params = useMemo(
     () => ({ page, limit: LIMIT, ...(status !== 'all' ? { status } : {}) }),
@@ -109,7 +107,7 @@ export default function MyLeavePage() {
             <Select
               options={STATUS_OPTIONS}
               value={STATUS_OPTIONS.find((o) => o.value === status) ?? null}
-              onChange={(opt) => setStatus(opt.value)}
+              onChange={(opt) => setFilter('status', opt.value)}
             />
           </div>
         </div>

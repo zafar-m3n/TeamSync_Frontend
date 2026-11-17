@@ -1,6 +1,6 @@
 import Table from '@/components/ui/Table'
 import IconButton from '@/components/ui/IconButton'
-import { useAuth } from '@/store/AuthContext'
+import { useAuth } from '@/store/useAuth'
 import { useMyProfile } from '@/hooks/useMyProfile'
 import { canCancelLeaveRequest } from '@/pages/leave/utils/canCancelLeaveRequest'
 import { canActOnLeaveRequest } from '@/pages/leave/utils/canActOnLeaveRequest'

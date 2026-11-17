@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { Icon } from "@iconify/react";
 import clsx from "clsx";
-import { useAuth } from "@/store/AuthContext";
+import { useAuth } from "@/store/useAuth";
 import { moduleRoutes, buildNavItems } from "@/routes/routeConfig";
 import logo from "@/assets/logo.png";
 import favicon from "@/assets/favicon.png";

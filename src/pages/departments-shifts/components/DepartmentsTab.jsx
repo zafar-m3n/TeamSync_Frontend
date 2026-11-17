@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import Table from '@/components/ui/Table'
 import TableSkeleton from '@/components/ui/TableSkeleton'
 import Modal from '@/components/ui/Modal'
@@ -6,6 +6,7 @@ import Button from '@/components/ui/Button'
 import IconButton from '@/components/ui/IconButton'
 import Input from '@/components/form/Input'
 import { useDepartments, useDeleteDepartment } from '@/hooks/useDepartments'
+import { useDebouncedFilter, useListFilters } from '@/hooks/useListFilters'
 import DepartmentFormModal from '@/pages/departments-shifts/components/DepartmentFormModal'
 
 const LIMIT = 10
@@ -16,23 +17,11 @@ const columns = [
   { key: 'actions', header: 'Actions' },
 ]
 
-function useDebouncedValue(value, delay) {
-  const [debounced, setDebounced] = useState(value)
-  useEffect(() => {
-    const timer = setTimeout(() => setDebounced(value), delay)
-    return () => clearTimeout(timer)
-  }, [value, delay])
-  return debounced
-}
-
 export default function DepartmentsTab() {
-  const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
-  const debouncedSearch = useDebouncedValue(search.trim(), 300)
-
-  useEffect(() => {
-    setPage(1)
-  }, [debouncedSearch])
+  const { filters, page, setFilter, setPage } = useListFilters({ search: '' })
+  const debouncedSearch = filters.search
+  useDebouncedFilter(setFilter, 'search', search.trim())
 
   const params = useMemo(
     () => ({

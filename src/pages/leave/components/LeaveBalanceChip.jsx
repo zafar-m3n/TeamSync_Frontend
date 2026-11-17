@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Icon } from '@iconify/react'
-import { useAuth } from '@/store/AuthContext'
+import { useAuth } from '@/store/useAuth'
 import { useLeaveBalance } from '@/hooks/useLeaveBalance'
 import SetQuotaModal from '@/pages/leave/components/SetQuotaModal'
 import { activeBalances } from '@/pages/leave/utils/leaveBalances'

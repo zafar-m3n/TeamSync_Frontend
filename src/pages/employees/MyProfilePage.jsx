@@ -1,5 +1,5 @@
 import { useMyProfile } from '@/hooks/useMyProfile'
-import { useAuth } from '@/store/AuthContext'
+import { useAuth } from '@/store/useAuth'
 import Spinner from '@/components/ui/Spinner'
 import Button from '@/components/ui/Button'
 import EmployeeDetailView from '@/pages/employees/components/EmployeeDetailView'

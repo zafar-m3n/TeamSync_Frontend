@@ -11,10 +11,7 @@ export default function useCountUp(target, duration = 800) {
   const frame = useRef(0)
 
   useEffect(() => {
-    if (!animatable) {
-      setValue(target)
-      return
-    }
+    if (!animatable) return
     const factor = Number.isInteger(numeric) ? 1 : 10
     const start = performance.now()
     const tick = (now) => {
@@ -28,7 +25,7 @@ export default function useCountUp(target, duration = 800) {
     return () => cancelAnimationFrame(frame.current)
   }, [target, numeric, animatable, duration])
 
-  return value
+  return animatable ? value : target
 }
 
 // Drop-in wrapper so a count-up value can be passed straight to a StatCard's

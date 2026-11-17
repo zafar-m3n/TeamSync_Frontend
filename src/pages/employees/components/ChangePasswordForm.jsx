@@ -6,7 +6,7 @@ import Input from '@/components/form/Input'
 import Button from '@/components/ui/Button'
 import { useChangePassword } from '@/hooks/useChangePassword'
 import { toast } from '@/hooks/useToast'
-import { useAuth } from '@/store/AuthContext'
+import { useAuth } from '@/store/useAuth'
 
 const FIELDS = ['currentPassword', 'newPassword', 'confirmPassword']
 

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { format } from 'date-fns'
 import Select from '@/components/ui/Select'
 import Table from '@/components/ui/Table'
@@ -6,9 +6,10 @@ import TableSkeleton from '@/components/ui/TableSkeleton'
 import Button from '@/components/ui/Button'
 import ProgressBar from '@/components/ui/ProgressBar'
 import IconButton from '@/components/ui/IconButton'
-import { useEmployees } from '@/hooks/useEmployees'
+import { useListFilters } from '@/hooks/useListFilters'
+import EmployeeSearchSelect from '@/components/form/EmployeeSearchSelect'
 import { useAllGoals } from '@/hooks/useAllGoals'
-import { useAuth } from '@/store/AuthContext'
+import { useAuth } from '@/store/useAuth'
 import { canDeleteGoal } from '@/lib/permissions'
 import DeleteGoalModal from '@/pages/goals/components/DeleteGoalModal'
 
@@ -50,41 +51,14 @@ function pctLabel(value) {
   return `${Math.round(Number(value) || 0)}%`
 }
 
-function useDebouncedValue(value, delay) {
-  const [debounced, setDebounced] = useState(value)
-  useEffect(() => {
-    const t = setTimeout(() => setDebounced(value), delay)
-    return () => clearTimeout(t)
-  }, [value, delay])
-  return debounced
-}
-
 export default function AllGoalsPage() {
-  const [page, setPage] = useState(1)
-  const [employee, setEmployee] = useState(null)
-  const [year, setYear] = useState('')
-  const [month, setMonth] = useState('')
+  const { filters, page, setFilter, setPage } = useListFilters({ employee: null, year: '', month: '' })
+  const { employee, year, month } = filters
   const [deleteTarget, setDeleteTarget] = useState(null)
   const { user, can } = useAuth()
   const columns = can('goals', 'delete')
     ? [...baseColumns, { key: 'actions', header: 'Actions' }]
     : baseColumns
-
-  const [employeeQuery, setEmployeeQuery] = useState('')
-  const debouncedEmployeeQuery = useDebouncedValue(employeeQuery.trim(), 300)
-  const { data: empData } = useEmployees({
-    page: 1,
-    limit: 20,
-    ...(debouncedEmployeeQuery ? { search: debouncedEmployeeQuery } : {}),
-  })
-  const employeeOptions = (empData?.rows ?? []).map((e) => ({
-    value: e.id,
-    label: e.fullName,
-  }))
-
-  useEffect(() => {
-    setPage(1)
-  }, [employee, year, month])
 
   const params = useMemo(
     () => ({
@@ -108,13 +82,9 @@ export default function AllGoalsPage() {
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <div>
           <label className="mb-1 block text-xs font-medium text-gray-500">Employee</label>
-          <Select
-            isClearable
-            options={employeeOptions}
-            filterOption={() => true}
-            onInputChange={(v) => setEmployeeQuery(v)}
+          <EmployeeSearchSelect
             value={employee}
-            onChange={(opt) => setEmployee(opt ?? null)}
+            onChange={(opt) => setFilter('employee', opt ?? null)}
             placeholder="Any employee"
           />
         </div>
@@ -124,8 +94,8 @@ export default function AllGoalsPage() {
             options={YEAR_OPTIONS}
             value={YEAR_OPTIONS.find((o) => o.value === year) ?? null}
             onChange={(opt) => {
-              setYear(opt.value)
-              if (!opt.value) setMonth('')
+              setFilter('year', opt.value)
+              if (!opt.value) setFilter('month', '')
             }}
           />
         </div>
@@ -135,7 +105,7 @@ export default function AllGoalsPage() {
             isDisabled={!year}
             options={MONTH_OPTIONS}
             value={MONTH_OPTIONS.find((o) => o.value === month) ?? null}
-            onChange={(opt) => setMonth(opt.value)}
+            onChange={(opt) => setFilter('month', opt.value)}
           />
         </div>
       </div>

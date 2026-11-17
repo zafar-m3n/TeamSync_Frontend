@@ -1,13 +1,14 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { format } from 'date-fns'
 import Table from '@/components/ui/Table'
 import TableSkeleton from '@/components/ui/TableSkeleton'
 import Button from '@/components/ui/Button'
-import { DateRangeField } from '@/components/form/DatePicker'
+import { DateRangeField, toYmd } from '@/components/form/DatePicker'
 import { useMyAttendance } from '@/hooks/useMyAttendance'
+import { useListFilters } from '@/hooks/useListFilters'
 import AttendanceStatusBadge from '@/pages/attendance/components/AttendanceStatusBadge'
 import ClockPanel from '@/pages/attendance/components/ClockPanel'
-import { useAuth } from '@/store/AuthContext'
+import { useAuth } from '@/store/useAuth'
 
 const LIMIT = 10
 
@@ -17,11 +18,6 @@ const columns = [
   { key: 'clockIn', header: 'Clock In' },
   { key: 'clockOut', header: 'Clock Out' },
 ]
-
-function toYmd(d) {
-  const p = (n) => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`
-}
 
 function fmtDate(value) {
   if (!value) return '—'
@@ -37,12 +33,8 @@ function fmtTime(value) {
 
 export default function MyAttendancePage() {
   const { can } = useAuth()
-  const [range, setRange] = useState(undefined)
-  const [page, setPage] = useState(1)
-
-  useEffect(() => {
-    setPage(1)
-  }, [range])
+  const { filters, page, setFilter, setPage } = useListFilters({ range: undefined })
+  const { range } = filters
 
   const params = useMemo(
     () => ({
@@ -68,7 +60,7 @@ export default function MyAttendancePage() {
           <label className="mb-1 block text-xs font-medium text-gray-500">Date range</label>
           <DateRangeField
             value={range}
-            onChange={setRange}
+            onChange={(next) => setFilter('range', next)}
             placeholder="Any dates"
             className="w-72"
           />

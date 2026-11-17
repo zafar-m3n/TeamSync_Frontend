@@ -1,6 +1,6 @@
 import { Icon } from "@iconify/react";
 import { Link, useMatches } from "react-router-dom";
-import { useAuth } from "@/store/AuthContext";
+import { useAuth } from "@/store/useAuth";
 import { useMyProfile } from "@/hooks/useMyProfile";
 import Dropdown from "@/components/ui/Dropdown";
 

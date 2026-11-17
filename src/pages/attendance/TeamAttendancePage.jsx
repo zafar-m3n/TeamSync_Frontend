@@ -5,7 +5,7 @@ import TableSkeleton from '@/components/ui/TableSkeleton'
 import Button from '@/components/ui/Button'
 import IconButton from '@/components/ui/IconButton'
 import Pagination from '@/components/ui/Pagination'
-import { DateField } from '@/components/form/DatePicker'
+import { DateField, toYmd } from '@/components/form/DatePicker'
 import { useTeamAttendance } from '@/hooks/useTeamAttendance'
 import { useMyTeam } from '@/hooks/useMyTeam'
 import AttendanceStatusBadge from '@/pages/attendance/components/AttendanceStatusBadge'
@@ -20,11 +20,6 @@ const columns = [
   { key: 'clockOut', header: 'Clock Out' },
   { key: 'actions', header: 'Actions' },
 ]
-
-function toYmd(d) {
-  const p = (n) => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`
-}
 
 function fmtTime(value) {
   if (!value) return '—'

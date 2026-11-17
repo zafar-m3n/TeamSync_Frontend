@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/store/AuthContext";
+import { useAuth } from "@/store/useAuth";
 import AuthLayout from "@/components/layout/AuthLayout";
 import FormField from "@/components/form/FormField";
 import Input from "@/components/form/Input";

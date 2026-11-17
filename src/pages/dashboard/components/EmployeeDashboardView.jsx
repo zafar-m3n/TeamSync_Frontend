@@ -4,7 +4,7 @@ import { Icon } from '@iconify/react'
 import StatCard from '@/components/ui/StatCard'
 import Table from '@/components/ui/Table'
 import { CountUp } from '@/hooks/useCountUp'
-import { useAuth } from '@/store/AuthContext'
+import { useAuth } from '@/store/useAuth'
 import ClockPanel from '@/pages/attendance/components/ClockPanel'
 
 const CARD_LINK =

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import clsx from "clsx";
-import { useAuth } from "@/store/AuthContext";
+import { useAuth } from "@/store/useAuth";
 import Sidebar from "@/components/layout/Sidebar";
 import Topbar from "@/components/layout/Topbar";
 

@@ -1,12 +1,13 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { format } from 'date-fns'
 import Select from '@/components/ui/Select'
 import Table from '@/components/ui/Table'
 import TableSkeleton from '@/components/ui/TableSkeleton'
 import Button from '@/components/ui/Button'
 import IconButton from '@/components/ui/IconButton'
-import { DateRangeField } from '@/components/form/DatePicker'
-import { useEmployees } from '@/hooks/useEmployees'
+import { DateRangeField, toYmd } from '@/components/form/DatePicker'
+import EmployeeSearchSelect from '@/components/form/EmployeeSearchSelect'
+import { useListFilters } from '@/hooks/useListFilters'
 import { useDepartments } from '@/hooks/useDepartments'
 import { useAllAttendance } from '@/hooks/useAllAttendance'
 import AttendanceStatusBadge from '@/pages/attendance/components/AttendanceStatusBadge'
@@ -28,11 +29,6 @@ const STATUS_OPTIONS = ['Present', 'Late', 'Half-day', 'Absent'].map((s) => ({
   label: s,
 }))
 
-function toYmd(d) {
-  const p = (n) => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`
-}
-
 function fmtDate(value) {
   if (!value) return '—'
   const d = new Date(value)
@@ -45,44 +41,22 @@ function fmtTime(value) {
   return Number.isNaN(d.getTime()) ? '—' : format(d, 'p')
 }
 
-function useDebouncedValue(value, delay) {
-  const [debounced, setDebounced] = useState(value)
-  useEffect(() => {
-    const t = setTimeout(() => setDebounced(value), delay)
-    return () => clearTimeout(t)
-  }, [value, delay])
-  return debounced
-}
-
 export default function AllAttendancePage() {
-  const [page, setPage] = useState(1)
-  const [status, setStatus] = useState(null)
-  const [departmentId, setDepartmentId] = useState(null)
-  const [employee, setEmployee] = useState(null) // { value, label }
-  const [range, setRange] = useState(undefined)
-  const [editTarget, setEditTarget] = useState(null)
-
-  const [employeeQuery, setEmployeeQuery] = useState('')
-  const debouncedEmployeeQuery = useDebouncedValue(employeeQuery.trim(), 300)
-  const { data: empData } = useEmployees({
-    page: 1,
-    limit: 20,
-    ...(debouncedEmployeeQuery ? { search: debouncedEmployeeQuery } : {}),
+  // status, departmentId and employee are { value, label } options.
+  const { filters, page, setFilter, setPage } = useListFilters({
+    status: null,
+    departmentId: null,
+    employee: null,
+    range: undefined,
   })
-  const employeeOptions = (empData?.rows ?? []).map((e) => ({
-    value: e.id,
-    label: e.fullName,
-  }))
+  const { status, departmentId, employee, range } = filters
+  const [editTarget, setEditTarget] = useState(null)
 
   const { data: deptData } = useDepartments({ page: 1, limit: 200 })
   const departmentOptions = (deptData?.rows ?? []).map((d) => ({
     value: d.id,
     label: d.name,
   }))
-
-  useEffect(() => {
-    setPage(1)
-  }, [status, departmentId, employee, range])
 
   const params = useMemo(
     () => ({
@@ -107,13 +81,9 @@ export default function AllAttendancePage() {
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div>
           <label className="mb-1 block text-xs font-medium text-gray-500">Employee</label>
-          <Select
-            isClearable
-            options={employeeOptions}
-            filterOption={() => true}
-            onInputChange={(v) => setEmployeeQuery(v)}
+          <EmployeeSearchSelect
             value={employee}
-            onChange={(opt) => setEmployee(opt ?? null)}
+            onChange={(opt) => setFilter('employee', opt ?? null)}
             placeholder="Any employee"
           />
         </div>
@@ -123,7 +93,7 @@ export default function AllAttendancePage() {
             isClearable
             options={STATUS_OPTIONS}
             value={status}
-            onChange={(opt) => setStatus(opt ?? null)}
+            onChange={(opt) => setFilter('status', opt ?? null)}
             placeholder="Any status"
           />
         </div>
@@ -133,7 +103,7 @@ export default function AllAttendancePage() {
             isClearable
             options={departmentOptions}
             value={departmentId}
-            onChange={(opt) => setDepartmentId(opt ?? null)}
+            onChange={(opt) => setFilter('departmentId', opt ?? null)}
             placeholder="Any department"
           />
         </div>
@@ -141,7 +111,7 @@ export default function AllAttendancePage() {
           <label className="mb-1 block text-xs font-medium text-gray-500">Date range</label>
           <DateRangeField
             value={range}
-            onChange={setRange}
+            onChange={(next) => setFilter('range', next)}
             placeholder="Any dates"
             className="w-72"
           />

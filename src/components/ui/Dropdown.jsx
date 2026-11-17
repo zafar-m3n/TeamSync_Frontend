@@ -7,10 +7,7 @@ export default function Dropdown({ trigger, children, align = 'right' }) {
   const rootRef = useRef(null)
 
   useEffect(() => {
-    if (!open) {
-      setEntered(false)
-      return
-    }
+    if (!open) return
     const raf = requestAnimationFrame(() => setEntered(true))
     const onPointerDown = (event) => {
       if (rootRef.current && !rootRef.current.contains(event.target)) setOpen(false)
@@ -33,7 +30,11 @@ export default function Dropdown({ trigger, children, align = 'right' }) {
         type="button"
         aria-haspopup="menu"
         aria-expanded={open}
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => {
+          // Reopening starts from the hidden state so the enter transition replays.
+          if (!open) setEntered(false)
+          setOpen(!open)
+        }}
         className="flex items-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
       >
         {trigger}

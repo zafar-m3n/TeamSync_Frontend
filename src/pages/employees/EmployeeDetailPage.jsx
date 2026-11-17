@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom'
 import { useEmployee } from '@/hooks/useEmployee'
-import { useAuth } from '@/store/AuthContext'
+import { useAuth } from '@/store/useAuth'
 import Spinner from '@/components/ui/Spinner'
 import Button from '@/components/ui/Button'
 import EmployeeDetailView from '@/pages/employees/components/EmployeeDetailView'
