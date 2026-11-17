@@ -1,17 +1,15 @@
 import { useMemo, useState } from 'react'
-import { format } from 'date-fns'
 import Select from '@/components/ui/Select'
 import Table from '@/components/ui/Table'
-import TableSkeleton from '@/components/ui/TableSkeleton'
-import Button from '@/components/ui/Button'
-import ProgressBar from '@/components/ui/ProgressBar'
 import IconButton from '@/components/ui/IconButton'
+import FormField from '@/components/form/FormField'
 import { useListFilters } from '@/hooks/useListFilters'
 import EmployeeSearchSelect from '@/components/form/EmployeeSearchSelect'
 import { useAllGoals } from '@/hooks/useAllGoals'
 import { useAuth } from '@/store/useAuth'
 import { canDeleteGoal } from '@/lib/permissions'
 import DeleteGoalModal from '@/pages/goals/components/DeleteGoalModal'
+import { goalColumns } from '@/pages/goals/utils/goalColumns'
 
 const LIMIT = 10
 const CURRENT_YEAR = new Date().getFullYear()
@@ -31,34 +29,13 @@ const MONTH_OPTIONS = [
 
 // HR/Admin can't edit goals or record actuals; with goals.delete they can remove
 // any goal (e.g. one left by a manager who has gone).
-const baseColumns = [
-  { key: 'employee', header: 'Employee' },
-  { key: 'title', header: 'Title' },
-  { key: 'targetDate', header: 'Target Date' },
-  { key: 'numericTarget', header: 'Numeric Target' },
-  { key: 'actualValue', header: 'Actual Value' },
-  { key: 'progress', header: 'Progress' },
-  { key: 'description', header: 'Description' },
-]
-
-function fmtDate(value) {
-  if (!value) return '—'
-  const d = new Date(value)
-  return Number.isNaN(d.getTime()) ? '—' : format(d, 'PP')
-}
-
-function pctLabel(value) {
-  return `${Math.round(Number(value) || 0)}%`
-}
+const columns = goalColumns({ withEmployee: true })
 
 export default function AllGoalsPage() {
   const { filters, page, setFilter, setPage } = useListFilters({ employee: null, year: '', month: '' })
   const { employee, year, month } = filters
   const [deleteTarget, setDeleteTarget] = useState(null)
   const { user, can } = useAuth()
-  const columns = can('goals', 'delete')
-    ? [...baseColumns, { key: 'actions', header: 'Actions' }]
-    : baseColumns
 
   const params = useMemo(
     () => ({
@@ -72,24 +49,16 @@ export default function AllGoalsPage() {
     [page, employee, year, month],
   )
 
-  const { data, isLoading, isError, error, refetch } = useAllGoals(params)
+  const { data, isLoading, isFetching, isError, error, refetch } = useAllGoals(params)
   const rows = data?.rows ?? []
-  const meta = data?.meta
-  const totalPages = meta?.totalPages ?? 1
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        <div>
-          <label className="mb-1 block text-xs font-medium text-gray-500">Employee</label>
-          <EmployeeSearchSelect
-            value={employee}
-            onChange={(opt) => setFilter('employee', opt ?? null)}
-            placeholder="Any employee"
-          />
-        </div>
-        <div>
-          <label className="mb-1 block text-xs font-medium text-gray-500">Year</label>
+        <FormField label="Employee">
+          <EmployeeSearchSelect value={employee} onChange={(opt) => setFilter('employee', opt ?? null)} placeholder="Any employee" />
+        </FormField>
+        <FormField label="Year">
           <Select
             options={YEAR_OPTIONS}
             value={YEAR_OPTIONS.find((o) => o.value === year) ?? null}
@@ -98,99 +67,39 @@ export default function AllGoalsPage() {
               if (!opt.value) setFilter('month', '')
             }}
           />
-        </div>
-        <div>
-          <label className="mb-1 block text-xs font-medium text-gray-500">Month</label>
+        </FormField>
+        <FormField label="Month">
           <Select
             isDisabled={!year}
             options={MONTH_OPTIONS}
             value={MONTH_OPTIONS.find((o) => o.value === month) ?? null}
             onChange={(opt) => setFilter('month', opt.value)}
           />
-        </div>
+        </FormField>
       </div>
 
-      {isLoading ? (
-        <TableSkeleton columns={columns} rows={LIMIT} />
-      ) : isError ? (
-        <div className="flex flex-col items-center gap-3 rounded-lg border border-gray-200 bg-white py-12 text-center">
-          <p className="text-sm text-gray-600">
-            {error?.message || 'Could not load goals.'}
-          </p>
-          <Button variant="secondary" size="sm" onClick={() => refetch()}>
-            Try again
-          </Button>
-        </div>
-      ) : (
-        <>
-          <Table
-            columns={columns}
-            rows={rows}
-            emptyMessage="No goals match these filters"
-            renderRow={(goal) => (
-              <tr
-                key={goal.id}
-                className="border-b border-gray-100 last:border-0 hover:bg-gray-50"
-              >
-                <td className="px-4 py-3 text-text">{goal.employee?.fullName ?? '—'}</td>
-                <td className="px-4 py-3 text-text">{goal.title}</td>
-                <td className="px-4 py-3 text-text">{fmtDate(goal.targetDate)}</td>
-                <td className="px-4 py-3 text-text">{goal.numericTarget}</td>
-                <td className="px-4 py-3 text-text">{goal.actualValue ?? '—'}</td>
-                <td className="px-4 py-3">
-                  <ProgressBar
-                    value={goal.percentComplete}
-                    label={pctLabel(goal.percentComplete)}
-                  />
-                </td>
-                <td
-                  className="max-w-xs truncate px-4 py-3 text-text"
-                  title={goal.description || undefined}
-                >
-                  {goal.description || '—'}
-                </td>
-                {can('goals', 'delete') && (
-                  <td className="px-4 py-3">
-                    {canDeleteGoal(user, goal) && (
-                      <IconButton
-                        icon="lucide:trash-2"
-                        label="Delete goal"
-                        variant="danger"
-                        size="sm"
-                        onClick={() => setDeleteTarget(goal)}
-                      />
-                    )}
-                  </td>
-                )}
-              </tr>
-            )}
-          />
-
-          {meta && totalPages > 1 && (
-            <div className="flex items-center justify-between">
-              <Button
-                variant="secondary"
-                size="sm"
-                disabled={page <= 1}
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-              >
-                Previous
-              </Button>
-              <span className="text-sm text-gray-500">
-                Page {meta.page} of {totalPages}
-              </span>
-              <Button
-                variant="secondary"
-                size="sm"
-                disabled={page >= totalPages}
-                onClick={() => setPage((p) => p + 1)}
-              >
-                Next
-              </Button>
-            </div>
-          )}
-        </>
-      )}
+      <Table
+        caption="All goals"
+        columns={columns}
+        rows={rows}
+        meta={data?.meta}
+        onPageChange={setPage}
+        isLoading={isLoading}
+        isFetching={isFetching}
+        loadingRows={LIMIT}
+        error={isError ? error?.message || 'Could not load goals.' : null}
+        onRetry={() => refetch()}
+        emptyIcon="lucide:target"
+        emptyMessage="No goals match these filters"
+        rowActions={
+          can('goals', 'delete')
+            ? (goal) =>
+                canDeleteGoal(user, goal) && (
+                  <IconButton icon="lucide:trash-2" label="Delete goal" variant="ghost-danger" size="sm" onClick={() => setDeleteTarget(goal)} />
+                )
+            : undefined
+        }
+      />
 
       {deleteTarget && (
         <DeleteGoalModal

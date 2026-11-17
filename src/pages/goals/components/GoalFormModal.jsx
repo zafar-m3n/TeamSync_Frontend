@@ -96,7 +96,7 @@ export default function GoalFormModal({ goal, onClose }) {
           <Button
             type="submit"
             form="goal-form"
-            variant="accent"
+            variant="primary"
             isLoading={mutation.isPending}
           >
             {isEdit ? 'Save changes' : 'Create goal'}
@@ -145,29 +145,31 @@ export default function GoalFormModal({ goal, onClose }) {
           />
         </FormField>
 
-        <FormField label="Numeric Target" required error={errors.numericTarget?.message}>
-          <Input
-            type="number"
-            min="0"
-            step="any"
-            placeholder="50"
-            {...register('numericTarget')}
-          />
-        </FormField>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <FormField label="Numeric Target" required error={errors.numericTarget?.message}>
+            <Input
+              type="number"
+              min="0"
+              step="any"
+              placeholder="50"
+              {...register('numericTarget')}
+            />
+          </FormField>
 
-        <FormField label="Target Date" required error={errors.targetDate?.message}>
-          <Controller
-            control={control}
-            name="targetDate"
-            render={({ field }) => (
-              <DateField
-                value={field.value}
-                onChange={field.onChange}
-                placeholder="Pick a date"
-              />
-            )}
-          />
-        </FormField>
+          <FormField label="Target Date" required error={errors.targetDate?.message}>
+            <Controller
+              control={control}
+              name="targetDate"
+              render={({ field }) => (
+                <DateField
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder="Pick a date"
+                />
+              )}
+            />
+          </FormField>
+        </div>
       </form>
     </Modal>
   )

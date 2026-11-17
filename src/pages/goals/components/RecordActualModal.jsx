@@ -43,7 +43,7 @@ export default function RecordActualModal({ goal, onClose }) {
           <Button
             type="submit"
             form="record-actual-form"
-            variant="accent"
+            variant="primary"
             isLoading={mutation.isPending}
           >
             Save
@@ -57,9 +57,19 @@ export default function RecordActualModal({ goal, onClose }) {
         className="flex flex-col gap-4"
         noValidate
       >
-        <p className="text-sm text-gray-500">
-          Target: <span className="font-medium text-text">{goal.numericTarget}</span>
-        </p>
+        <div className="rounded-lg border border-line bg-surface-subtle px-4 py-3">
+          <p className="truncate text-sm font-medium text-fg">{goal.title}</p>
+          <dl className="mt-2 flex gap-6 text-sm">
+            <div>
+              <dt className="text-xs text-fg-muted">Target</dt>
+              <dd className="font-display text-lg font-semibold tabular-nums text-fg">{goal.numericTarget}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-fg-muted">Current</dt>
+              <dd className="font-display text-lg font-semibold tabular-nums text-fg">{goal.actualValue ?? '—'}</dd>
+            </div>
+          </dl>
+        </div>
         <FormField label="Actual Value" required error={errors.actualValue?.message}>
           <Input
             type="number"

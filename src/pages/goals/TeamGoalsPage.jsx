@@ -1,39 +1,18 @@
 import { useMemo, useState } from 'react'
-import { format } from 'date-fns'
+import { Icon } from '@iconify/react'
 import Table from '@/components/ui/Table'
-import TableSkeleton from '@/components/ui/TableSkeleton'
 import Button from '@/components/ui/Button'
 import IconButton from '@/components/ui/IconButton'
-import ProgressBar from '@/components/ui/ProgressBar'
 import { useTeamGoals } from '@/hooks/useTeamGoals'
 import { useAuth } from '@/store/useAuth'
 import { canDeleteGoal } from '@/lib/permissions'
 import GoalFormModal from '@/pages/goals/components/GoalFormModal'
 import RecordActualModal from '@/pages/goals/components/RecordActualModal'
 import DeleteGoalModal from '@/pages/goals/components/DeleteGoalModal'
+import { goalColumns } from '@/pages/goals/utils/goalColumns'
 
 const LIMIT = 10
-
-const columns = [
-  { key: 'employee', header: 'Employee' },
-  { key: 'title', header: 'Title' },
-  { key: 'targetDate', header: 'Target Date' },
-  { key: 'numericTarget', header: 'Numeric Target' },
-  { key: 'actualValue', header: 'Actual Value' },
-  { key: 'progress', header: 'Progress' },
-  { key: 'description', header: 'Description' },
-  { key: 'actions', header: 'Actions' },
-]
-
-function fmtDate(value) {
-  if (!value) return '—'
-  const d = new Date(value)
-  return Number.isNaN(d.getTime()) ? '—' : format(d, 'PP')
-}
-
-function pctLabel(value) {
-  return `${Math.round(Number(value) || 0)}%`
-}
+const columns = goalColumns({ withEmployee: true })
 
 export default function TeamGoalsPage() {
   const [page, setPage] = useState(1)
@@ -43,137 +22,57 @@ export default function TeamGoalsPage() {
   const { user } = useAuth()
 
   const params = useMemo(() => ({ page, limit: LIMIT }), [page])
-  const { data, isLoading, isError, error, refetch } = useTeamGoals(params)
-
+  const { data, isLoading, isFetching, isError, error, refetch } = useTeamGoals(params)
   const rows = data?.rows ?? []
-  const meta = data?.meta
-  const totalPages = meta?.totalPages ?? 1
 
   const openCreate = () => setFormTarget(null)
+  const newButton = (size) => (
+    <Button variant="primary" size={size} onClick={openCreate}>
+      <Icon icon="lucide:plus" width={size === 'sm' ? 14 : 16} height={size === 'sm' ? 14 : 16} aria-hidden />
+      New Goal
+    </Button>
+  )
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end">
-        <Button variant="accent" onClick={openCreate}>
-          New Goal
-        </Button>
-      </div>
+      <div className="flex justify-end">{newButton()}</div>
 
-      {isLoading ? (
-        <TableSkeleton columns={columns} rows={LIMIT} />
-      ) : isError ? (
-        <div className="flex flex-col items-center gap-3 rounded-lg border border-gray-200 bg-white py-12 text-center">
-          <p className="text-sm text-gray-600">
-            {error?.message || 'Could not load your team goals.'}
-          </p>
-          <Button variant="secondary" size="sm" onClick={() => refetch()}>
-            Try again
-          </Button>
-        </div>
-      ) : (
-        <>
-          <Table
-            columns={columns}
-            rows={rows}
-            emptyMessage="No goals set for your team yet"
-            emptyAction={
-              <Button variant="accent" size="sm" onClick={openCreate}>
-                New Goal
-              </Button>
-            }
-            renderRow={(goal) => (
-              <tr
-                key={goal.id}
-                className="border-b border-gray-100 last:border-0 hover:bg-gray-50"
-              >
-                <td className="px-4 py-3 text-text">{goal.employee?.fullName ?? '—'}</td>
-                <td className="px-4 py-3 text-text">{goal.title}</td>
-                <td className="px-4 py-3 text-text">{fmtDate(goal.targetDate)}</td>
-                <td className="px-4 py-3 text-text">{goal.numericTarget}</td>
-                <td className="px-4 py-3 text-text">{goal.actualValue ?? '—'}</td>
-                <td className="px-4 py-3">
-                  <ProgressBar
-                    value={goal.percentComplete}
-                    label={pctLabel(goal.percentComplete)}
-                  />
-                </td>
-                <td
-                  className="max-w-xs truncate px-4 py-3 text-text"
-                  title={goal.description || undefined}
-                >
-                  {goal.description || '—'}
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex flex-wrap gap-2">
-                    <IconButton
-                      icon="lucide:pencil"
-                      label="Edit goal"
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => setFormTarget(goal)}
-                    />
-                    <IconButton
-                      icon="lucide:clipboard-check"
-                      label="Record actual"
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => setActualTarget(goal)}
-                    />
-                    {canDeleteGoal(user, goal) && (
-                      <IconButton
-                        icon="lucide:trash-2"
-                        label="Delete goal"
-                        variant="danger"
-                        size="sm"
-                        onClick={() => setDeleteTarget(goal)}
-                      />
-                    )}
-                  </div>
-                </td>
-              </tr>
+      <Table
+        caption="Team goals"
+        columns={columns}
+        rows={rows}
+        meta={data?.meta}
+        onPageChange={setPage}
+        isLoading={isLoading}
+        isFetching={isFetching}
+        loadingRows={LIMIT}
+        error={isError ? error?.message || 'Could not load your team goals.' : null}
+        onRetry={() => refetch()}
+        emptyIcon="lucide:target"
+        emptyMessage="No goals set for your team yet"
+        emptyAction={newButton('sm')}
+        rowActions={(goal) => (
+          <>
+            <IconButton icon="lucide:pencil" label="Edit goal" variant="ghost" size="sm" onClick={() => setFormTarget(goal)} />
+            <IconButton
+              icon="lucide:clipboard-check"
+              label="Record actual"
+              variant="ghost"
+              size="sm"
+              onClick={() => setActualTarget(goal)}
+            />
+            {canDeleteGoal(user, goal) && (
+              <IconButton icon="lucide:trash-2" label="Delete goal" variant="ghost-danger" size="sm" onClick={() => setDeleteTarget(goal)} />
             )}
-          />
-
-          {meta && totalPages > 1 && (
-            <div className="flex items-center justify-between">
-              <Button
-                variant="secondary"
-                size="sm"
-                disabled={page <= 1}
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-              >
-                Previous
-              </Button>
-              <span className="text-sm text-gray-500">
-                Page {meta.page} of {totalPages}
-              </span>
-              <Button
-                variant="secondary"
-                size="sm"
-                disabled={page >= totalPages}
-                onClick={() => setPage((p) => p + 1)}
-              >
-                Next
-              </Button>
-            </div>
-          )}
-        </>
-      )}
+          </>
+        )}
+      />
 
       {formTarget !== undefined && (
-        <GoalFormModal
-          key={formTarget?.id ?? 'new'}
-          goal={formTarget}
-          onClose={() => setFormTarget(undefined)}
-        />
+        <GoalFormModal key={formTarget?.id ?? 'new'} goal={formTarget} onClose={() => setFormTarget(undefined)} />
       )}
 
-      {actualTarget && (
-        <RecordActualModal
-          goal={actualTarget}
-          onClose={() => setActualTarget(null)}
-        />
-      )}
+      {actualTarget && <RecordActualModal goal={actualTarget} onClose={() => setActualTarget(null)} />}
 
       {deleteTarget && (
         <DeleteGoalModal

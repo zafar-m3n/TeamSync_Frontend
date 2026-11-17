@@ -1,42 +1,31 @@
-import Modal from '@/components/ui/Modal'
-import Button from '@/components/ui/Button'
+import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { useDeleteGoal } from '@/hooks/useDeleteGoal'
 
 export default function DeleteGoalModal({ goal, onClose, onDeleted }) {
   const mutation = useDeleteGoal()
 
   return (
-    <Modal
+    <ConfirmDialog
       isOpen
       onClose={onClose}
       title="Delete goal"
-      footer={
-        <>
-          <Button variant="secondary" onClick={onClose} disabled={mutation.isPending}>
-            Cancel
-          </Button>
-          <Button
-            variant="danger"
-            isLoading={mutation.isPending}
-            onClick={() =>
-              mutation.mutate(goal.id, {
-                onSuccess: () => {
-                  onDeleted?.()
-                  onClose()
-                },
-              })
-            }
-          >
-            Delete
-          </Button>
-        </>
+      confirmLabel="Delete"
+      tone="danger"
+      isLoading={mutation.isPending}
+      onConfirm={() =>
+        mutation.mutate(goal.id, {
+          onSuccess: () => {
+            onDeleted?.()
+            onClose()
+          },
+        })
       }
     >
       <p>
-        Delete <strong>{goal.title}</strong>
-        {goal.employee?.fullName ? <> for {goal.employee.fullName}</> : null}? Any recorded actual
-        is removed with it, and this can&rsquo;t be undone.
+        Delete <strong className="font-semibold text-fg">{goal.title}</strong>
+        {goal.employee?.fullName ? <> for {goal.employee.fullName}</> : null}? Any recorded actual is removed with it, and
+        this can&rsquo;t be undone.
       </p>
-    </Modal>
+    </ConfirmDialog>
   )
 }
