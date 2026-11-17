@@ -14,9 +14,21 @@ const appRoutes = moduleRoutes.map((route) => ({
   handle: { title: route.navLabel },
 }))
 
+// Dev-only component gallery. `import.meta.env.DEV` is false in production builds,
+// so this branch and its lazy chunk are dropped from the bundle.
+const devRoutes = import.meta.env.DEV
+  ? [
+      {
+        path: 'dev/ui',
+        handle: { title: 'Component gallery' },
+        lazy: () => import('@/dev/ComponentGallery').then((m) => ({ Component: m.default })),
+      },
+    ]
+  : []
+
 const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
-  { element: <AppLayout />, children: appRoutes },
+  { element: <AppLayout />, children: [...appRoutes, ...devRoutes] },
   ...LEGACY_ROLE_PREFIXES.map((prefix) => ({
     path: `/${prefix}/*`,
     element: <LegacyRoleRedirect />,
