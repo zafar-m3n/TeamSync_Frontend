@@ -1,29 +1,25 @@
 import clsx from 'clsx'
 import { Icon } from '@iconify/react'
 import Spinner from '@/components/ui/Spinner'
-
-const base =
-  'relative inline-flex shrink-0 items-center justify-center rounded-md transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none'
+import { buttonBase } from '@/components/ui/buttonStyles'
 
 const sizes = {
-  sm: 'h-8 w-8',
-  md: 'h-10 w-10',
+  sm: 'h-8 w-8 rounded-md',
+  md: 'h-9 w-9 rounded-md',
+  lg: 'h-11 w-11 rounded-lg',
 }
 
-const iconSizes = {
-  sm: 18,
-  md: 20,
-}
+const iconSizes = { sm: 16, md: 18, lg: 20 }
 
+// Row actions sit in dense tables, so coloured variants are tinted rather than solid.
 const variants = {
-  primary: 'bg-primary text-white hover:bg-primary/90 active:bg-primary/80',
-  accent: 'bg-accent text-white hover:bg-accent/90 active:bg-accent/80',
-  secondary:
-    'bg-white border border-gray-300 text-text hover:bg-gray-50 active:bg-gray-100',
-  danger: 'bg-red-600 text-white hover:bg-red-700 active:bg-red-800',
-  success: 'bg-emerald-600 text-white hover:bg-emerald-700 active:bg-emerald-800',
-  ghost: 'text-gray-500 hover:bg-gray-100 hover:text-text',
-  'ghost-danger': 'text-gray-500 hover:bg-red-50 hover:text-red-600',
+  primary: 'bg-brand-600 text-on-brand hover:bg-brand-700',
+  accent: 'border border-brand-100 bg-brand-50 text-brand-700 hover:border-brand-500/40 hover:bg-brand-100',
+  secondary: 'border border-line-strong/70 bg-surface text-fg-muted hover:bg-surface-subtle hover:text-fg',
+  danger: 'border border-danger/20 bg-danger-soft text-danger hover:border-danger/40 hover:bg-danger/15',
+  success: 'border border-success/20 bg-success-soft text-success hover:border-success/40 hover:bg-success/15',
+  ghost: 'text-fg-muted hover:bg-surface-hover hover:text-fg',
+  'ghost-danger': 'text-fg-muted hover:bg-danger-soft hover:text-danger',
 }
 
 // Icon-only button. `label` is required — it drives the accessible name and the
@@ -39,6 +35,7 @@ export default function IconButton({
   className,
   ...props
 }) {
+  const px = iconSizes[size] ?? iconSizes.sm
   return (
     <button
       type={type}
@@ -46,24 +43,10 @@ export default function IconButton({
       title={label}
       disabled={disabled || isLoading}
       aria-busy={isLoading || undefined}
-      className={clsx(
-        base,
-        sizes[size] ?? sizes.sm,
-        variants[variant] ?? variants.secondary,
-        className,
-      )}
+      className={clsx(buttonBase, sizes[size] ?? sizes.sm, variants[variant] ?? variants.secondary, className)}
       {...props}
     >
-      {isLoading ? (
-        <Spinner size="sm" />
-      ) : (
-        <Icon
-          icon={icon}
-          width={iconSizes[size] ?? iconSizes.sm}
-          height={iconSizes[size] ?? iconSizes.sm}
-          aria-hidden
-        />
-      )}
+      {isLoading ? <Spinner size="sm" /> : <Icon icon={icon} width={px} height={px} aria-hidden />}
     </button>
   )
 }

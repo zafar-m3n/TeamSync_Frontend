@@ -6,11 +6,11 @@ const sizes = {
   lg: 'h-10 w-10 border-[3px]',
 }
 
-export default function Spinner({ size = 'md', className }) {
+export default function Spinner({ size = 'md', label = 'Loading', className }) {
   return (
     <span
       role="status"
-      aria-label="Loading"
+      aria-label={label}
       className={clsx(
         'inline-block animate-spin rounded-full border-current border-t-transparent align-[-0.125em]',
         sizes[size] ?? sizes.md,

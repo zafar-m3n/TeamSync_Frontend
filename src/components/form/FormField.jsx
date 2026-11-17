@@ -1,38 +1,56 @@
-import { cloneElement, isValidElement, useId } from 'react'
+import { cloneElement, isValidElement, useId, useMemo } from 'react'
+import { Icon } from '@iconify/react'
+import { FieldContext } from '@/components/form/fieldContext'
 
-export default function FormField({ label, error, required = false, children }) {
+export default function FormField({ label, error, hint, required = false, className, children }) {
   const autoId = useId()
+  const fieldId = (isValidElement(children) && children.props.id) || autoId
   const errorId = `${autoId}-error`
+  const hintId = `${autoId}-hint`
   const hasError = Boolean(error)
+  const describedBy = hasError ? errorId : hint ? hintId : undefined
+
+  const ctx = useMemo(
+    () => ({ id: fieldId, invalid: hasError, describedBy, errorId: hasError ? errorId : undefined }),
+    [fieldId, hasError, describedBy, errorId],
+  )
 
   const field = isValidElement(children)
     ? cloneElement(children, {
-        id: children.props.id ?? autoId,
+        id: fieldId,
         invalid: hasError || undefined,
         'aria-invalid': hasError || undefined,
-        'aria-describedby': hasError ? errorId : children.props['aria-describedby'],
+        'aria-describedby': describedBy ?? children.props['aria-describedby'],
       })
     : children
 
   return (
-    <div className="flex flex-col gap-1.5">
-      {label && (
-        <label
-          htmlFor={children?.props?.id ?? autoId}
-          className="flex items-center gap-0.5 text-sm font-medium text-text"
-        >
-          <span>{label}</span>
-          {required && (
-            <span className="text-xs font-normal text-gray-500">*</span>
-          )}
-        </label>
-      )}
-      {field}
-      {hasError && (
-        <p id={errorId} className="text-sm text-red-600">
-          {error}
-        </p>
-      )}
-    </div>
+    <FieldContext.Provider value={ctx}>
+      <div className={className ?? 'flex flex-col gap-1.5'}>
+        {label && (
+          <label htmlFor={fieldId} className="flex items-center gap-1 text-sm font-medium text-fg">
+            <span>{label}</span>
+            {required && (
+              <span aria-hidden="true" className="text-danger">
+                *
+              </span>
+            )}
+            {required && <span className="sr-only">(required)</span>}
+          </label>
+        )}
+        {field}
+        {hint && !hasError && (
+          <p id={hintId} className="text-cell text-fg-muted">
+            {hint}
+          </p>
+        )}
+        {hasError && (
+          <p id={errorId} className="flex items-start gap-1 text-cell text-danger">
+            <Icon icon="lucide:circle-alert" width="14" height="14" className="mt-[3px] shrink-0" aria-hidden />
+            <span>{error}</span>
+          </p>
+        )}
+      </div>
+    </FieldContext.Provider>
   )
 }

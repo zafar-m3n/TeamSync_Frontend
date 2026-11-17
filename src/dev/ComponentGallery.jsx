@@ -1,8 +1,12 @@
 import { useState } from 'react'
 import clsx from 'clsx'
 import TokensSection from '@/dev/sections/TokensSection'
+import FormControlsSection from '@/dev/sections/FormControlsSection'
 
-const SECTIONS = [{ id: 'tokens', label: 'Tokens', Component: TokensSection }]
+const SECTIONS = [
+  { id: 'tokens', label: 'Tokens', Component: TokensSection },
+  { id: 'form-controls', label: 'Form controls', Component: FormControlsSection },
+]
 
 export default function ComponentGallery() {
   const [dark, setDark] = useState(false)
