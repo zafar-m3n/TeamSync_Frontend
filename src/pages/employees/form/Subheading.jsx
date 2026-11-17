@@ -1,7 +1,7 @@
 export default function Subheading({ children }) {
   return (
-    <p className="border-b border-gray-100 pb-1.5 text-sm font-semibold text-primary">
+    <h3 className="flex items-center gap-3 text-xs font-semibold uppercase tracking-wide text-fg-muted after:h-px after:flex-1 after:bg-line">
       {children}
-    </p>
+    </h3>
   )
 }

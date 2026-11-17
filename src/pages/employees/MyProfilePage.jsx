@@ -1,47 +1,40 @@
 import { useMyProfile } from '@/hooks/useMyProfile'
 import { useAuth } from '@/store/useAuth'
-import Spinner from '@/components/ui/Spinner'
-import Button from '@/components/ui/Button'
+import Card from '@/components/ui/Card'
+import EmptyState from '@/components/ui/EmptyState'
+import ErrorState from '@/components/ui/ErrorState'
 import EmployeeDetailView from '@/pages/employees/components/EmployeeDetailView'
+import EmployeeDetailSkeleton from '@/pages/employees/components/EmployeeDetailSkeleton'
 import ChangePasswordForm from '@/pages/employees/components/ChangePasswordForm'
 
 export default function MyProfilePage() {
   const { can } = useAuth()
-  const { data, isLoading, isError, error, refetch } = useMyProfile()
+  const { data, isLoading, isError, error, refetch, isRefetching } = useMyProfile()
 
   const canEdit = can('employees', 'edit')
-  const editHref = data?.id
-    ? `/employees/${data.id}/edit`
-    : null
+  const editHref = data?.id ? `/employees/${data.id}/edit` : null
 
-  if (isLoading) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <Spinner size="lg" className="text-accent" />
-      </div>
-    )
-  }
+  if (isLoading) return <EmployeeDetailSkeleton label="Loading your profile" />
 
   let profile
   if (isError) {
     profile = (
-      <div className="flex min-h-[40vh] flex-col items-center justify-center gap-4 text-center">
-        <p className="text-sm text-gray-600">
-          {error?.message || 'Could not load your profile.'}
-        </p>
-        <Button onClick={() => refetch()}>Try again</Button>
-      </div>
+      <Card>
+        <ErrorState
+          message={error?.message || 'Could not load your profile.'}
+          onRetry={() => refetch()}
+          isRetrying={isRefetching}
+        />
+      </Card>
     )
   } else if (!data) {
     profile = (
-      <div className="rounded-lg border border-gray-200 bg-white p-6 text-sm text-gray-600">
-        Your account has no employee profile yet.
-      </div>
+      <Card>
+        <EmptyState icon="lucide:user-round-x" message="Your account has no employee profile yet." />
+      </Card>
     )
   } else {
-    profile = (
-      <EmployeeDetailView data={data} canEdit={canEdit} editHref={editHref} heading="My Profile" />
-    )
+    profile = <EmployeeDetailView data={data} canEdit={canEdit} editHref={editHref} heading="My Profile" />
   }
 
   return (

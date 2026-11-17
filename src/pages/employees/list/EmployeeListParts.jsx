@@ -1,43 +1,28 @@
 import IconButton from '@/components/ui/IconButton'
-import TableSkeleton from '@/components/ui/TableSkeleton'
-import Button from '@/components/ui/Button'
+import Avatar from '@/components/ui/Avatar'
+import Skeleton, { LoadingRegion } from '@/components/ui/Skeleton'
+import EmptyState from '@/components/ui/EmptyState'
+import ErrorState from '@/components/ui/ErrorState'
 
-function getInitials(source) {
-  const parts = String(source || '')
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-  if (parts.length === 0) return '?'
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
-}
-
-export function Avatar({ name, className = 'h-8 w-8 text-xs' }) {
-  return (
-    <span
-      className={`flex shrink-0 items-center justify-center rounded-full bg-accent/10 font-semibold text-accent ${className}`}
-    >
-      {getInitials(name)}
-    </span>
-  )
-}
-
-export function NameCell({ name }) {
+export function NameCell({ name, sub }) {
   return (
     <span className="flex items-center gap-3">
       <Avatar name={name} />
-      <span className="font-medium text-text">{name ?? '—'}</span>
+      <span className="min-w-0">
+        <span className="block truncate font-medium text-fg">{name ?? '—'}</span>
+        {sub && <span className="block truncate text-xs text-fg-muted">{sub}</span>}
+      </span>
     </span>
   )
 }
 
 export function RowActions({ empId, navigate, className, onDelete }) {
   return (
-    <div className={`flex gap-2 ${className ?? ''}`}>
+    <div className={`flex gap-1 ${className ?? ''}`}>
       <IconButton
         icon="lucide:eye"
         label="View employee"
-        variant="secondary"
+        variant="ghost"
         size="sm"
         onClick={(e) => {
           e.stopPropagation()
@@ -47,7 +32,7 @@ export function RowActions({ empId, navigate, className, onDelete }) {
       <IconButton
         icon="lucide:pencil"
         label="Edit employee"
-        variant="secondary"
+        variant="ghost"
         size="sm"
         onClick={(e) => {
           e.stopPropagation()
@@ -58,7 +43,7 @@ export function RowActions({ empId, navigate, className, onDelete }) {
         <IconButton
           icon="lucide:trash-2"
           label="Delete employee"
-          variant="danger"
+          variant="ghost-danger"
           size="sm"
           onClick={(e) => {
             e.stopPropagation()
@@ -70,31 +55,48 @@ export function RowActions({ empId, navigate, className, onDelete }) {
   )
 }
 
-export function ListSkeleton({ columns, rows }) {
+// Phone-width card shell; the whole card opens the employee.
+export function MobileCard({ onOpen, children }) {
   return (
-    <>
-      <div className="hidden md:block">
-        <TableSkeleton columns={columns} rows={rows} />
-      </div>
-      <div className="space-y-3 md:hidden">
-        {Array.from({ length: rows }).map((_, i) => (
-          <div
-            key={i}
-            className="h-24 animate-pulse rounded-lg border border-gray-200 bg-gray-50"
-          />
-        ))}
-      </div>
-    </>
+    <div
+      onClick={onOpen}
+      className="cursor-pointer rounded-lg border border-line bg-surface p-4 shadow-sm transition-colors duration-(--duration-fast) hover:bg-surface-subtle"
+    >
+      {children}
+    </div>
   )
 }
 
-export function ListError({ message, onRetry }) {
-  return (
-    <div className="flex flex-col items-center gap-3 rounded-lg border border-gray-200 bg-white py-12 text-center">
-      <p className="text-sm text-gray-600">{message}</p>
-      <Button variant="secondary" size="sm" onClick={onRetry}>
-        Try again
-      </Button>
-    </div>
-  )
+// Loading / error / empty for the phone-width card list (the table handles its own).
+export function MobileListState({ isLoading, error, onRetry, rows, emptyMessage, emptyAction }) {
+  if (isLoading) {
+    return (
+      <LoadingRegion label="Loading employees" className="space-y-3">
+        {Array.from({ length: 4 }, (_, i) => (
+          <div key={i} className="flex items-center gap-3 rounded-lg border border-line bg-surface p-4 shadow-sm">
+            <Skeleton className="h-10 w-10 rounded-full" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-3 w-32" />
+              <Skeleton className="h-2.5 w-20" />
+            </div>
+          </div>
+        ))}
+      </LoadingRegion>
+    )
+  }
+  if (error) {
+    return (
+      <div className="rounded-lg border border-line bg-surface shadow-sm">
+        <ErrorState compact message={error} onRetry={onRetry} />
+      </div>
+    )
+  }
+  if (rows.length === 0) {
+    return (
+      <div className="rounded-lg border border-line bg-surface shadow-sm">
+        <EmptyState compact icon="lucide:users" message={emptyMessage} action={emptyAction} />
+      </div>
+    )
+  }
+  return null
 }

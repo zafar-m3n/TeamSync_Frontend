@@ -2,6 +2,7 @@ import { Controller } from 'react-hook-form'
 import Select from '@/components/ui/Select'
 import FormField from '@/components/form/FormField'
 import Input from '@/components/form/Input'
+import GroupLabel from '@/pages/employees/form/Subheading'
 
 const RELATIONSHIP_OPTIONS = [
   { value: 'Spouse', label: 'Spouse' },
@@ -10,21 +11,14 @@ const RELATIONSHIP_OPTIONS = [
   { value: 'Other', label: 'Other' },
 ]
 
-function GroupLabel({ children }) {
-  return (
-    <p className="border-b border-gray-100 pb-1.5 text-sm font-semibold text-primary">
-      {children}
-    </p>
-  )
-}
 
 // All contact fields are optional on the backend — no `required` flags here.
 // Every field uses register() except emergencyContactRelationship, which is a
 // restricted Select and therefore needs Controller + `control`.
 export default function ContactFields({ register, control }) {
   return (
-    <div className="space-y-6">
-      <div className="space-y-3">
+    <div className="space-y-8">
+      <div className="space-y-4">
         <GroupLabel>Address</GroupLabel>
         <div className="grid gap-4 sm:grid-cols-2">
           <FormField label="Address Line 1">
@@ -45,7 +39,7 @@ export default function ContactFields({ register, control }) {
         </div>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         <GroupLabel>Emergency contact</GroupLabel>
         <div className="grid gap-4 sm:grid-cols-2">
           <FormField label="Emergency Contact Name">

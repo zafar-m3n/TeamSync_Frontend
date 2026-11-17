@@ -4,7 +4,9 @@ import { Icon } from '@iconify/react'
 import Table from '@/components/ui/Table'
 import Button from '@/components/ui/Button'
 import IconButton from '@/components/ui/IconButton'
+import clsx from 'clsx'
 import Modal from '@/components/ui/Modal'
+import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import FormField from '@/components/form/FormField'
 import Input from '@/components/form/Input'
 import FileActions from '@/components/ui/FileActions'
@@ -38,9 +40,19 @@ function fmtDate(value) {
 }
 
 const columns = [
-  { key: 'docName', header: 'Document' },
-  { key: 'uploadDate', header: 'Uploaded' },
-  { key: 'actions', header: '' },
+  {
+    key: 'docName',
+    header: 'Document',
+    render: (doc) => (
+      <span className="flex items-center gap-2.5">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-surface-subtle text-fg-muted ring-1 ring-line">
+          <Icon icon="lucide:file-text" width="16" height="16" aria-hidden />
+        </span>
+        <span className="font-medium text-fg">{doc.docName}</span>
+      </span>
+    ),
+  },
+  { key: 'uploadDate', header: 'Uploaded', className: 'whitespace-nowrap tabular-nums text-fg-muted', render: (doc) => fmtDate(doc.uploadDate) },
 ]
 
 function UploadDocumentModal({ employeeId, onClose }) {
@@ -90,7 +102,7 @@ function UploadDocumentModal({ employeeId, onClose }) {
           <Button
             type="submit"
             form="upload-document-form"
-            variant="accent"
+            variant="primary"
             isLoading={upload.isPending}
             disabled={!canSubmit}
           >
@@ -115,23 +127,28 @@ function UploadDocumentModal({ employeeId, onClose }) {
         </FormField>
 
         <div className="flex flex-col gap-1.5">
-          <span className="text-sm font-medium text-text">File</span>
-          <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md border border-dashed border-gray-300 bg-gray-50 px-4 py-6 text-center transition-colors hover:border-accent hover:bg-gray-100 focus-within:ring-2 focus-within:ring-accent">
-            <Icon
-              icon={file ? 'lucide:file-check-2' : 'lucide:upload-cloud'}
-              width="24"
-              height="24"
-              className={file ? 'text-accent' : 'text-gray-400'}
-              aria-hidden
-            />
-            <span className="text-sm text-text">
-              {file ? file.name : 'Click to choose a file'}
+          <span id="upload-file-label" className="text-sm font-medium text-fg">
+            File
+          </span>
+          <label
+            className={clsx(
+              'flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed px-4 py-7 text-center transition-colors duration-(--duration-fast) focus-within:focus-ring',
+              file ? 'border-brand-500 bg-brand-50' : 'border-line-strong bg-surface-subtle hover:border-brand-500 hover:bg-brand-50/60',
+            )}
+          >
+            <span
+              className={clsx(
+                'flex h-10 w-10 items-center justify-center rounded-full',
+                file ? 'bg-brand-100 text-brand-700' : 'bg-surface text-fg-muted ring-1 ring-line',
+              )}
+            >
+              <Icon icon={file ? 'lucide:file-check-2' : 'lucide:upload-cloud'} width="20" height="20" aria-hidden />
             </span>
-            <span className="text-xs text-gray-500">
-              PDF, Word, or JPEG/PNG · up to 5 MB
-            </span>
+            <span className="max-w-full truncate text-sm font-medium text-fg">{file ? file.name : 'Click to choose a file'}</span>
+            <span className="text-xs text-fg-muted">PDF, Word, or JPEG/PNG · up to 5 MB</span>
             <input
               type="file"
+              aria-labelledby="upload-file-label"
               accept="application/pdf,.doc,.docx,image/jpeg,image/png"
               className="sr-only"
               onChange={onFileChange}
@@ -146,6 +163,9 @@ function UploadDocumentModal({ employeeId, onClose }) {
 export default function EmployeeDocumentsList({ employeeId, documents = [], canEdit }) {
   const del = useDeleteDocument()
   const [deleteTarget, setDeleteTarget] = useState(null)
+  // Keeps the name on screen while the dialog animates out.
+  const [shownTarget, setShownTarget] = useState(null)
+  if (deleteTarget && deleteTarget !== shownTarget) setShownTarget(deleteTarget)
   const [uploadOpen, setUploadOpen] = useState(false)
 
   return (
@@ -153,91 +173,51 @@ export default function EmployeeDocumentsList({ employeeId, documents = [], canE
       {canEdit && (
         <div>
           <Button variant="secondary" size="sm" onClick={() => setUploadOpen(true)}>
+            <Icon icon="lucide:upload" width="14" height="14" aria-hidden />
             Upload document
           </Button>
         </div>
       )}
 
       <Table
+        caption="Documents"
         columns={columns}
         rows={documents}
         emptyMessage="No documents uploaded"
-        renderRow={(doc) => (
-          <tr key={doc.id} className="border-b border-gray-100 last:border-0">
-            <td className="px-4 py-3 text-text">
-              <span className="flex items-center gap-2">
-                <Icon
-                  icon="lucide:file-text"
-                  width="16"
-                  height="16"
-                  className="shrink-0 text-gray-400"
-                  aria-hidden
-                />
-                <span>{doc.docName}</span>
-              </span>
-            </td>
-            <td className="px-4 py-3 text-text">{fmtDate(doc.uploadDate)}</td>
-            <td className="px-4 py-3">
-              <div className="flex items-center justify-end gap-1">
-                <FileActions
-                  url={documentDownloadUrl(employeeId, doc.id)}
-                  mimeType={doc.mimeType}
-                  name={doc.docName}
-                />
-                {canEdit && (
-                  <IconButton
-                    icon="lucide:trash-2"
-                    label="Delete document"
-                    variant="danger"
-                    size="sm"
-                    onClick={() => setDeleteTarget(doc)}
-                  />
-                )}
-              </div>
-            </td>
-          </tr>
+        emptyIcon="lucide:folder-open"
+        rowActions={(doc) => (
+          <>
+            <FileActions url={documentDownloadUrl(employeeId, doc.id)} mimeType={doc.mimeType} name={doc.docName} />
+            {canEdit && (
+              <IconButton
+                icon="lucide:trash-2"
+                label="Delete document"
+                variant="ghost-danger"
+                size="sm"
+                onClick={() => setDeleteTarget(doc)}
+              />
+            )}
+          </>
         )}
       />
 
-      {uploadOpen && (
-        <UploadDocumentModal
-          employeeId={employeeId}
-          onClose={() => setUploadOpen(false)}
-        />
-      )}
+      {uploadOpen && <UploadDocumentModal employeeId={employeeId} onClose={() => setUploadOpen(false)} />}
 
-      <Modal
+      <ConfirmDialog
         isOpen={Boolean(deleteTarget)}
         onClose={() => setDeleteTarget(null)}
         title="Delete document"
-        footer={
-          <>
-            <Button
-              variant="secondary"
-              onClick={() => setDeleteTarget(null)}
-              disabled={del.isPending}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="danger"
-              isLoading={del.isPending}
-              onClick={() =>
-                del.mutate(
-                  { id: employeeId, documentId: deleteTarget.id },
-                  { onSuccess: () => setDeleteTarget(null) },
-                )
-              }
-            >
-              Delete
-            </Button>
-          </>
+        confirmLabel="Delete"
+        tone="danger"
+        isLoading={del.isPending}
+        onConfirm={() =>
+          del.mutate({ id: employeeId, documentId: deleteTarget.id }, { onSuccess: () => setDeleteTarget(null) })
         }
       >
         <p>
-          Delete <strong>{deleteTarget?.docName}</strong>? This can’t be undone.
+          Delete <strong className="font-semibold text-fg">{shownTarget?.docName}</strong>? This can’t be undone.
         </p>
-      </Modal>
+      </ConfirmDialog>
     </div>
   )
 }

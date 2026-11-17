@@ -1,9 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { Icon } from '@iconify/react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import clsx from 'clsx'
-import Spinner from '@/components/ui/Spinner'
+import Button from '@/components/ui/Button'
+import Card from '@/components/ui/Card'
+import ErrorState from '@/components/ui/ErrorState'
+import Skeleton, { LoadingRegion } from '@/components/ui/Skeleton'
+import { usePageEnter } from '@/hooks/useMotion'
 import { useAuth } from '@/store/useAuth'
 import { canAssignRole } from '@/lib/permissions'
 import { toast } from '@/hooks/useToast'
@@ -71,7 +75,9 @@ export default function EmployeeFormPage({ mode }) {
   const wizard = useEmployeeWizard(stepFields(mode))
   // The one derived flag that both the button swap and the last-step content
   // render off of, so they can never disagree.
-  const { currentStep, entered, isLastStep } = wizard
+  const { currentStep, isLastStep } = wizard
+  const stepRef = useRef(null)
+  usePageEnter(stepRef, currentStep)
 
   const handleNext = async () => {
     wizard.visit(currentStep)
@@ -135,57 +141,57 @@ export default function EmployeeFormPage({ mode }) {
 
   if (isEdit && loadingEmployee) {
     return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <Spinner size="lg" className="text-accent" />
+      <div className="mx-auto max-w-3xl">
+        <Card padding="lg">
+          <LoadingRegion label="Loading employee" className="space-y-6">
+            <Skeleton className="h-7 w-full max-w-lg" />
+            <div className="grid gap-4 sm:grid-cols-2">
+              {Array.from({ length: 6 }, (_, i) => (
+                <div key={i} className="space-y-2">
+                  <Skeleton className="h-3 w-24" />
+                  <Skeleton className="h-9 w-full" />
+                </div>
+              ))}
+            </div>
+          </LoadingRegion>
+        </Card>
       </div>
     )
   }
 
   if (isEdit && employeeError) {
     return (
-      <p className="text-sm text-gray-600">Could not load this employee to edit.</p>
+      <div className="mx-auto max-w-3xl">
+        <Card>
+          <ErrorState message="Could not load this employee to edit." />
+        </Card>
+      </div>
     )
   }
 
   return (
     <div className="mx-auto max-w-3xl pb-16">
-      <div className="rounded-lg border border-gray-200 bg-white p-6 sm:p-8">
+      <div className="rounded-lg border border-line bg-surface p-5 shadow-sm sm:p-8">
         <div className="flex items-start justify-between gap-4">
-          <h1 className="font-display text-3xl leading-tight text-primary">
-            {isEdit ? 'Edit Employee' : 'New Employee'}
-          </h1>
-          <button
+          <div className="min-w-0 flex-1">
+            <Stepper steps={wizard.stepperSteps(errors)} currentStep={currentStep} />
+          </div>
+          <Button
             type="button"
-            onClick={() =>
-              navigate(
-                isEdit ? `/employees/${employeeId}` : `/employees`,
-              )
-            }
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate(isEdit ? `/employees/${employeeId}` : `/employees`)}
             disabled={mutation.isPending}
-            className="mt-1 shrink-0 rounded text-sm text-gray-500 transition-colors hover:text-text focus:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-50"
+            className="-mr-2 -mt-1"
           >
             Cancel
-          </button>
-        </div>
-
-        <div className="mt-6">
-          <Stepper steps={wizard.stepperSteps(errors)} currentStep={currentStep} />
+          </Button>
         </div>
 
         <form onSubmit={submit} className="mt-8" noValidate>
-          <div
-            className={clsx(
-              'transition duration-200 ease-out motion-reduce:transition-none',
-              entered ? 'translate-y-0 opacity-100' : 'translate-y-1 opacity-0',
-            )}
-          >
+          <div ref={stepRef}>
             {currentStep === 1 && (
-              <AccountStep
-                form={form}
-                mode={mode}
-                roleOptions={roleOptions}
-                roleLocked={roleLocked}
-              />
+              <AccountStep form={form} mode={mode} roleOptions={roleOptions} roleLocked={roleLocked} />
             )}
 
             {currentStep === 2 && (
@@ -199,14 +205,14 @@ export default function EmployeeFormPage({ mode }) {
 
             {currentStep === 3 && (
               <section className="space-y-6">
-                <p className="text-sm text-gray-500">All fields in this step are optional.</p>
+                <OptionalNote />
                 <ContactFields register={form.register} control={form.control} />
               </section>
             )}
 
             {isLastStep && (
               <section className="space-y-6">
-                <p className="text-sm text-gray-500">All fields in this step are optional.</p>
+                <OptionalNote />
                 <BankingFields register={form.register} />
               </section>
             )}
@@ -223,5 +229,14 @@ export default function EmployeeFormPage({ mode }) {
         </form>
       </div>
     </div>
+  )
+}
+
+function OptionalNote() {
+  return (
+    <p className="flex items-center gap-2 rounded-md bg-surface-subtle px-3 py-2 text-cell text-fg-muted">
+      <Icon icon="lucide:info" width="14" height="14" aria-hidden />
+      All fields in this step are optional.
+    </p>
   )
 }

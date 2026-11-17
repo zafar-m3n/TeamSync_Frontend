@@ -14,8 +14,8 @@ export default function AccountStep({ form, mode, roleOptions, roleLocked }) {
   } = form
 
   return (
-    <section className="space-y-6">
-      <div className="space-y-3">
+    <section className="space-y-8">
+      <div className="space-y-4">
         <Subheading>Account</Subheading>
         <div className="grid gap-4 sm:grid-cols-2">
           <FormField label="Email" required error={errors.email?.message}>
@@ -61,7 +61,7 @@ export default function AccountStep({ form, mode, roleOptions, roleLocked }) {
         </div>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         <Subheading>Personal details</Subheading>
         <div className="grid gap-4 sm:grid-cols-2">
           <FormField

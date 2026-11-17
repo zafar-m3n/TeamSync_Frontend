@@ -1,10 +1,9 @@
-import { useEffect, useReducer } from 'react'
+import { useReducer } from 'react'
 import { ALL_STEPS, STEP_LABELS, TOTAL_STEPS } from '@/pages/employees/form/employeeFormSchema'
 
-const initialState = { currentStep: 1, visitedSteps: new Set(), entered: true }
+const initialState = { currentStep: 1, visitedSteps: new Set() }
 
-// Changing step hides the content; the next frame fades it back in.
-const goTo = (state, step) => ({ ...state, currentStep: step, entered: false })
+const goTo = (state, step) => ({ ...state, currentStep: step })
 
 function reducer(state, action) {
   switch (action.type) {
@@ -18,8 +17,6 @@ function reducer(state, action) {
       return { ...state, visitedSteps: new Set(state.visitedSteps).add(action.step) }
     case 'visitAll':
       return { ...state, visitedSteps: new Set(ALL_STEPS) }
-    case 'entered':
-      return { ...state, entered: true }
     default:
       return state
   }
@@ -32,11 +29,6 @@ const stepHasError = (fields, errorKeys) =>
 export function useEmployeeWizard(stepFields) {
   const [state, dispatch] = useReducer(reducer, initialState)
   const { currentStep, visitedSteps } = state
-
-  useEffect(() => {
-    const id = requestAnimationFrame(() => dispatch({ type: 'entered' }))
-    return () => cancelAnimationFrame(id)
-  }, [currentStep])
 
   const stepStatus = (step, errorKeys) => {
     if (step === currentStep) return 'current'

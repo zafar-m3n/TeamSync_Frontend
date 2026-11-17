@@ -4,6 +4,7 @@ import { z } from 'zod'
 import FormField from '@/components/form/FormField'
 import Input from '@/components/form/Input'
 import Button from '@/components/ui/Button'
+import Card from '@/components/ui/Card'
 import { useChangePassword } from '@/hooks/useChangePassword'
 import { toast } from '@/hooks/useToast'
 import { useAuth } from '@/store/useAuth'
@@ -60,11 +61,15 @@ export default function ChangePasswordForm() {
   }
 
   return (
-    <section id="change-password" className="scroll-mt-20 rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
-      <h2 className="text-base font-semibold text-primary">Change password</h2>
+    <Card
+      id="change-password"
+      className="scroll-mt-20"
+      title="Change password"
+      description="Changing it signs you out of your other sessions."
+    >
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="mt-4 grid max-w-md gap-4"
+        className="grid max-w-md gap-4"
         noValidate
       >
         <FormField label="Current Password" required error={errors.currentPassword?.message}>
@@ -92,11 +97,11 @@ export default function ChangePasswordForm() {
           />
         </FormField>
         <div>
-          <Button type="submit" variant="accent" isLoading={mutation.isPending}>
+          <Button type="submit" variant="primary" isLoading={mutation.isPending}>
             Change password
           </Button>
         </div>
       </form>
-    </section>
+    </Card>
   )
 }

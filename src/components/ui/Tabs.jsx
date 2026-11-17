@@ -32,7 +32,7 @@ export default function Tabs({ tabs, activeKey, onChange, id, className }) {
       ref={listRef}
       role="tablist"
       onKeyDown={onKeyDown}
-      className={clsx('flex gap-1 overflow-x-auto border-b border-line', className)}
+      className={clsx('flex gap-1 overflow-x-auto overflow-y-hidden shadow-[inset_0_-1px_0_var(--color-line)]', className)}
     >
       {tabs.map((tab) => {
         const active = tab.key === activeKey
@@ -47,7 +47,7 @@ export default function Tabs({ tabs, activeKey, onChange, id, className }) {
             tabIndex={active ? 0 : -1}
             onClick={() => onChange(tab.key)}
             className={clsx(
-              'relative -mb-px shrink-0 whitespace-nowrap rounded-t-md border-b-2 px-3.5 py-2.5 text-sm font-medium transition-colors duration-(--duration-fast) focus-visible:focus-ring',
+              'relative shrink-0 whitespace-nowrap rounded-t-md border-b-2 px-3.5 py-2.5 text-sm font-medium transition-colors duration-(--duration-fast) focus-visible:outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--color-brand-500)]',
               active ? 'border-brand-600 text-fg' : 'border-transparent text-fg-muted hover:border-line-strong/50 hover:text-fg',
             )}
           >

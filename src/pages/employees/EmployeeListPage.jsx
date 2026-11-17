@@ -1,12 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import Button from '@/components/ui/Button'
 import { useEmployees } from '@/hooks/useEmployees'
 import { useAuth } from '@/store/useAuth'
 import { outranks } from '@/lib/permissions'
 import { useEmployeeListFilters } from '@/pages/employees/list/useEmployeeListFilters'
-import { LIMIT, allColumns } from '@/pages/employees/list/employeeListConfig'
-import { ListError, ListSkeleton } from '@/pages/employees/list/EmployeeListParts'
 import EmployeeFilters from '@/pages/employees/list/EmployeeFilters'
 import EmployeeTable from '@/pages/employees/list/EmployeeTable'
 import DeleteEmployeeDialog from '@/pages/employees/list/DeleteEmployeeDialog'
@@ -18,7 +15,6 @@ function AllList() {
   const canDelete = can('employees', 'delete')
   const [deleteTarget, setDeleteTarget] = useState(null)
   const filters = useEmployeeListFilters()
-  const { page, setPage } = filters
 
   // Omit delete entirely (never a disabled button) when it can't apply: no
   // permission, this is the current user's own employee record, or the target
@@ -28,52 +24,23 @@ function AllList() {
       ? () => setDeleteTarget(emp)
       : null
 
-  const { data, isLoading, isError, error, refetch } = useEmployees(filters.params)
-
-  const rows = data?.rows ?? []
-  const meta = data?.meta
-  const totalPages = meta?.totalPages ?? 1
+  const { data, isLoading, isFetching, isError, error, refetch } = useEmployees(filters.params)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <EmployeeFilters filters={filters} onNew={() => navigate('new')} />
 
-      {isLoading ? (
-        <ListSkeleton columns={allColumns} rows={LIMIT} />
-      ) : isError ? (
-        <ListError
-          message={error?.message || 'Could not load employees.'}
-          onRetry={() => refetch()}
-        />
-      ) : (
-        <>
-          <EmployeeTable rows={rows} navigate={navigate} deleteHandlerFor={deleteHandlerFor} />
-
-          {meta && totalPages > 1 && (
-            <div className="flex items-center justify-between pt-2">
-              <Button
-                variant="secondary"
-                size="sm"
-                disabled={page <= 1}
-                onClick={() => setPage(Math.max(1, page - 1))}
-              >
-                Previous
-              </Button>
-              <span className="text-sm text-gray-500">
-                Page {meta.page} of {totalPages}
-              </span>
-              <Button
-                variant="secondary"
-                size="sm"
-                disabled={page >= totalPages}
-                onClick={() => setPage(page + 1)}
-              >
-                Next
-              </Button>
-            </div>
-          )}
-        </>
-      )}
+      <EmployeeTable
+        rows={data?.rows ?? []}
+        meta={data?.meta}
+        onPageChange={filters.setPage}
+        isLoading={isLoading}
+        isFetching={isFetching}
+        error={isError ? error?.message || 'Could not load employees.' : null}
+        onRetry={() => refetch()}
+        navigate={navigate}
+        deleteHandlerFor={deleteHandlerFor}
+      />
 
       <DeleteEmployeeDialog employee={deleteTarget} onClose={() => setDeleteTarget(null)} />
     </div>

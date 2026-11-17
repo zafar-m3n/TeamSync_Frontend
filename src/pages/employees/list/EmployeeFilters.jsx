@@ -1,3 +1,4 @@
+import { Icon } from '@iconify/react'
 import Select from '@/components/ui/Select'
 import Button from '@/components/ui/Button'
 import Input from '@/components/form/Input'
@@ -20,31 +21,42 @@ export default function EmployeeFilters({ filters, onNew }) {
   ]
 
   return (
-    <div className="flex flex-wrap items-center gap-4">
-      <div className="flex flex-1 flex-wrap items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
+    <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+      <div className="relative w-full sm:max-w-xs">
+        <Icon
+          icon="lucide:search"
+          width="16"
+          height="16"
+          aria-hidden
+          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-fg-subtle"
+        />
         <Input
           type="search"
+          aria-label="Search employees"
           placeholder="Search employees…"
           value={filters.search}
           onChange={(e) => filters.setSearch(e.target.value)}
-          className="max-w-xs"
+          className="pl-9"
         />
-        <div className="w-56">
-          <Select
-            options={departmentOptions}
-            value={departmentOptions.find((o) => o.value === filters.departmentId) ?? null}
-            onChange={(opt) => filters.setDepartmentId(opt.value)}
-          />
-        </div>
-        <div className="w-56">
-          <Select
-            options={STATUS_FILTER_OPTIONS}
-            value={STATUS_FILTER_OPTIONS.find((o) => o.value === filters.statusFilter) ?? null}
-            onChange={(opt) => filters.setStatusFilter(opt.value)}
-          />
-        </div>
       </div>
-      <Button variant="accent" onClick={onNew}>
+      <div className="w-full sm:w-52">
+        <Select
+          aria-label="Department"
+          options={departmentOptions}
+          value={departmentOptions.find((o) => o.value === filters.departmentId) ?? null}
+          onChange={(opt) => filters.setDepartmentId(opt.value)}
+        />
+      </div>
+      <div className="w-full sm:w-52">
+        <Select
+          aria-label="Employment status"
+          options={STATUS_FILTER_OPTIONS}
+          value={STATUS_FILTER_OPTIONS.find((o) => o.value === filters.statusFilter) ?? null}
+          onChange={(opt) => filters.setStatusFilter(opt.value)}
+        />
+      </div>
+      <Button variant="primary" onClick={onNew} className="sm:ml-auto">
+        <Icon icon="lucide:plus" width="16" height="16" aria-hidden />
         New Employee
       </Button>
     </div>
