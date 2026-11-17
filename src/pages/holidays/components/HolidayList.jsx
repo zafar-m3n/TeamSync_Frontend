@@ -3,12 +3,13 @@ import Card from '@/components/ui/Card'
 import Skeleton, { LoadingRegion } from '@/components/ui/Skeleton'
 import EmptyState from '@/components/ui/EmptyState'
 import ErrorState from '@/components/ui/ErrorState'
+import { describeError } from '@/lib/errors'
 import { useHolidays } from '@/hooks/useHolidays'
 import { formatHolidayDate } from '@/pages/holidays/utils/formatHolidayDate'
 
 // Read-only list for anyone with holidays.view.
 export default function HolidayList({ year }) {
-  const { data: holidays = [], isLoading, isError } = useHolidays(year)
+  const { data: holidays = [], isLoading, isError, error, refetch, isRefetching } = useHolidays(year)
 
   return (
     <Card
@@ -26,7 +27,7 @@ export default function HolidayList({ year }) {
           <Skeleton className="h-3 w-40" />
         </LoadingRegion>
       ) : isError ? (
-        <ErrorState compact message="Could not load holidays." />
+        <ErrorState compact {...describeError(error, 'Could not load holidays.')} onRetry={() => refetch()} isRetrying={isRefetching} />
       ) : holidays.length === 0 ? (
         <EmptyState compact icon="lucide:calendar" message={`No holidays listed for ${year}.`} />
       ) : (

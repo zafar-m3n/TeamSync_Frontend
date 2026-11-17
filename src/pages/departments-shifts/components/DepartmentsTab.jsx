@@ -84,7 +84,7 @@ export default function DepartmentsTab() {
         isLoading={isLoading}
         isFetching={isFetching}
         loadingRows={LIMIT}
-        error={isError ? error?.message || 'Could not load departments.' : null}
+        error={isError ? error : null}
         onRetry={() => refetch()}
         emptyIcon="lucide:building-2"
         emptyMessage="No departments yet — add your first department"

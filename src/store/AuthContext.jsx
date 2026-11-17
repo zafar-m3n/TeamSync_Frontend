@@ -5,7 +5,8 @@ import * as token from '@/lib/token'
 import { onUnauthorized } from '@/lib/sessionEvents'
 import { hasPermission } from '@/lib/permissions'
 import { toast } from '@/hooks/useToast'
-import Spinner from '@/components/ui/Spinner'
+import Skeleton from '@/components/ui/Skeleton'
+import favicon from '@/assets/favicon.png'
 import { AuthContext } from '@/store/useAuth'
 
 const meQueryKey = (userId) => ['me', userId]
@@ -112,8 +113,15 @@ export function AuthProvider({ children }) {
   return (
     <AuthContext.Provider value={value}>
       {awaitingPermissions ? (
-        <div className="flex min-h-screen items-center justify-center bg-gray-50">
-          <Spinner size="lg" className="text-accent" />
+        <div
+          role="status"
+          aria-label="Loading TeamSync"
+          className="flex min-h-screen flex-col items-center justify-center gap-4 bg-canvas"
+        >
+          <span className="flex h-12 w-12 animate-pulse items-center justify-center rounded-xl bg-white p-1.5 shadow-sm ring-1 ring-line motion-reduce:animate-none">
+            <img src={favicon} alt="" className="h-full w-full object-contain" />
+          </span>
+          <Skeleton className="h-2 w-32" />
         </div>
       ) : (
         children

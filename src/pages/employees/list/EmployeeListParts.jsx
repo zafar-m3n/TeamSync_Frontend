@@ -3,6 +3,7 @@ import Avatar from '@/components/ui/Avatar'
 import Skeleton, { LoadingRegion } from '@/components/ui/Skeleton'
 import EmptyState from '@/components/ui/EmptyState'
 import ErrorState from '@/components/ui/ErrorState'
+import { describeError } from '@/lib/errors'
 
 export function NameCell({ name, sub }) {
   return (
@@ -87,7 +88,7 @@ export function MobileListState({ isLoading, error, onRetry, rows, emptyMessage,
   if (error) {
     return (
       <div className="rounded-lg border border-line bg-surface shadow-sm">
-        <ErrorState compact message={error} onRetry={onRetry} />
+        <ErrorState compact {...describeError(error)} onRetry={onRetry} />
       </div>
     )
   }

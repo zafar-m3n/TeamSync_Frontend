@@ -111,7 +111,7 @@ export default function TrainingCategoriesTab() {
         columns={columns}
         rows={categories}
         isLoading={isLoading}
-        error={isError ? error?.message || 'Could not load categories.' : null}
+        error={isError ? error : null}
         onRetry={() => refetch()}
         emptyIcon="lucide:tags"
         emptyMessage="No training categories yet — add your first category"

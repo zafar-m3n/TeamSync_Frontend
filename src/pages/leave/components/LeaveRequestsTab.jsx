@@ -26,7 +26,7 @@ export default function LeaveRequestsTab() {
         onPageChange={setPage}
         isLoading={isLoading}
         isFetching={isFetching}
-        error={isError ? error?.message || 'Could not load leave requests.' : null}
+        error={isError ? error : null}
         onRetry={() => refetch()}
         emptyMessage="No leave requests match these filters"
         onAction={(kind, request) => setDialog({ kind, request })}

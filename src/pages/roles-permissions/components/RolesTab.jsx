@@ -47,7 +47,7 @@ export default function RolesTab() {
         columns={columns}
         rows={roles}
         isLoading={isLoading}
-        error={isError ? error?.message || 'Could not load roles.' : null}
+        error={isError ? error : null}
         onRetry={() => refetch()}
         emptyIcon="lucide:shield"
         emptyMessage="No roles yet"

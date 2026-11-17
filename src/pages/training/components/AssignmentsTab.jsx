@@ -49,7 +49,7 @@ export default function AssignmentsTab() {
         isLoading={isLoading}
         isFetching={isFetching}
         loadingRows={LIMIT}
-        error={isError ? error?.message || 'Could not load assignments.' : null}
+        error={isError ? error : null}
         onRetry={() => refetch()}
         emptyIcon="lucide:user-check"
         emptyMessage="No assignments match these filters"

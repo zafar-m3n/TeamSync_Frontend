@@ -22,7 +22,7 @@ export default function MyGoalsPage() {
       isLoading={isLoading}
       isFetching={isFetching}
       loadingRows={LIMIT}
-      error={isError ? error?.message || 'Could not load your goals.' : null}
+      error={isError ? error : null}
       onRetry={() => refetch()}
       emptyIcon="lucide:target"
       emptyMessage="No goals assigned to you yet"

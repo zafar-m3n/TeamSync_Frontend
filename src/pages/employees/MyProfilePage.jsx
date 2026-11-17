@@ -3,6 +3,7 @@ import { useAuth } from '@/store/useAuth'
 import Card from '@/components/ui/Card'
 import EmptyState from '@/components/ui/EmptyState'
 import ErrorState from '@/components/ui/ErrorState'
+import { describeError } from '@/lib/errors'
 import EmployeeDetailView from '@/pages/employees/components/EmployeeDetailView'
 import EmployeeDetailSkeleton from '@/pages/employees/components/EmployeeDetailSkeleton'
 import ChangePasswordForm from '@/pages/employees/components/ChangePasswordForm'
@@ -21,7 +22,7 @@ export default function MyProfilePage() {
     profile = (
       <Card>
         <ErrorState
-          message={error?.message || 'Could not load your profile.'}
+          {...describeError(error, 'Could not load your profile.')}
           onRetry={() => refetch()}
           isRetrying={isRefetching}
         />

@@ -46,7 +46,7 @@ export default function TeamGoalsPage() {
         isLoading={isLoading}
         isFetching={isFetching}
         loadingRows={LIMIT}
-        error={isError ? error?.message || 'Could not load your team goals.' : null}
+        error={isError ? error : null}
         onRetry={() => refetch()}
         emptyIcon="lucide:target"
         emptyMessage="No goals set for your team yet"

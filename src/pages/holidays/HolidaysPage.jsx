@@ -60,7 +60,7 @@ export default function HolidaysPage() {
         columns={columns}
         rows={holidays}
         isLoading={isLoading}
-        error={isError ? error?.message || 'Could not load holidays.' : null}
+        error={isError ? error : null}
         onRetry={() => refetch()}
         emptyIcon="lucide:calendar"
         emptyMessage={`No holidays for ${year} yet`}

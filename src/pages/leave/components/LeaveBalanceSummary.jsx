@@ -8,7 +8,7 @@ const columns = [
   { key: 'remaining', header: 'Remaining', align: 'right', className: 'tabular-nums font-semibold text-success' },
 ]
 
-export default function LeaveBalanceSummary({ balances, year, isLoading }) {
+export default function LeaveBalanceSummary({ balances, year, isLoading, error, onRetry }) {
   return (
     <Table
       caption={`Leave balance by type for ${year}`}
@@ -16,6 +16,8 @@ export default function LeaveBalanceSummary({ balances, year, isLoading }) {
       rows={activeBalances(balances)}
       getRowKey={(b) => b.leaveTypeId}
       isLoading={isLoading}
+      error={error}
+      onRetry={onRetry}
       loadingRows={2}
       emptyIcon="lucide:wallet"
       emptyMessage={`No leave balance set for ${year}.`}

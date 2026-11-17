@@ -52,7 +52,7 @@ export default function TeamAttendancePage() {
         onPageChange={setPage}
         isLoading={isLoading}
         isFetching={isFetching}
-        error={isError ? error?.message || 'Could not load team attendance.' : null}
+        error={isError ? error : null}
         onRetry={() => refetch()}
         emptyIcon="lucide:calendar-x"
         emptyMessage={emptyMessage}

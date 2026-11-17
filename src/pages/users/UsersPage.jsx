@@ -148,7 +148,7 @@ export default function UsersPage() {
         isLoading={isLoading}
         isFetching={isFetching}
         loadingRows={LIMIT}
-        error={isError ? error?.message || 'Could not load users.' : null}
+        error={isError ? error : null}
         onRetry={() => refetch()}
         emptyIcon="lucide:user-round-x"
         emptyMessage="No users found"

@@ -97,7 +97,7 @@ export default function AllAttendancePage() {
         isLoading={isLoading}
         isFetching={isFetching}
         loadingRows={LIMIT}
-        error={isError ? error?.message || 'Could not load attendance.' : null}
+        error={isError ? error : null}
         onRetry={() => refetch()}
         emptyIcon="lucide:calendar-x"
         emptyMessage="No attendance records match these filters"

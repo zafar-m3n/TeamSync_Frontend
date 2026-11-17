@@ -55,7 +55,7 @@ export default function MyAttendancePage() {
           isLoading={isLoading}
           isFetching={isFetching}
           loadingRows={LIMIT}
-          error={isError ? error?.message || 'Could not load your attendance.' : null}
+          error={isError ? error : null}
           onRetry={() => refetch()}
           emptyIcon="lucide:calendar-x"
           emptyMessage="No attendance records yet"

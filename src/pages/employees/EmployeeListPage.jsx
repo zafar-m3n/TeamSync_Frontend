@@ -36,7 +36,7 @@ function AllList() {
         onPageChange={filters.setPage}
         isLoading={isLoading}
         isFetching={isFetching}
-        error={isError ? error?.message || 'Could not load employees.' : null}
+        error={isError ? error : null}
         onRetry={() => refetch()}
         navigate={navigate}
         deleteHandlerFor={deleteHandlerFor}

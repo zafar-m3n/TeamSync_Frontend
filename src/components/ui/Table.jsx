@@ -6,6 +6,7 @@ import ErrorState from '@/components/ui/ErrorState'
 import Pagination from '@/components/ui/Pagination'
 import { SkeletonRows } from '@/components/ui/TableSkeleton'
 import { useStaggerIn } from '@/hooks/useMotion'
+import { describeError } from '@/lib/errors'
 
 const ALIGN = { left: 'text-left', center: 'text-center', right: 'text-right' }
 
@@ -41,7 +42,8 @@ const compare = (a, b) => {
  * sortable columns sort the given rows in the browser — only use that for lists that
  * aren't paginated, since it can only see the current page.
  *
- * States: `isLoading` shows skeleton rows, `error` shows ErrorState (with `onRetry`),
+ * States: `isLoading` shows skeleton rows, `error` (an API error or a message) shows
+ * ErrorState with `onRetry` — 403 and no-response errors get their own wording;
  * empty shows EmptyState (`emptyMessage`, `emptyAction`, or a custom `empty` node).
  * Pagination: pass the API `meta` and `onPageChange` (and optionally `onPageSizeChange`).
  */
@@ -105,7 +107,7 @@ export default function Table({
       return (
         <tr>
           <td colSpan={colSpan}>
-            <ErrorState compact message={typeof error === 'string' ? error : undefined} onRetry={onRetry} />
+            <ErrorState compact {...describeError(error)} onRetry={onRetry} />
           </td>
         </tr>
       )

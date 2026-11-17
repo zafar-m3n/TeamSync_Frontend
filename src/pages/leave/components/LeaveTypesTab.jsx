@@ -135,7 +135,7 @@ export default function LeaveTypesTab() {
         columns={columns}
         rows={leaveTypes}
         isLoading={isLoading}
-        error={isError ? error?.message || 'Could not load leave types.' : null}
+        error={isError ? error : null}
         onRetry={() => refetch()}
         emptyIcon="lucide:tags"
         emptyMessage="No leave types yet — add your first leave type"

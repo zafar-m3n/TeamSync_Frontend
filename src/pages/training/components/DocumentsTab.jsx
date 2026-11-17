@@ -57,7 +57,7 @@ export default function DocumentsTab() {
         isLoading={isLoading}
         isFetching={isFetching}
         loadingRows={LIMIT}
-        error={isError ? error?.message || 'Could not load documents.' : null}
+        error={isError ? error : null}
         onRetry={() => refetch()}
         emptyIcon="lucide:file-text"
         emptyMessage="No documents match this filter"

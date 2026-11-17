@@ -31,7 +31,7 @@ export default function MyTrainingPage() {
       columns={columns}
       rows={rows}
       isLoading={isLoading}
-      error={isError ? error?.message || 'Could not load your training.' : null}
+      error={isError ? error : null}
       onRetry={() => refetch()}
       emptyIcon="lucide:graduation-cap"
       emptyMessage="No training assigned yet."

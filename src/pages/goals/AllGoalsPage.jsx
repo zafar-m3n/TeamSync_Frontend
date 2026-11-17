@@ -87,7 +87,7 @@ export default function AllGoalsPage() {
         isLoading={isLoading}
         isFetching={isFetching}
         loadingRows={LIMIT}
-        error={isError ? error?.message || 'Could not load goals.' : null}
+        error={isError ? error : null}
         onRetry={() => refetch()}
         emptyIcon="lucide:target"
         emptyMessage="No goals match these filters"

@@ -68,7 +68,7 @@ function MyDocumentsTab() {
         isLoading={isLoading}
         isFetching={isFetching}
         loadingRows={LIMIT}
-        error={isError ? error?.message || 'Could not load your documents.' : null}
+        error={isError ? error : null}
         onRetry={() => refetch()}
         emptyIcon="lucide:file-text"
         emptyMessage="You haven't uploaded any documents yet"
@@ -112,7 +112,7 @@ function MyAssignmentsTab() {
         isLoading={isLoading}
         isFetching={isFetching}
         loadingRows={LIMIT}
-        error={isError ? error?.message || 'Could not load your assignments.' : null}
+        error={isError ? error : null}
         onRetry={() => refetch()}
         emptyIcon="lucide:user-check"
         emptyMessage="You haven't assigned any training yet"

@@ -78,7 +78,7 @@ export default function ShiftsTab() {
         columns={columns}
         rows={shifts ?? []}
         isLoading={isLoading}
-        error={isError ? error?.message || 'Could not load shifts.' : null}
+        error={isError ? error : null}
         onRetry={() => refetch()}
         emptyIcon="lucide:clock"
         emptyMessage="No shifts yet — add your first shift"

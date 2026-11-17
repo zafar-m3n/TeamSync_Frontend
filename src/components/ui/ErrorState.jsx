@@ -9,6 +9,12 @@ const KINDS = {
     message: "We couldn't load this. Check your connection and try again.",
     badge: 'bg-danger-soft text-danger',
   },
+  offline: {
+    icon: 'lucide:wifi-off',
+    title: "Can't reach TeamSync",
+    message: 'The server isn’t responding. Check your connection, then try again.',
+    badge: 'bg-warning-soft text-warning',
+  },
   forbidden: {
     icon: 'lucide:lock',
     title: "You don't have access",

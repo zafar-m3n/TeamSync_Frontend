@@ -1,6 +1,7 @@
 import { useDashboard } from '@/hooks/useDashboard'
 import Card from '@/components/ui/Card'
 import ErrorState from '@/components/ui/ErrorState'
+import { describeError } from '@/lib/errors'
 import EmployeeDashboardView from '@/pages/dashboard/components/EmployeeDashboardView'
 import ManagerDashboardView from '@/pages/dashboard/components/ManagerDashboardView'
 import AdminDashboardView from '@/pages/dashboard/components/AdminDashboardView'
@@ -16,7 +17,7 @@ export default function DashboardPage() {
       <Card padding="none">
         <ErrorState
           title="Your dashboard didn't load"
-          message={error?.message || 'Something went wrong loading your dashboard.'}
+          {...describeError(error, 'Something went wrong loading your dashboard.')}
           onRetry={() => refetch()}
           isRetrying={isFetching}
         />

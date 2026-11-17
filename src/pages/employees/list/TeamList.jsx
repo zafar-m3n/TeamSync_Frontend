@@ -16,7 +16,7 @@ const teamColumns = [
 export default function TeamList() {
   const navigate = useNavigate()
   const { data: rows = [], isLoading, isError, error, refetch } = useMyTeam()
-  const errorMessage = isError ? error?.message || 'Could not load your team.' : null
+  const errorMessage = isError ? error : null
 
   return (
     <>

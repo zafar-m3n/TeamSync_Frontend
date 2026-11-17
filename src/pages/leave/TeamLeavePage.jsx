@@ -43,7 +43,7 @@ export default function TeamLeavePage() {
         onPageChange={setPage}
         isLoading={isLoading}
         isFetching={isFetching}
-        error={isError ? error?.message || 'Could not load team leave requests.' : null}
+        error={isError ? error : null}
         onRetry={() => refetch()}
         emptyMessage="No leave requests from your team"
         onAction={(kind, request) => setDialog({ kind, request })}

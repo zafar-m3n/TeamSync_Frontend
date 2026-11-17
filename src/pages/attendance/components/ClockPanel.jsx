@@ -4,6 +4,8 @@ import { Icon } from '@iconify/react'
 import clsx from 'clsx'
 import Button from '@/components/ui/Button'
 import Skeleton from '@/components/ui/Skeleton'
+import ErrorState from '@/components/ui/ErrorState'
+import { describeError } from '@/lib/errors'
 import { parseYmd } from '@/components/form/DatePicker'
 import { useClockIn, useClockOut, useClockStatus } from '@/hooks/useClock'
 import AttendanceStatusBadge from '@/pages/attendance/components/AttendanceStatusBadge'
@@ -36,7 +38,7 @@ function LiveTime() {
  * is the compact dashboard card.
  */
 export default function ClockPanel({ prominent = false }) {
-  const { data: status, isLoading, isError, error } = useClockStatus()
+  const { data: status, isLoading, isError, error, refetch, isRefetching } = useClockStatus()
   const clockIn = useClockIn()
   const clockOut = useClockOut()
   const busy = clockIn.isPending || clockOut.isPending
@@ -52,13 +54,17 @@ export default function ClockPanel({ prominent = false }) {
     )
     actions = <Skeleton className={clsx('h-11', prominent ? 'w-44' : 'w-full')} />
   } else if (isError) {
-    info = (
-      <p className="text-sm text-fg-muted">
-        {error?.code === 'NO_SHIFT_ASSIGNED'
-          ? 'You have no shift assigned yet, so clocking in is unavailable.'
-          : error?.message || 'Could not load your shift.'}
-      </p>
-    )
+    info =
+      error?.code === 'NO_SHIFT_ASSIGNED' ? (
+        <p className="text-sm text-fg-muted">You have no shift assigned yet, so clocking in is unavailable.</p>
+      ) : (
+        <ErrorState
+          compact
+          {...describeError(error, 'Could not load your shift.')}
+          onRetry={() => refetch()}
+          isRetrying={isRefetching}
+        />
+      )
   } else {
     const { shift, shiftDay, record, canClockIn, canClockOut } = status
     const inAt = time(record?.clockIn)

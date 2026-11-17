@@ -40,7 +40,7 @@ export default function MyLeavePage() {
   const { user, can } = useAuth()
   const canRequestLeave = can('leave', 'submit') && can('leave_types', 'view')
   const canViewHolidays = can('holidays', 'view')
-  const { data: profile } = useMyProfile()
+  const { data: profile, isError: profileError, error: profileErr, refetch: refetchProfile } = useMyProfile()
   const currentEmployeeId = profile?.id ?? null
 
   const [year, setYear] = useState(CURRENT_YEAR)
@@ -50,7 +50,13 @@ export default function MyLeavePage() {
   const [showForm, setShowForm] = useState(false)
   const [cancelTarget, setCancelTarget] = useState(null)
 
-  const { data: balances, isLoading: balancesLoading } = useLeaveBalance(currentEmployeeId, year)
+  const {
+    data: balances,
+    isLoading: balancesLoading,
+    isError: balancesError,
+    error: balancesErr,
+    refetch: refetchBalances,
+  } = useLeaveBalance(currentEmployeeId, year)
   const balance = balances ? sumBalances(balances) : null
 
   const params = useMemo(() => ({ page, limit: LIMIT, ...(status !== 'all' ? { status } : {}) }), [page, status])
@@ -84,7 +90,13 @@ export default function MyLeavePage() {
 
       <div className={clsx('grid items-start gap-6', canViewHolidays && 'lg:grid-cols-3')}>
         <div className={clsx(canViewHolidays && 'lg:col-span-2')}>
-          <LeaveBalanceSummary balances={balances} year={year} isLoading={currentEmployeeId != null && balancesLoading} />
+          <LeaveBalanceSummary
+            balances={balances}
+            year={year}
+            isLoading={currentEmployeeId != null && balancesLoading}
+            error={profileError ? profileErr : balancesError ? balancesErr : null}
+            onRetry={() => (profileError ? refetchProfile() : refetchBalances())}
+          />
         </div>
         {canViewHolidays && <HolidayList year={year} />}
       </div>
@@ -109,7 +121,7 @@ export default function MyLeavePage() {
           isLoading={isLoading}
           isFetching={isFetching}
           loadingRows={LIMIT}
-          error={isError ? error?.message || 'Could not load your leave requests.' : null}
+          error={isError ? error : null}
           onRetry={() => refetch()}
           emptyIcon="lucide:calendar-x"
           emptyMessage="No leave requests yet"
