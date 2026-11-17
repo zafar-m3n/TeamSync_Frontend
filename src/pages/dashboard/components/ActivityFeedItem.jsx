@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { formatDistanceToNow } from 'date-fns'
 import { Icon } from '@iconify/react'
+import clsx from 'clsx'
 import Badge from '@/components/ui/Badge'
 
 const TYPES = {
@@ -9,14 +10,14 @@ const TYPES = {
   training_assigned: { icon: 'lucide:graduation-cap', tone: 'neutral', label: 'Training' },
 }
 
+const iconTone = {
+  success: 'bg-success-soft text-success',
+  info: 'bg-info-soft text-info',
+  neutral: 'bg-surface-subtle text-fg-muted',
+}
+
 function personName(data) {
-  return (
-    data?.employee?.fullName ||
-    data?.fullName ||
-    data?.employeeName ||
-    data?.name ||
-    'Someone'
-  )
+  return data?.employee?.fullName || data?.fullName || data?.employeeName || data?.name || 'Someone'
 }
 
 function describe(type, data) {
@@ -51,22 +52,24 @@ function targetFor(item) {
 }
 
 export default function ActivityFeedItem({ item }) {
-  const meta =
-    TYPES[item.type] ?? { icon: 'lucide:activity', tone: 'neutral', label: item.type }
+  const meta = TYPES[item.type] ?? { icon: 'lucide:activity', tone: 'neutral', label: item.type }
   const to = targetFor(item)
 
   const body = (
     <>
-      <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-600">
-        <Icon icon={meta.icon} width="16" height="16" />
+      <span className={clsx('flex h-8 w-8 shrink-0 items-center justify-center rounded-full', iconTone[meta.tone] ?? iconTone.neutral)}>
+        <Icon icon={meta.icon} width="16" height="16" aria-hidden />
       </span>
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <Badge tone={meta.tone}>{meta.label}</Badge>
-          <span className="text-xs text-gray-400">{relative(item.timestamp)}</span>
+        <p className="text-sm text-fg">{describe(item.type, item.data)}</p>
+        <div className="mt-1 flex items-center gap-2">
+          <Badge size="sm" tone={meta.tone}>
+            {meta.label}
+          </Badge>
+          <span className="text-xs text-fg-subtle">{relative(item.timestamp)}</span>
         </div>
-        <p className="mt-1 text-sm text-text">{describe(item.type, item.data)}</p>
       </div>
+      {to && <Icon icon="lucide:chevron-right" width="16" height="16" aria-hidden className="self-center text-fg-subtle" />}
     </>
   )
 
@@ -75,7 +78,7 @@ export default function ActivityFeedItem({ item }) {
       {to ? (
         <Link
           to={to}
-          className="flex items-start gap-3 px-4 py-3 transition-colors hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent"
+          className="flex items-start gap-3 px-4 py-3 transition-colors duration-(--duration-fast) hover:bg-surface-subtle focus-visible:focus-ring focus-visible:rounded-md"
         >
           {body}
         </Link>

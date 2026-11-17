@@ -1,121 +1,66 @@
-import { Link } from 'react-router-dom'
-import { format } from 'date-fns'
-import { Icon } from '@iconify/react'
 import StatCard from '@/components/ui/StatCard'
 import Table from '@/components/ui/Table'
-import { CountUp } from '@/hooks/useCountUp'
+import { CountUp } from '@/hooks/useMotion'
 import { useAuth } from '@/store/useAuth'
 import ClockPanel from '@/pages/attendance/components/ClockPanel'
-
-const CARD_LINK =
-  'block rounded-lg transition-shadow hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2'
-const HEADER_LINK =
-  'rounded text-sm font-medium text-accent transition-colors hover:text-accent/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent'
-
-function fmt(value, pattern) {
-  if (!value) return '—'
-  const d = new Date(value)
-  return Number.isNaN(d.getTime()) ? '—' : format(d, pattern)
-}
-
-function goalProgressText(goal) {
-  if (goal.status) return goal.status
-  if (typeof goal.progressPercentage === 'number') return `${goal.progressPercentage}%`
-  if (goal.targetValue != null && goal.actualValue != null) {
-    return `${goal.actualValue} / ${goal.targetValue}`
-  }
-  return '—'
-}
+import { CardLink, Panel } from '@/pages/dashboard/components/DashboardParts'
+import { fmt, goalProgressText } from '@/pages/dashboard/utils/dashboardFormat'
 
 const goalColumns = [
-  { key: 'title', header: 'Goal' },
-  { key: 'targetDate', header: 'Target date' },
-  { key: 'progress', header: 'Progress' },
+  { key: 'title', header: 'Goal', className: 'font-medium', render: (g) => g.title || '—' },
+  { key: 'targetDate', header: 'Target date', className: 'whitespace-nowrap tabular-nums', render: (g) => fmt(g.targetDate, 'PP') },
+  { key: 'progress', header: 'Progress', render: goalProgressText },
 ]
 
 export default function EmployeeDashboardView({ data }) {
   const { can } = useAuth()
-
-  const {
-    clockInStatus,
-    leaveBalance,
-    assignedTraining,
-    goalProgress: goals = [],
-  } = data
-
+  const { clockInStatus, leaveBalance, assignedTraining, goalProgress: goals = [] } = data
   const recent = assignedTraining?.recent ?? []
 
   const clockInText = clockInStatus?.hasClockedIn
-    ? `Clocked in at ${fmt(clockInStatus.clockIn, 'p')}${
-        clockInStatus.status ? ` (${clockInStatus.status})` : ''
-      }`
+    ? `Clocked in at ${fmt(clockInStatus.clockIn, 'p')}${clockInStatus.status ? ` (${clockInStatus.status})` : ''}`
     : 'Not clocked in yet today'
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-8">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {can('attendance', 'clock') ? (
           <ClockPanel />
         ) : (
-          <Link to={`/my-attendance`} className={CARD_LINK}>
-            <div className="rounded-lg border border-gray-200 bg-white p-5">
-              <p className="text-sm text-gray-500">Today&rsquo;s attendance</p>
-              <p className="mt-1 text-lg font-medium text-text">{clockInText}</p>
-            </div>
-          </Link>
+          <CardLink to="/my-attendance">
+            <StatCard value={<span className="text-lg">{clockInText}</span>} label="Today’s attendance" icon="lucide:clock" />
+          </CardLink>
         )}
 
-        <Link to={`/my-leave`} className={CARD_LINK}>
+        <CardLink to="/my-leave">
           <StatCard
             value={<CountUp value={leaveBalance?.remaining ?? '—'} />}
             label="Leave days remaining"
             tone="info"
+            icon="lucide:calendar-days"
           >
             {leaveBalance?.usedDays ?? 0} used of {leaveBalance?.totalDays ?? 0} total
           </StatCard>
-        </Link>
+        </CardLink>
 
-        <Link to={`/my-training`} className={CARD_LINK}>
-          <StatCard
-            value={<CountUp value={assignedTraining?.count ?? 0} />}
-            label="Assigned training"
-          >
+        <CardLink to="/my-training">
+          <StatCard value={<CountUp value={assignedTraining?.count ?? 0} />} label="Assigned training" icon="lucide:graduation-cap">
             {recent.length > 0 ? (
-              <ul className="list-disc space-y-1 pl-4">
+              <ul className="list-disc space-y-1 pl-4 text-fg">
                 {recent.map((doc, i) => (
                   <li key={doc.id ?? i}>{doc.title || doc.name || 'Untitled document'}</li>
                 ))}
               </ul>
             ) : (
-              <span className="text-gray-500">Nothing assigned right now</span>
+              <span>Nothing assigned right now</span>
             )}
           </StatCard>
-        </Link>
+        </CardLink>
       </div>
 
-      <section>
-        <div className="mb-3 flex items-center justify-between gap-2">
-          <h2 className="flex items-center gap-2 text-xl text-primary">
-            <Icon icon="lucide:target" width="20" height="20" className="text-gray-400" />
-            This month&rsquo;s goals
-          </h2>
-          <Link to={`/my-goals`} className={HEADER_LINK}>
-            View all
-          </Link>
-        </div>
-        <Table
-          columns={goalColumns}
-          rows={goals}
-          emptyMessage="No goals set for you this month"
-          renderRow={(goal, i) => (
-            <tr key={goal.id ?? i} className="border-b border-gray-100 last:border-0">
-              <td className="px-4 py-3 text-text">{goal.title || '—'}</td>
-              <td className="px-4 py-3 text-text">{fmt(goal.targetDate, 'PP')}</td>
-              <td className="px-4 py-3 text-text">{goalProgressText(goal)}</td>
-            </tr>
-          )}
-        />
-      </section>
+      <Panel icon="lucide:target" title="This month’s goals" to="/my-goals">
+        <Table columns={goalColumns} rows={goals} emptyMessage="No goals set for you this month" emptyIcon="lucide:target" />
+      </Panel>
     </div>
   )
 }

@@ -10,6 +10,9 @@ import ErrorState from '@/components/ui/ErrorState'
 import { useUsers } from '@/hooks/useUsers'
 import { useRoles } from '@/hooks/useRoles'
 import { toast } from '@/hooks/useToast'
+import StatCard from '@/components/ui/StatCard'
+import ProgressBar from '@/components/ui/ProgressBar'
+import { DashboardSkeleton } from '@/pages/dashboard/components/DashboardParts'
 
 const FORCE = ['live', 'loading', 'empty', 'error']
 
@@ -112,6 +115,21 @@ export default function DataDisplaySection() {
           error={roles.isError ? 'Roles could not be loaded.' : undefined}
           onRetry={roles.refetch}
         />
+      </Card>
+
+      <Card title="StatCard (SpotlightCard) and ProgressBar" description="Hover a card: the glow follows the pointer only while it is over the card.">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <StatCard value="42" label="Present" tone="success" icon="lucide:user-check" />
+          <StatCard value="3" label="Late" tone="warning" icon="lucide:clock-alert" />
+          <StatCard value="7" label="Total Users" icon="lucide:users" accent />
+          <StatCard value="72%" label="Weekly Attendance Rate" tone="warning" icon="lucide:trending-up" accent>
+            <ProgressBar value={72} tone="warning" />
+          </StatCard>
+        </div>
+      </Card>
+
+      <Card title="Dashboard loading skeleton">
+        <DashboardSkeleton />
       </Card>
 
       <div className="grid gap-6 lg:grid-cols-3">

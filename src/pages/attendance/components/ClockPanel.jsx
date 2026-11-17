@@ -1,5 +1,7 @@
 import { format } from 'date-fns'
+import { Icon } from '@iconify/react'
 import Button from '@/components/ui/Button'
+import Skeleton from '@/components/ui/Skeleton'
 import { parseYmd } from '@/components/form/DatePicker'
 import { useClockIn, useClockOut, useClockStatus } from '@/hooks/useClock'
 import AttendanceStatusBadge from '@/pages/attendance/components/AttendanceStatusBadge'
@@ -16,10 +18,16 @@ export default function ClockPanel() {
 
   let body
   if (isLoading) {
-    body = <p className="text-sm text-gray-500">Loading today&rsquo;s shift…</p>
+    body = (
+      <div role="status" aria-label="Loading today’s shift" className="flex flex-col gap-2">
+        <Skeleton className="h-3 w-48" />
+        <Skeleton className="h-4 w-32" />
+        <Skeleton className="mt-2 h-11 w-full" />
+      </div>
+    )
   } else if (isError) {
     body = (
-      <p className="text-sm text-gray-500">
+      <p className="text-sm text-fg-muted">
         {error?.code === 'NO_SHIFT_ASSIGNED'
           ? 'You have no shift assigned yet, so clocking in is unavailable.'
           : error?.message || 'Could not load your shift.'}
@@ -30,17 +38,17 @@ export default function ClockPanel() {
     const inAt = time(record?.clockIn)
     const outAt = time(record?.clockOut)
     body = (
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="space-y-1">
-          <p className="text-sm text-gray-500">
-            {shift.name} · {hhmm(shift.startTime)}–{hhmm(shift.endTime)} ·{' '}
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-1.5">
+          <p className="text-cell text-fg-muted">
+            {shift.name} · <span className="tabular-nums">{hhmm(shift.startTime)}–{hhmm(shift.endTime)}</span> ·{' '}
             {format(parseYmd(shiftDay), 'EEE, PP')}
           </p>
-          <div className="flex items-center gap-2 text-sm text-text">
+          <div className="flex flex-wrap items-center gap-2 text-sm text-fg">
             {inAt ? (
               <>
                 <AttendanceStatusBadge status={record.status} />
-                <span>
+                <span className="tabular-nums">
                   Clocked in at {inAt}
                   {outAt && `, out at ${outAt}`}
                 </span>
@@ -50,26 +58,49 @@ export default function ClockPanel() {
             )}
           </div>
         </div>
-        <div className="flex gap-2">
-          {canClockIn && (
-            <Button variant="success" isLoading={clockIn.isPending} disabled={busy} onClick={() => clockIn.mutate()}>
-              Clock in
-            </Button>
-          )}
-          {canClockOut && (
-            <Button variant="secondary" isLoading={clockOut.isPending} disabled={busy} onClick={() => clockOut.mutate()}>
-              Clock out
-            </Button>
-          )}
-        </div>
+        {(canClockIn || canClockOut) && (
+          <div className="flex gap-2">
+            {canClockIn && (
+              <Button
+                variant="success"
+                size="lg"
+                className="flex-1"
+                isLoading={clockIn.isPending}
+                disabled={busy}
+                onClick={() => clockIn.mutate()}
+              >
+                <Icon icon="lucide:log-in" width="18" height="18" aria-hidden />
+                Clock in
+              </Button>
+            )}
+            {canClockOut && (
+              <Button
+                variant="secondary"
+                size="lg"
+                className="flex-1"
+                isLoading={clockOut.isPending}
+                disabled={busy}
+                onClick={() => clockOut.mutate()}
+              >
+                <Icon icon="lucide:log-out" width="18" height="18" aria-hidden />
+                Clock out
+              </Button>
+            )}
+          </div>
+        )}
       </div>
     )
   }
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-5">
-      <p className="mb-2 text-sm font-medium text-text">Today&rsquo;s attendance</p>
+    <section className="flex h-full flex-col gap-3 rounded-lg border border-line bg-surface p-5 shadow-sm">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-cell font-medium text-fg-muted">Today&rsquo;s attendance</h2>
+        <span className="flex h-8 w-8 items-center justify-center rounded-md bg-brand-50 text-brand-700">
+          <Icon icon="lucide:clock" width="16" height="16" aria-hidden />
+        </span>
+      </div>
       {body}
-    </div>
+    </section>
   )
 }

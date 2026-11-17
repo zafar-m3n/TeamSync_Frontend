@@ -1,146 +1,73 @@
-import { Link } from 'react-router-dom'
-import { format } from 'date-fns'
-import { Icon } from '@iconify/react'
 import Badge from '@/components/ui/Badge'
 import Table from '@/components/ui/Table'
-import { CountUp } from '@/hooks/useCountUp'
-
-const HEADER_LINK =
-  'rounded text-sm font-medium text-accent transition-colors hover:text-accent/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent'
-
-function fmt(value, pattern) {
-  if (!value) return '—'
-  const d = new Date(value)
-  return Number.isNaN(d.getTime()) ? '—' : format(d, pattern)
-}
-
-function goalProgressText(goal) {
-  if (goal.status) return goal.status
-  if (typeof goal.progressPercentage === 'number') return `${goal.progressPercentage}%`
-  if (goal.targetValue != null && goal.actualValue != null) {
-    return `${goal.actualValue} / ${goal.targetValue}`
-  }
-  return '—'
-}
+import { Panel } from '@/pages/dashboard/components/DashboardParts'
+import { fmt, goalProgressText } from '@/pages/dashboard/utils/dashboardFormat'
+import { CountUp } from '@/hooks/useMotion'
 
 const attendanceTone = { Present: 'success', Late: 'warning', Absent: 'danger' }
 
 const attendanceColumns = [
-  { key: 'employee', header: 'Employee' },
-  { key: 'status', header: 'Status' },
-  { key: 'clockIn', header: 'Clock-in' },
+  { key: 'employee', header: 'Employee', className: 'font-medium', render: (r) => r.employee?.fullName ?? '—' },
+  {
+    key: 'status',
+    header: 'Status',
+    render: (r) => (
+      <Badge dot tone={attendanceTone[r.status] ?? 'neutral'}>
+        {r.status ?? '—'}
+      </Badge>
+    ),
+  },
+  { key: 'clockIn', header: 'Clock-in', className: 'whitespace-nowrap tabular-nums', render: (r) => fmt(r.clockIn, 'p') },
 ]
 
 const leaveColumns = [
-  { key: 'employee', header: 'Employee' },
-  { key: 'leaveType', header: 'Leave type' },
-  { key: 'dates', header: 'Dates' },
+  { key: 'employee', header: 'Employee', className: 'font-medium', render: (r) => r.employee?.fullName ?? '—' },
+  { key: 'leaveType', header: 'Leave type', render: (r) => r.leaveType?.name ?? '—' },
+  {
+    key: 'dates',
+    header: 'Dates',
+    className: 'whitespace-nowrap tabular-nums',
+    render: (r) => (
+      <>
+        {fmt(r.startDate, 'PP')} &ndash; {fmt(r.endDate, 'PP')}
+      </>
+    ),
+  },
 ]
 
 const goalColumns = [
-  { key: 'employee', header: 'Employee' },
-  { key: 'title', header: 'Goal' },
-  { key: 'targetDate', header: 'Target date' },
-  { key: 'progress', header: 'Progress' },
+  { key: 'employee', header: 'Employee', className: 'font-medium', render: (g) => g.employee?.fullName ?? '—' },
+  { key: 'title', header: 'Goal', render: (g) => g.title || '—' },
+  { key: 'targetDate', header: 'Target date', className: 'whitespace-nowrap tabular-nums', render: (g) => fmt(g.targetDate, 'PP') },
+  { key: 'progress', header: 'Progress', render: goalProgressText },
 ]
 
-function SectionHeadingIcon({ icon }) {
-  return <Icon icon={icon} width="20" height="20" className="text-gray-400" />
-}
-
 export default function ManagerDashboardView({ data }) {
-
-  const {
-    teamAttendanceToday = [],
-    pendingLeaveApprovals = [],
-    teamGoalProgress = [],
-  } = data
+  const { teamAttendanceToday = [], pendingLeaveApprovals = [], teamGoalProgress = [] } = data
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
-      <section className="min-w-0">
-        <div className="mb-3 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <h2 className="flex items-center gap-2 text-xl text-primary">
-              <SectionHeadingIcon icon="lucide:calendar-clock" />
-              Pending leave approvals
-            </h2>
-            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
-              <CountUp value={pendingLeaveApprovals.length} />
-            </span>
-          </div>
-          <Link to={`/team-leave`} className={HEADER_LINK}>
-            View all
-          </Link>
-        </div>
-        <Table
-          columns={leaveColumns}
-          rows={pendingLeaveApprovals}
-          emptyMessage="No pending leave requests"
-          renderRow={(req, i) => (
-            <tr key={req.id ?? i} className="border-b border-gray-100 last:border-0">
-              <td className="px-4 py-3 text-text">{req.employee?.fullName ?? '—'}</td>
-              <td className="px-4 py-3 text-text">{req.leaveType?.name ?? '—'}</td>
-              <td className="px-4 py-3 text-text">
-                {fmt(req.startDate, 'PP')} &ndash; {fmt(req.endDate, 'PP')}
-              </td>
-            </tr>
-          )}
-        />
-      </section>
+      <Panel
+        icon="lucide:calendar-clock"
+        title="Pending leave approvals"
+        count={<CountUp value={pendingLeaveApprovals.length} />}
+        to="/team-leave"
+      >
+        <Table columns={leaveColumns} rows={pendingLeaveApprovals} emptyMessage="No pending leave requests" emptyIcon="lucide:calendar-check-2" />
+      </Panel>
 
-      <section className="min-w-0">
-        <div className="mb-3 flex items-center justify-between gap-2">
-          <h2 className="flex items-center gap-2 text-xl text-primary">
-            <SectionHeadingIcon icon="lucide:calendar-check" />
-            Team attendance today
-          </h2>
-          <Link to={`/team-attendance`} className={HEADER_LINK}>
-            View all
-          </Link>
-        </div>
+      <Panel icon="lucide:calendar-check" title="Team attendance today" to="/team-attendance">
         <Table
           columns={attendanceColumns}
           rows={teamAttendanceToday}
           emptyMessage="No attendance recorded for your team today"
-          renderRow={(rec, i) => (
-            <tr key={rec.id ?? i} className="border-b border-gray-100 last:border-0">
-              <td className="px-4 py-3 text-text">{rec.employee?.fullName ?? '—'}</td>
-              <td className="px-4 py-3">
-                <Badge tone={attendanceTone[rec.status] ?? 'neutral'}>
-                  {rec.status ?? '—'}
-                </Badge>
-              </td>
-              <td className="px-4 py-3 text-text">{fmt(rec.clockIn, 'p')}</td>
-            </tr>
-          )}
+          emptyIcon="lucide:calendar-x"
         />
-      </section>
+      </Panel>
 
-      <section className="min-w-0 lg:col-span-2">
-        <div className="mb-3 flex items-center justify-between gap-2">
-          <h2 className="flex items-center gap-2 text-xl text-primary">
-            <SectionHeadingIcon icon="lucide:target" />
-            Team goal progress
-          </h2>
-          <Link to={`/team-goals`} className={HEADER_LINK}>
-            View all
-          </Link>
-        </div>
-        <Table
-          columns={goalColumns}
-          rows={teamGoalProgress}
-          emptyMessage="No goals set for your team this month"
-          renderRow={(goal, i) => (
-            <tr key={goal.id ?? i} className="border-b border-gray-100 last:border-0">
-              <td className="px-4 py-3 text-text">{goal.employee?.fullName ?? '—'}</td>
-              <td className="px-4 py-3 text-text">{goal.title || '—'}</td>
-              <td className="px-4 py-3 text-text">{fmt(goal.targetDate, 'PP')}</td>
-              <td className="px-4 py-3 text-text">{goalProgressText(goal)}</td>
-            </tr>
-          )}
-        />
-      </section>
+      <Panel icon="lucide:target" title="Team goal progress" to="/team-goals" className="lg:col-span-2">
+        <Table columns={goalColumns} rows={teamGoalProgress} emptyMessage="No goals set for your team this month" emptyIcon="lucide:target" />
+      </Panel>
     </div>
   )
 }
