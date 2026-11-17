@@ -1,34 +1,23 @@
-import Modal from '@/components/ui/Modal'
-import Button from '@/components/ui/Button'
+import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { useDeleteTrainingDocument } from '@/hooks/useTrainingMutations'
 
 export default function DeleteDocumentModal({ document, onClose }) {
   const del = useDeleteTrainingDocument()
 
   return (
-    <Modal
+    <ConfirmDialog
       isOpen
       onClose={onClose}
       title="Delete training document"
-      footer={
-        <>
-          <Button variant="secondary" onClick={onClose} disabled={del.isPending}>
-            Cancel
-          </Button>
-          <Button
-            variant="danger"
-            isLoading={del.isPending}
-            onClick={() => del.mutate(document.id, { onSuccess: onClose })}
-          >
-            Delete
-          </Button>
-        </>
-      }
+      confirmLabel="Delete"
+      tone="danger"
+      isLoading={del.isPending}
+      onConfirm={() => del.mutate(document.id, { onSuccess: onClose })}
     >
       <p>
-        Delete <strong>{document.title}</strong>? It will also be removed from
-        everyone it is assigned to.
+        Delete <strong className="font-semibold text-fg">{document.title}</strong>? It will also be removed from everyone it
+        is assigned to.
       </p>
-    </Modal>
+    </ConfirmDialog>
   )
 }

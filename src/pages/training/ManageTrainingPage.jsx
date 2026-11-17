@@ -1,19 +1,18 @@
 import { useMemo, useState } from 'react'
-import Tabs from '@/components/ui/Tabs'
+import { Icon } from '@iconify/react'
+import Tabs, { TabPanel } from '@/components/ui/Tabs'
 import Table from '@/components/ui/Table'
-import TableSkeleton from '@/components/ui/TableSkeleton'
 import Button from '@/components/ui/Button'
 import IconButton from '@/components/ui/IconButton'
-import Modal from '@/components/ui/Modal'
 import FileActions from '@/components/ui/FileActions'
 import { trainingDocumentDownloadUrl } from '@/services/trainingDocumentService'
 import { useMyUploads } from '@/hooks/useMyUploads'
 import { useMyAssignments } from '@/hooks/useMyAssignments'
-import { useRemoveAssignment } from '@/hooks/useTrainingMutations'
 import UploadDocumentModal from '@/pages/training/components/UploadDocumentModal'
 import AssignDocumentModal from '@/pages/training/components/AssignDocumentModal'
 import DeleteDocumentModal from '@/pages/training/components/DeleteDocumentModal'
-import PageControls from '@/pages/training/components/PageControls'
+import RemoveAssignmentModal from '@/pages/training/components/RemoveAssignmentModal'
+import TrainingDocTitle from '@/pages/training/components/TrainingDocTitle'
 import { fmtDate, renderTarget } from '@/pages/training/utils/trainingFormat'
 
 const LIMIT = 10
@@ -24,11 +23,22 @@ const TABS = [
 ]
 
 const documentColumns = [
-  { key: 'title', header: 'Title' },
-  { key: 'category', header: 'Category' },
-  { key: 'description', header: 'Description' },
-  { key: 'uploaded', header: 'Uploaded' },
-  { key: 'actions', header: 'Actions' },
+  { key: 'title', header: 'Title', render: (d) => <TrainingDocTitle title={d.title} mimeType={d.mimeType} /> },
+  { key: 'category', header: 'Category', render: (d) => d.category?.name ?? '—' },
+  {
+    key: 'description',
+    header: 'Description',
+    className: 'text-fg-muted',
+    render: (d) =>
+      d.description ? (
+        <span title={d.description} className="block max-w-56 truncate">
+          {d.description}
+        </span>
+      ) : (
+        <span className="text-fg-subtle">—</span>
+      ),
+  },
+  { key: 'uploaded', header: 'Uploaded', className: 'whitespace-nowrap tabular-nums text-fg-muted', render: (d) => fmtDate(d.uploadDate ?? d.createdAt) },
 ]
 
 function MyDocumentsTab() {
@@ -38,102 +48,50 @@ function MyDocumentsTab() {
   const [deleteTarget, setDeleteTarget] = useState(null)
 
   const params = useMemo(() => ({ page, limit: LIMIT }), [page])
-  const { data, isLoading, isError, error, refetch } = useMyUploads(params)
-
-  const rows = data?.rows ?? []
-  const meta = data?.meta
-  const totalPages = meta?.totalPages ?? 1
+  const { data, isLoading, isFetching, isError, error, refetch } = useMyUploads(params)
 
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
-        <Button variant="accent" onClick={() => setShowUpload(true)}>
+        <Button variant="primary" onClick={() => setShowUpload(true)}>
+          <Icon icon="lucide:upload" width="16" height="16" aria-hidden />
           Upload Document
         </Button>
       </div>
 
-      {isLoading ? (
-        <TableSkeleton columns={documentColumns} rows={LIMIT} />
-      ) : isError ? (
-        <div className="flex flex-col items-center gap-3 rounded-lg border border-gray-200 bg-white py-12 text-center">
-          <p className="text-sm text-gray-600">
-            {error?.message || 'Could not load your documents.'}
-          </p>
-          <Button variant="secondary" size="sm" onClick={() => refetch()}>
-            Try again
-          </Button>
-        </div>
-      ) : (
-        <>
-          <Table
-            columns={documentColumns}
-            rows={rows}
-            emptyMessage="You haven't uploaded any documents yet"
-            renderRow={(doc) => (
-              <tr
-                key={doc.id}
-                className="border-b border-gray-100 last:border-0 hover:bg-gray-50"
-              >
-                <td className="px-4 py-3 text-text">{doc.title}</td>
-                <td className="px-4 py-3 text-text">{doc.category?.name ?? '—'}</td>
-                <td
-                  className="max-w-xs truncate px-4 py-3 text-text"
-                  title={doc.description || undefined}
-                >
-                  {doc.description || '—'}
-                </td>
-                <td className="px-4 py-3 text-text">
-                  {fmtDate(doc.uploadDate ?? doc.createdAt)}
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-1">
-                    <FileActions
-                      url={trainingDocumentDownloadUrl(doc.id)}
-                      mimeType={doc.mimeType}
-                      name={doc.title}
-                    />
-                    <IconButton
-                      icon="lucide:user-plus"
-                      label="Assign document"
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => setAssignTarget(doc)}
-                    />
-                    <IconButton
-                      icon="lucide:trash-2"
-                      label="Delete document"
-                      variant="ghost-danger"
-                      size="sm"
-                      onClick={() => setDeleteTarget(doc)}
-                    />
-                  </div>
-                </td>
-              </tr>
-            )}
-          />
-          <PageControls page={page} meta={meta} totalPages={totalPages} onPage={setPage} />
-        </>
-      )}
+      <Table
+        caption="My uploaded documents"
+        columns={documentColumns}
+        rows={data?.rows ?? []}
+        meta={data?.meta}
+        onPageChange={setPage}
+        isLoading={isLoading}
+        isFetching={isFetching}
+        loadingRows={LIMIT}
+        error={isError ? error?.message || 'Could not load your documents.' : null}
+        onRetry={() => refetch()}
+        emptyIcon="lucide:file-text"
+        emptyMessage="You haven't uploaded any documents yet"
+        rowActions={(doc) => (
+          <>
+            <FileActions url={trainingDocumentDownloadUrl(doc.id)} mimeType={doc.mimeType} name={doc.title} />
+            <IconButton icon="lucide:user-plus" label="Assign document" variant="ghost" size="sm" onClick={() => setAssignTarget(doc)} />
+            <IconButton icon="lucide:trash-2" label="Delete document" variant="ghost-danger" size="sm" onClick={() => setDeleteTarget(doc)} />
+          </>
+        )}
+      />
 
       {showUpload && <UploadDocumentModal onClose={() => setShowUpload(false)} />}
-      {assignTarget && (
-        <AssignDocumentModal
-          document={assignTarget}
-          onClose={() => setAssignTarget(null)}
-        />
-      )}
-      {deleteTarget && (
-        <DeleteDocumentModal document={deleteTarget} onClose={() => setDeleteTarget(null)} />
-      )}
+      {assignTarget && <AssignDocumentModal document={assignTarget} onClose={() => setAssignTarget(null)} />}
+      {deleteTarget && <DeleteDocumentModal document={deleteTarget} onClose={() => setDeleteTarget(null)} />}
     </div>
   )
 }
 
 const assignmentColumns = [
-  { key: 'document', header: 'Document' },
-  { key: 'target', header: 'Target' },
-  { key: 'assigned', header: 'Assigned' },
-  { key: 'actions', header: 'Actions' },
+  { key: 'document', header: 'Document', className: 'font-medium', render: (a) => a.document?.title ?? '—' },
+  { key: 'target', header: 'Target', render: renderTarget },
+  { key: 'assigned', header: 'Assigned', className: 'whitespace-nowrap tabular-nums text-fg-muted', render: (a) => fmtDate(a.assignedDate ?? a.createdAt) },
 ]
 
 function MyAssignmentsTab() {
@@ -141,87 +99,29 @@ function MyAssignmentsTab() {
   const [removeTarget, setRemoveTarget] = useState(null)
 
   const params = useMemo(() => ({ page, limit: LIMIT }), [page])
-  const { data, isLoading, isError, error, refetch } = useMyAssignments(params)
-  const removeMutation = useRemoveAssignment()
-
-  const rows = data?.rows ?? []
-  const meta = data?.meta
-  const totalPages = meta?.totalPages ?? 1
+  const { data, isLoading, isFetching, isError, error, refetch } = useMyAssignments(params)
 
   return (
     <div className="space-y-4">
-      {isLoading ? (
-        <TableSkeleton columns={assignmentColumns} rows={LIMIT} />
-      ) : isError ? (
-        <div className="flex flex-col items-center gap-3 rounded-lg border border-gray-200 bg-white py-12 text-center">
-          <p className="text-sm text-gray-600">
-            {error?.message || 'Could not load your assignments.'}
-          </p>
-          <Button variant="secondary" size="sm" onClick={() => refetch()}>
-            Try again
-          </Button>
-        </div>
-      ) : (
-        <>
-          <Table
-            columns={assignmentColumns}
-            rows={rows}
-            emptyMessage="You haven't assigned any training yet"
-            renderRow={(a) => (
-              <tr
-                key={a.id}
-                className="border-b border-gray-100 last:border-0 hover:bg-gray-50"
-              >
-                <td className="px-4 py-3 text-text">{a.document?.title ?? '—'}</td>
-                <td className="px-4 py-3 text-text">{renderTarget(a)}</td>
-                <td className="px-4 py-3 text-text">
-                  {fmtDate(a.assignedDate ?? a.createdAt)}
-                </td>
-                <td className="px-4 py-3">
-                  <IconButton
-                    icon="lucide:trash-2"
-                    label="Remove assignment"
-                    variant="danger"
-                    size="sm"
-                    onClick={() => setRemoveTarget(a)}
-                  />
-                </td>
-              </tr>
-            )}
-          />
-          <PageControls page={page} meta={meta} totalPages={totalPages} onPage={setPage} />
-        </>
-      )}
+      <Table
+        caption="My training assignments"
+        columns={assignmentColumns}
+        rows={data?.rows ?? []}
+        meta={data?.meta}
+        onPageChange={setPage}
+        isLoading={isLoading}
+        isFetching={isFetching}
+        loadingRows={LIMIT}
+        error={isError ? error?.message || 'Could not load your assignments.' : null}
+        onRetry={() => refetch()}
+        emptyIcon="lucide:user-check"
+        emptyMessage="You haven't assigned any training yet"
+        rowActions={(a) => (
+          <IconButton icon="lucide:trash-2" label="Remove assignment" variant="ghost-danger" size="sm" onClick={() => setRemoveTarget(a)} />
+        )}
+      />
 
-      <Modal
-        isOpen={Boolean(removeTarget)}
-        onClose={() => setRemoveTarget(null)}
-        title="Remove assignment"
-        footer={
-          <>
-            <Button
-              variant="secondary"
-              onClick={() => setRemoveTarget(null)}
-              disabled={removeMutation.isPending}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="danger"
-              isLoading={removeMutation.isPending}
-              onClick={() =>
-                removeMutation.mutate(removeTarget.id, {
-                  onSuccess: () => setRemoveTarget(null),
-                })
-              }
-            >
-              Remove
-            </Button>
-          </>
-        }
-      >
-        <p>Remove this training assignment? The document itself isn&rsquo;t deleted.</p>
-      </Modal>
+      <RemoveAssignmentModal assignment={removeTarget} onClose={() => setRemoveTarget(null)} />
     </div>
   )
 }
@@ -230,9 +130,11 @@ export default function ManageTrainingPage() {
   const [activeKey, setActiveKey] = useState('documents')
 
   return (
-    <div className="space-y-6">
-      <Tabs tabs={TABS} activeKey={activeKey} onChange={setActiveKey} />
-      {activeKey === 'documents' ? <MyDocumentsTab /> : <MyAssignmentsTab />}
+    <div className="space-y-5">
+      <Tabs id="manage-training" tabs={TABS} activeKey={activeKey} onChange={setActiveKey} />
+      <TabPanel id="manage-training" activeKey={activeKey}>
+        {activeKey === 'documents' ? <MyDocumentsTab /> : <MyAssignmentsTab />}
+      </TabPanel>
     </div>
   )
 }

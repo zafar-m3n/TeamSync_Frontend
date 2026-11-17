@@ -1,4 +1,5 @@
 import { Controller, useForm } from 'react-hook-form'
+import { Icon } from '@iconify/react'
 import Select from '@/components/ui/Select'
 import Modal from '@/components/ui/Modal'
 import FormField from '@/components/form/FormField'
@@ -59,7 +60,7 @@ export default function AssignDocumentModal({ document: doc, onClose }) {
           <Button
             type="submit"
             form="assign-document-form"
-            variant="accent"
+            variant="primary"
             isLoading={mutation.isPending}
             disabled={!hasTarget}
           >
@@ -74,7 +75,7 @@ export default function AssignDocumentModal({ document: doc, onClose }) {
         className="flex flex-col gap-4"
         noValidate
       >
-        <p className="text-sm text-gray-500">Assign to an employee, a department, or both.</p>
+        <p className="text-sm text-fg-muted">Assign to an employee, a department, or both.</p>
 
         <FormField label="Employee">
           <Controller
@@ -94,7 +95,8 @@ export default function AssignDocumentModal({ document: doc, onClose }) {
 
         <FormField label="Department">
           {noDepartments ? (
-            <div className="rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-400">
+            <div className="flex items-center gap-2 rounded-md border border-line bg-surface-subtle px-3 py-2 text-sm text-fg-subtle">
+              <Icon icon="lucide:info" width="14" height="14" aria-hidden />
               You aren&rsquo;t the head of any department
             </div>
           ) : (

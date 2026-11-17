@@ -1,62 +1,41 @@
 import Table from '@/components/ui/Table'
-import TableSkeleton from '@/components/ui/TableSkeleton'
-import Button from '@/components/ui/Button'
 import FileActions from '@/components/ui/FileActions'
 import { trainingDocumentDownloadUrl } from '@/services/trainingDocumentService'
 import { useAssignedTraining } from '@/hooks/useAssignedTraining'
+import TrainingDocTitle from '@/pages/training/components/TrainingDocTitle'
 
 const columns = [
-  { key: 'title', header: 'Title' },
-  { key: 'category', header: 'Category' },
-  { key: 'description', header: 'Description' },
-  { key: 'actions', header: '' },
+  { key: 'title', header: 'Title', render: (d) => <TrainingDocTitle title={d.title} mimeType={d.mimeType} /> },
+  { key: 'category', header: 'Category', render: (d) => d.category?.name ?? '—' },
+  {
+    key: 'description',
+    header: 'Description',
+    className: 'text-fg-muted',
+    render: (d) =>
+      d.description ? (
+        <span title={d.description} className="block max-w-xs truncate">
+          {d.description}
+        </span>
+      ) : (
+        <span className="text-fg-subtle">—</span>
+      ),
+  },
 ]
 
 export default function MyTrainingPage() {
   const { data: rows = [], isLoading, isError, error, refetch } = useAssignedTraining()
 
-  if (isLoading) return <TableSkeleton columns={columns} rows={5} />
-
-  if (isError) {
-    return (
-      <div className="flex flex-col items-center gap-3 rounded-lg border border-gray-200 bg-white py-12 text-center">
-        <p className="text-sm text-gray-600">
-          {error?.message || 'Could not load your training.'}
-        </p>
-        <Button variant="secondary" size="sm" onClick={() => refetch()}>
-          Try again
-        </Button>
-      </div>
-    )
-  }
-
   return (
     <Table
+      caption="My training"
       columns={columns}
       rows={rows}
+      isLoading={isLoading}
+      error={isError ? error?.message || 'Could not load your training.' : null}
+      onRetry={() => refetch()}
+      emptyIcon="lucide:graduation-cap"
       emptyMessage="No training assigned yet."
-      renderRow={(doc) => (
-        <tr
-          key={doc.id}
-          className="border-b border-gray-100 last:border-0 hover:bg-gray-50"
-        >
-          <td className="px-4 py-3 text-text">{doc.title}</td>
-          <td className="px-4 py-3 text-text">{doc.category?.name ?? '—'}</td>
-          <td
-            className="max-w-xs truncate px-4 py-3 text-text"
-            title={doc.description || undefined}
-          >
-            {doc.description || '—'}
-          </td>
-          <td className="px-4 py-3">
-            <FileActions
-              url={trainingDocumentDownloadUrl(doc.id)}
-              mimeType={doc.mimeType}
-              name={doc.title}
-            />
-          </td>
-        </tr>
-      )}
+      rowActions={(doc) => <FileActions url={trainingDocumentDownloadUrl(doc.id)} mimeType={doc.mimeType} name={doc.title} />}
     />
   )
 }

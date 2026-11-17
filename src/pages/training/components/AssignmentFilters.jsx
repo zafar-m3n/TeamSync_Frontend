@@ -1,4 +1,5 @@
 import Select from '@/components/ui/Select'
+import FormField from '@/components/form/FormField'
 import EmployeeSearchSelect from '@/components/form/EmployeeSearchSelect'
 import { useDepartments } from '@/hooks/useDepartments'
 import { useAllTrainingDocuments } from '@/hooks/useAllTrainingDocuments'
@@ -19,8 +20,7 @@ export default function AssignmentFilters({ filters, onChange }) {
 
   return (
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-      <div>
-        <label className="mb-1 block text-xs font-medium text-gray-500">Document</label>
+      <FormField label="Document">
         <Select
           isClearable
           options={documentOptions}
@@ -28,17 +28,11 @@ export default function AssignmentFilters({ filters, onChange }) {
           onChange={(opt) => onChange('document', opt ?? null)}
           placeholder="Any document"
         />
-      </div>
-      <div>
-        <label className="mb-1 block text-xs font-medium text-gray-500">Employee</label>
-        <EmployeeSearchSelect
-          value={filters.employee}
-          onChange={(opt) => onChange('employee', opt ?? null)}
-          placeholder="Any employee"
-        />
-      </div>
-      <div>
-        <label className="mb-1 block text-xs font-medium text-gray-500">Department</label>
+      </FormField>
+      <FormField label="Employee">
+        <EmployeeSearchSelect value={filters.employee} onChange={(opt) => onChange('employee', opt ?? null)} placeholder="Any employee" />
+      </FormField>
+      <FormField label="Department">
         <Select
           isClearable
           options={departmentOptions}
@@ -46,7 +40,7 @@ export default function AssignmentFilters({ filters, onChange }) {
           onChange={(opt) => onChange('dept', opt ?? null)}
           placeholder="Any department"
         />
-      </div>
+      </FormField>
     </div>
   )
 }

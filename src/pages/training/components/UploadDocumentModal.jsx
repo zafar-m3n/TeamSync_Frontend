@@ -6,6 +6,7 @@ import Select from '@/components/ui/Select'
 import Modal from '@/components/ui/Modal'
 import FormField from '@/components/form/FormField'
 import Input from '@/components/form/Input'
+import FileDrop from '@/components/form/FileDrop'
 import Button from '@/components/ui/Button'
 import { useTrainingCategories } from '@/hooks/useTrainingCategories'
 import { useUploadDocument } from '@/hooks/useTrainingMutations'
@@ -91,7 +92,7 @@ export default function UploadDocumentModal({ onClose }) {
           <Button
             type="submit"
             form="upload-document-form"
-            variant="accent"
+            variant="primary"
             isLoading={mutation.isPending}
           >
             Upload
@@ -139,12 +140,12 @@ export default function UploadDocumentModal({ onClose }) {
         </FormField>
 
         <FormField label="File" required error={fileError}>
-          <input
-            ref={fileInputRef}
-            type="file"
+          <FileDrop
+            inputRef={fileInputRef}
+            file={file}
             accept="application/pdf,.doc,.docx,image/jpeg,image/png"
+            hint="PDF, Word, or JPEG/PNG · up to 5 MB"
             onChange={onFileChange}
-            className="block w-full text-sm text-text file:mr-3 file:rounded-md file:border file:border-gray-300 file:bg-white file:px-3 file:py-1.5 file:text-sm file:text-text hover:file:bg-gray-50"
           />
         </FormField>
       </form>

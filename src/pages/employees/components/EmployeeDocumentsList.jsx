@@ -4,11 +4,11 @@ import { Icon } from '@iconify/react'
 import Table from '@/components/ui/Table'
 import Button from '@/components/ui/Button'
 import IconButton from '@/components/ui/IconButton'
-import clsx from 'clsx'
 import Modal from '@/components/ui/Modal'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import FormField from '@/components/form/FormField'
 import Input from '@/components/form/Input'
+import FileDrop from '@/components/form/FileDrop'
 import FileActions from '@/components/ui/FileActions'
 import { toast } from '@/hooks/useToast'
 import { useUploadDocument, useDeleteDocument } from '@/hooks/useEmployee'
@@ -126,35 +126,14 @@ function UploadDocumentModal({ employeeId, onClose }) {
           />
         </FormField>
 
-        <div className="flex flex-col gap-1.5">
-          <span id="upload-file-label" className="text-sm font-medium text-fg">
-            File
-          </span>
-          <label
-            className={clsx(
-              'flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed px-4 py-7 text-center transition-colors duration-(--duration-fast) focus-within:focus-ring',
-              file ? 'border-brand-500 bg-brand-50' : 'border-line-strong bg-surface-subtle hover:border-brand-500 hover:bg-brand-50/60',
-            )}
-          >
-            <span
-              className={clsx(
-                'flex h-10 w-10 items-center justify-center rounded-full',
-                file ? 'bg-brand-100 text-brand-700' : 'bg-surface text-fg-muted ring-1 ring-line',
-              )}
-            >
-              <Icon icon={file ? 'lucide:file-check-2' : 'lucide:upload-cloud'} width="20" height="20" aria-hidden />
-            </span>
-            <span className="max-w-full truncate text-sm font-medium text-fg">{file ? file.name : 'Click to choose a file'}</span>
-            <span className="text-xs text-fg-muted">PDF, Word, or JPEG/PNG · up to 5 MB</span>
-            <input
-              type="file"
-              aria-labelledby="upload-file-label"
-              accept="application/pdf,.doc,.docx,image/jpeg,image/png"
-              className="sr-only"
-              onChange={onFileChange}
-            />
-          </label>
-        </div>
+        <FormField label="File">
+          <FileDrop
+            file={file}
+            accept="application/pdf,.doc,.docx,image/jpeg,image/png"
+            hint="PDF, Word, or JPEG/PNG · up to 5 MB"
+            onChange={onFileChange}
+          />
+        </FormField>
       </form>
     </Modal>
   )

@@ -1,23 +1,19 @@
 import { useMemo, useState } from 'react'
 import Table from '@/components/ui/Table'
-import TableSkeleton from '@/components/ui/TableSkeleton'
 import IconButton from '@/components/ui/IconButton'
 import { useAllTrainingAssignments } from '@/hooks/useAllTrainingAssignments'
 import { useListFilters } from '@/hooks/useListFilters'
 import { fmtDate, renderTarget } from '@/pages/training/utils/trainingFormat'
 import AssignmentFilters from '@/pages/training/components/AssignmentFilters'
 import RemoveAssignmentModal from '@/pages/training/components/RemoveAssignmentModal'
-import PageControls from '@/pages/training/components/PageControls'
-import ListLoadError from '@/pages/training/components/ListLoadError'
 
 const LIMIT = 10
 
-const assignmentColumns = [
-  { key: 'document', header: 'Document' },
-  { key: 'target', header: 'Target' },
-  { key: 'assignedBy', header: 'Assigned By' },
-  { key: 'assigned', header: 'Assigned' },
-  { key: 'actions', header: 'Actions' },
+const columns = [
+  { key: 'document', header: 'Document', className: 'font-medium', render: (a) => a.document?.title ?? '—' },
+  { key: 'target', header: 'Target', render: renderTarget },
+  { key: 'assignedBy', header: 'Assigned By', render: (a) => a.assignedByUser?.employee?.fullName ?? '—' },
+  { key: 'assigned', header: 'Assigned', className: 'whitespace-nowrap tabular-nums text-fg-muted', render: (a) => fmtDate(a.assignedDate ?? a.createdAt) },
 ]
 
 export default function AssignmentsTab() {
@@ -38,55 +34,29 @@ export default function AssignmentsTab() {
     }),
     [page, filters],
   )
-  const { data, isLoading, isError, error, refetch } = useAllTrainingAssignments(params)
-
-  const rows = data?.rows ?? []
-  const meta = data?.meta
-  const totalPages = meta?.totalPages ?? 1
+  const { data, isLoading, isFetching, isError, error, refetch } = useAllTrainingAssignments(params)
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <AssignmentFilters filters={filters} onChange={setFilter} />
 
-      {isLoading ? (
-        <TableSkeleton columns={assignmentColumns} rows={LIMIT} />
-      ) : isError ? (
-        <ListLoadError
-          message={error?.message || 'Could not load assignments.'}
-          onRetry={() => refetch()}
-        />
-      ) : (
-        <>
-          <Table
-            columns={assignmentColumns}
-            rows={rows}
-            emptyMessage="No assignments match these filters"
-            renderRow={(a) => (
-              <tr
-                key={a.id}
-                className="border-b border-gray-100 last:border-0 hover:bg-gray-50"
-              >
-                <td className="px-4 py-3 text-text">{a.document?.title ?? '—'}</td>
-                <td className="px-4 py-3 text-text">{renderTarget(a)}</td>
-                <td className="px-4 py-3 text-text">{a.assignedByUser?.employee?.fullName ?? '—'}</td>
-                <td className="px-4 py-3 text-text">
-                  {fmtDate(a.assignedDate ?? a.createdAt)}
-                </td>
-                <td className="px-4 py-3">
-                  <IconButton
-                    icon="lucide:trash-2"
-                    label="Remove assignment"
-                    variant="danger"
-                    size="sm"
-                    onClick={() => setRemoveTarget(a)}
-                  />
-                </td>
-              </tr>
-            )}
-          />
-          <PageControls page={page} meta={meta} totalPages={totalPages} onPage={setPage} />
-        </>
-      )}
+      <Table
+        caption="Training assignments"
+        columns={columns}
+        rows={data?.rows ?? []}
+        meta={data?.meta}
+        onPageChange={setPage}
+        isLoading={isLoading}
+        isFetching={isFetching}
+        loadingRows={LIMIT}
+        error={isError ? error?.message || 'Could not load assignments.' : null}
+        onRetry={() => refetch()}
+        emptyIcon="lucide:user-check"
+        emptyMessage="No assignments match these filters"
+        rowActions={(a) => (
+          <IconButton icon="lucide:trash-2" label="Remove assignment" variant="ghost-danger" size="sm" onClick={() => setRemoveTarget(a)} />
+        )}
+      />
 
       <RemoveAssignmentModal assignment={removeTarget} onClose={() => setRemoveTarget(null)} />
     </div>
