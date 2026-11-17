@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import Tabs from '@/components/ui/Tabs'
+import Tabs, { TabPanel } from '@/components/ui/Tabs'
 import RolesTab from '@/pages/roles-permissions/components/RolesTab'
 import PermissionsTab from '@/pages/roles-permissions/components/PermissionsTab'
 
@@ -12,9 +12,11 @@ export default function RolesPermissionsPage() {
   const [activeKey, setActiveKey] = useState('roles')
 
   return (
-    <div className="space-y-6">
-      <Tabs tabs={TABS} activeKey={activeKey} onChange={setActiveKey} />
-      {activeKey === 'roles' ? <RolesTab /> : <PermissionsTab />}
+    <div className="space-y-5">
+      <Tabs id="roles-permissions" tabs={TABS} activeKey={activeKey} onChange={setActiveKey} />
+      <TabPanel id="roles-permissions" activeKey={activeKey}>
+        {activeKey === 'roles' ? <RolesTab /> : <PermissionsTab />}
+      </TabPanel>
     </div>
   )
 }

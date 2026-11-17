@@ -1,7 +1,9 @@
 import { Fragment, useMemo, useState } from 'react'
 import clsx from 'clsx'
 import { Icon } from '@iconify/react'
-import Spinner from '@/components/ui/Spinner'
+import Card from '@/components/ui/Card'
+import ErrorState from '@/components/ui/ErrorState'
+import Skeleton, { LoadingRegion } from '@/components/ui/Skeleton'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import Checkbox from '@/components/ui/Checkbox'
@@ -135,27 +137,33 @@ export default function PermissionsTab() {
 
   if (rolesQuery.isLoading || permsQuery.isLoading) {
     return (
-      <div className="flex min-h-[40vh] items-center justify-center">
-        <Spinner size="lg" className="text-accent" />
-      </div>
+      <LoadingRegion label="Loading permissions" className="overflow-hidden rounded-lg border border-line bg-surface shadow-sm">
+        <div className="border-b border-line bg-surface-subtle px-4 py-3">
+          <Skeleton className="h-3 w-64" />
+        </div>
+        {Array.from({ length: 8 }, (_, i) => (
+          <div key={i} className="flex items-center gap-8 border-b border-line px-4 py-3 last:border-0">
+            <Skeleton className="h-3 w-32" />
+            {Array.from({ length: 4 }, (_, j) => (
+              <Skeleton key={j} className="h-4 w-4" />
+            ))}
+          </div>
+        ))}
+      </LoadingRegion>
     )
   }
 
   if (rolesQuery.isError || permsQuery.isError) {
     return (
-      <div className="flex flex-col items-center gap-3 rounded-lg border border-gray-200 bg-white py-12 text-center">
-        <p className="text-sm text-gray-600">Could not load the permission matrix.</p>
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={() => {
+      <Card>
+        <ErrorState
+          message="Could not load the permission matrix."
+          onRetry={() => {
             rolesQuery.refetch()
             permsQuery.refetch()
           }}
-        >
-          Try again
-        </Button>
-      </div>
+        />
+      </Card>
     )
   }
 
@@ -163,19 +171,27 @@ export default function PermissionsTab() {
 
   return (
     <div className="space-y-4">
-      <div className="overflow-x-auto rounded-lg border border-gray-200">
-        <table className="min-w-full border-collapse text-sm">
+      <p className="text-cell text-fg-muted">
+        Tick what each role can do, then save. Changes are staged until you save them.
+      </p>
+      <div className="relative max-h-[calc(100vh-15rem)] overflow-auto rounded-lg border border-line bg-surface shadow-sm">
+        <table className="min-w-full border-separate border-spacing-0 text-sm">
+          <caption className="sr-only">Permissions by role</caption>
           <thead>
-            <tr className="border-b border-gray-200 bg-gray-50">
-              <th className="sticky left-0 z-10 min-w-48 border-r border-gray-200 bg-gray-50 px-4 py-3 text-left font-medium text-text">
+            <tr>
+              <th
+                scope="col"
+                className="sticky left-0 top-0 z-30 min-w-52 border-b border-r border-line bg-surface-subtle px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-fg-muted"
+              >
                 Permission
               </th>
               {roles.map((role) => (
                 <th
                   key={role.id}
-                  className="whitespace-nowrap px-4 py-3 text-center font-medium text-text"
+                  scope="col"
+                  className="sticky top-0 z-20 whitespace-nowrap border-b border-line bg-surface-subtle px-4 py-3 text-center text-xs font-semibold text-fg"
                 >
-                  <span className="inline-flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5">
                     {role.name}
                     {role.isCustom && <Badge tone="info">Custom</Badge>}
                   </span>
@@ -187,35 +203,40 @@ export default function PermissionsTab() {
             {groups.map((group) => (
               <Fragment key={group.module}>
                 <tr>
-                  <td
+                  <th
+                    scope="colgroup"
                     colSpan={roles.length + 1}
-                    className="bg-white px-4 pb-2 pt-5 text-sm font-semibold text-primary"
+                    className="border-b border-line bg-surface px-0 pb-2 pt-5 text-left"
                   >
-                    <span className="inline-flex items-center gap-2">
-                      <Icon
-                        icon={moduleIcon(group.module)}
-                        width="16"
-                        height="16"
-                        className="text-gray-400"
-                      />
+                    <span className="sticky left-0 inline-flex items-center gap-2 px-4 text-sm font-semibold text-fg">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-md bg-brand-50 text-brand-700">
+                        <Icon icon={moduleIcon(group.module)} width="14" height="14" aria-hidden />
+                      </span>
                       {moduleLabel(group.module)}
+                      <span className="text-xs font-normal text-fg-subtle">{group.rows.length}</span>
                     </span>
-                  </td>
+                  </th>
                 </tr>
                 {group.rows.map((row) => (
-                  <tr
-                    key={`${row.module}|${row.action}`}
-                    className="group border-b border-gray-100 last:border-0 hover:bg-gray-50"
-                  >
-                    <td className="sticky left-0 z-10 min-w-48 bg-white px-4 py-2 text-text group-hover:bg-gray-50">
+                  <tr key={`${row.module}|${row.action}`} className="group">
+                    <th
+                      scope="row"
+                      className="sticky left-0 z-10 min-w-52 border-b border-r border-line bg-surface px-4 py-1.5 text-left font-normal text-fg transition-colors duration-(--duration-fast) group-hover:bg-surface-subtle"
+                    >
                       {actionLabel(row.action)}
-                    </td>
+                    </th>
                     {roles.map((role) => {
                       const entry = byKey.get(`${row.module}|${row.action}|${role.id}`)
                       const locked = entry != null && entry.id === lockedId
                       const cellPending = entry != null && pending.has(entry.id)
                       return (
-                        <td key={role.id} className="px-4 py-2 text-center">
+                        <td
+                          key={role.id}
+                          className={clsx(
+                            'border-b border-line px-4 py-1.5 text-center transition-colors duration-(--duration-fast) group-hover:bg-surface-subtle',
+                            cellPending && 'bg-warning-soft/50',
+                          )}
+                        >
                           <Checkbox
                             checked={isChecked(entry)}
                             disabled={entry == null}
@@ -223,6 +244,7 @@ export default function PermissionsTab() {
                             pending={cellPending}
                             onChange={() => toggle(entry)}
                             title={locked ? LOCKOUT_TITLE : undefined}
+                            aria-label={`${role.name}: ${moduleLabel(row.module)} ${actionLabel(row.action)}`}
                           />
                         </td>
                       )
@@ -238,22 +260,20 @@ export default function PermissionsTab() {
       <div
         className={clsx(
           'flex items-center justify-end gap-2',
-          count > 0 &&
-            'sticky bottom-0 z-20 border-t border-gray-200 bg-white py-3',
+          count > 0 && 'sticky bottom-0 z-20 -mx-1 rounded-lg border border-line bg-surface/95 px-4 py-3 shadow-md backdrop-blur-sm',
         )}
       >
+        {count > 0 && (
+          <p className="mr-auto flex items-center gap-2 text-sm text-fg-muted" role="status">
+            <span className="h-2 w-2 rounded-full bg-warning" aria-hidden />
+            {count} unsaved {count === 1 ? 'change' : 'changes'}
+          </p>
+        )}
         <Button variant="secondary" disabled={count === 0} onClick={discard}>
           Discard
         </Button>
-        <Button
-          variant="accent"
-          disabled={count === 0}
-          isLoading={bulkUpdate.isPending}
-          onClick={save}
-        >
-          {count === 0
-            ? 'Save Changes'
-            : `Save ${count} ${count === 1 ? 'Change' : 'Changes'}`}
+        <Button variant="primary" disabled={count === 0} isLoading={bulkUpdate.isPending} onClick={save}>
+          {count === 0 ? 'Save Changes' : `Save ${count} ${count === 1 ? 'Change' : 'Changes'}`}
         </Button>
       </div>
     </div>

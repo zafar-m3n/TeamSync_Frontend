@@ -1,6 +1,6 @@
 import { useState } from 'react'
+import { Icon } from '@iconify/react'
 import Table from '@/components/ui/Table'
-import TableSkeleton from '@/components/ui/TableSkeleton'
 import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
 import IconButton from '@/components/ui/IconButton'
@@ -9,9 +9,21 @@ import RoleFormModal from '@/pages/roles-permissions/components/RoleFormModal'
 import DeleteRoleModal from '@/pages/roles-permissions/components/DeleteRoleModal'
 
 const columns = [
-  { key: 'name', header: 'Name' },
-  { key: 'description', header: 'Description' },
-  { key: 'actions', header: 'Actions' },
+  {
+    key: 'name',
+    header: 'Name',
+    className: 'whitespace-nowrap',
+    render: (role) => (
+      <span className="inline-flex items-center gap-2 font-medium text-fg">
+        <span className="flex h-7 w-7 items-center justify-center rounded-md bg-brand-50 text-brand-700">
+          <Icon icon="lucide:shield" width="14" height="14" aria-hidden />
+        </span>
+        {role.name}
+        {role.isCustom && <Badge tone="info">Custom</Badge>}
+      </span>
+    ),
+  },
+  { key: 'description', header: 'Description', className: 'text-fg-muted', render: (r) => r.description || <span className="text-fg-subtle">—</span> },
 ]
 
 export default function RolesTab() {
@@ -24,74 +36,42 @@ export default function RolesTab() {
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
-        <Button variant="accent" onClick={() => setFormTarget(null)}>
+        <Button variant="primary" onClick={() => setFormTarget(null)}>
+          <Icon icon="lucide:plus" width="16" height="16" aria-hidden />
           New Role
         </Button>
       </div>
 
-      {isLoading ? (
-        <TableSkeleton columns={columns} rows={5} />
-      ) : isError ? (
-        <div className="flex flex-col items-center gap-3 rounded-lg border border-gray-200 bg-white py-12 text-center">
-          <p className="text-sm text-gray-600">{error?.message || 'Could not load roles.'}</p>
-          <Button variant="secondary" size="sm" onClick={() => refetch()}>
-            Try again
-          </Button>
-        </div>
-      ) : (
-        <Table
-          columns={columns}
-          rows={roles}
-          emptyMessage="No roles yet"
-          renderRow={(role) => (
-            <tr key={role.id} className="border-b border-gray-100 last:border-0">
-              <td className="px-4 py-3">
-                <span className="inline-flex items-center gap-2 text-text">
-                  {role.name}
-                  {role.isCustom && <Badge tone="info">Custom</Badge>}
-                </span>
-              </td>
-              <td className="px-4 py-3 text-text">{role.description || '—'}</td>
-              <td className="px-4 py-3">
-                <div className="flex gap-2">
-                  <IconButton
-                    icon="lucide:pencil"
-                    label={`Edit ${role.name}`}
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => setFormTarget(role)}
-                  />
-                  {role.isCustom && (
-                    <IconButton
-                      icon="lucide:trash-2"
-                      label={`Delete ${role.name}`}
-                      variant="danger"
-                      size="sm"
-                      onClick={() => setDeleteId(role.id)}
-                    />
-                  )}
-                </div>
-              </td>
-            </tr>
-          )}
-        />
-      )}
+      <Table
+        caption="Roles"
+        columns={columns}
+        rows={roles}
+        isLoading={isLoading}
+        error={isError ? error?.message || 'Could not load roles.' : null}
+        onRetry={() => refetch()}
+        emptyIcon="lucide:shield"
+        emptyMessage="No roles yet"
+        rowActions={(role) => (
+          <>
+            <IconButton icon="lucide:pencil" label={`Edit ${role.name}`} variant="ghost" size="sm" onClick={() => setFormTarget(role)} />
+            {role.isCustom && (
+              <IconButton
+                icon="lucide:trash-2"
+                label={`Delete ${role.name}`}
+                variant="ghost-danger"
+                size="sm"
+                onClick={() => setDeleteId(role.id)}
+              />
+            )}
+          </>
+        )}
+      />
 
       {formTarget !== undefined && (
-        <RoleFormModal
-          key={formTarget?.id ?? 'new'}
-          role={formTarget}
-          onClose={() => setFormTarget(undefined)}
-        />
+        <RoleFormModal key={formTarget?.id ?? 'new'} role={formTarget} onClose={() => setFormTarget(undefined)} />
       )}
 
-      {deleteTarget && (
-        <DeleteRoleModal
-          key={deleteTarget.id}
-          role={deleteTarget}
-          onClose={() => setDeleteId(null)}
-        />
-      )}
+      {deleteTarget && <DeleteRoleModal key={deleteTarget.id} role={deleteTarget} onClose={() => setDeleteId(null)} />}
     </div>
   )
 }

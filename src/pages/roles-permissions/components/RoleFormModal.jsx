@@ -1,6 +1,7 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { Icon } from '@iconify/react'
 import Modal from '@/components/ui/Modal'
 import FormField from '@/components/form/FormField'
 import Input from '@/components/form/Input'
@@ -60,7 +61,7 @@ export default function RoleFormModal({ role, onClose }) {
           <Button
             type="submit"
             form="role-form"
-            variant="accent"
+            variant="primary"
             isLoading={mutation.isPending}
           >
             {isEdit ? 'Save changes' : 'Create role'}
@@ -84,7 +85,10 @@ export default function RoleFormModal({ role, onClose }) {
             />
           </FormField>
           {nameLocked && (
-            <p className="text-xs text-gray-500">Built-in roles cannot be renamed.</p>
+            <p className="flex items-center gap-1.5 text-xs text-fg-muted">
+              <Icon icon="lucide:lock" width="12" height="12" aria-hidden />
+              Built-in roles cannot be renamed.
+            </p>
           )}
         </div>
         <FormField label="Description" error={errors.description?.message}>

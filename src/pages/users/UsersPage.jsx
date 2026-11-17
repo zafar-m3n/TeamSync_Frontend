@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react'
-import clsx from 'clsx'
 import { Icon } from '@iconify/react'
 import Select from '@/components/ui/Select'
 import Table from '@/components/ui/Table'
-import TableSkeleton from '@/components/ui/TableSkeleton'
 import Badge from '@/components/ui/Badge'
-import Button from '@/components/ui/Button'
+import Avatar from '@/components/ui/Avatar'
+import Switch from '@/components/ui/Switch'
 import IconButton from '@/components/ui/IconButton'
+import FormField from '@/components/form/FormField'
 import { useAuth } from '@/store/useAuth'
 import { outranks } from '@/lib/permissions'
 import { useRoles } from '@/hooks/useRoles'
@@ -16,43 +16,44 @@ import ResetPasswordModal from '@/pages/users/components/ResetPasswordModal'
 
 const LIMIT = 10
 
-const columns = [
-  { key: 'email', header: 'Email' },
-  { key: 'role', header: 'Role' },
-  { key: 'status', header: 'Status' },
-  { key: 'actions', header: 'Actions' },
-]
-
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All' },
   { value: 'active', label: 'Active' },
   { value: 'inactive', label: 'Inactive' },
 ]
 
-// Switch-style toggle. Small and generic — could move to components/ui/ later.
-function StatusToggle({ checked, disabled, onChange, label }) {
+const columns = [
+  {
+    key: 'email',
+    header: 'Email',
+    render: (u) => (
+      <span className="flex items-center gap-3">
+        <Avatar name={u.email} />
+        <span className="font-medium text-fg">{u.email}</span>
+      </span>
+    ),
+  },
+  { key: 'role', header: 'Role', render: (u) => (u.role?.name ? <Badge tone="neutral">{u.role.name}</Badge> : '—') },
+  {
+    key: 'status',
+    header: 'Status',
+    render: (u) => (
+      <Badge dot tone={u.isActive ? 'success' : 'neutral'}>
+        {u.isActive ? 'Active' : 'Inactive'}
+      </Badge>
+    ),
+  },
+]
+
+function LockChip({ title, children }) {
   return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      aria-label={label}
-      disabled={disabled}
-      title={disabled ? 'Updating…' : undefined}
-      onClick={() => onChange(!checked)}
-      className={clsx(
-        'relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2',
-        checked ? 'bg-emerald-500' : 'bg-gray-300',
-        disabled && 'cursor-not-allowed opacity-50',
-      )}
+    <span
+      className="inline-flex items-center gap-1 rounded-full bg-surface-hover px-2 py-1 text-xs font-medium text-fg-muted"
+      title={title}
     >
-      <span
-        className={clsx(
-          'inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform',
-          checked ? 'translate-x-4' : 'translate-x-0.5',
-        )}
-      />
-    </button>
+      <Icon icon="lucide:lock" width="12" height="12" aria-hidden />
+      {children}
+    </span>
   )
 }
 
@@ -71,41 +72,61 @@ export default function UsersPage() {
       page,
       limit: LIMIT,
       ...(roleId ? { roleId } : {}),
-      ...(status === 'active'
-        ? { isActive: true }
-        : status === 'inactive'
-          ? { isActive: false }
-          : {}),
+      ...(status === 'active' ? { isActive: true } : status === 'inactive' ? { isActive: false } : {}),
     }),
     [page, roleId, status],
   )
 
-  const { data, isLoading, isError, error, refetch } = useUsers(params)
-  const rows = data?.rows ?? []
-  const meta = data?.meta
-  const totalPages = meta?.totalPages ?? 1
-
+  const { data, isLoading, isFetching, isError, error, refetch } = useUsers(params)
   const roleOptions = roles.map((r) => ({ value: r.id, label: r.name }))
 
+  const rowActions = (row) => {
+    const isSelf = String(row.id) === String(user.id)
+    const canAct = outranks(user, row.role)
+    const pendingThisRow = statusMutation.isPending && statusMutation.variables?.id === row.id
+    return (
+      <span className="flex items-center gap-3">
+        {isSelf ? (
+          <LockChip title="You can't deactivate your own account">Your account</LockChip>
+        ) : !canAct ? (
+          <LockChip title="Requires a higher role than this user's">Protected</LockChip>
+        ) : (
+          can('users', 'update_status') && (
+            <Switch
+              checked={row.isActive}
+              disabled={pendingThisRow}
+              title={pendingThisRow ? 'Updating…' : undefined}
+              label={`${row.isActive ? 'Deactivate' : 'Activate'} ${row.email}`}
+              onChange={(next) => statusMutation.mutate({ id: row.id, isActive: next })}
+            />
+          )
+        )}
+        {canAct && can('users', 'reset_password') && (
+          <IconButton icon="lucide:key-round" label="Reset password" variant="ghost" size="sm" onClick={() => setResetTarget(row)} />
+        )}
+      </span>
+    )
+  }
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div className="flex flex-wrap items-end gap-3">
-        <div className="w-56">
-          <label className="mb-1 block text-xs font-medium text-gray-500">Role</label>
-          <Select
-            isClearable
-            options={roleOptions}
-            placeholder="All roles"
-            value={roleOptions.find((o) => o.value === roleId) ?? null}
-            onChange={(opt) => {
-              setRoleId(opt?.value ?? null)
-              setPage(1)
-            }}
-          />
+        <div className="w-full sm:w-56">
+          <FormField label="Role">
+            <Select
+              isClearable
+              options={roleOptions}
+              placeholder="All roles"
+              value={roleOptions.find((o) => o.value === roleId) ?? null}
+              onChange={(opt) => {
+                setRoleId(opt?.value ?? null)
+                setPage(1)
+              }}
+            />
+          </FormField>
         </div>
-        <div>
-          <label className="mb-1 block text-xs font-medium text-gray-500">Status</label>
-          <div className="w-40">
+        <div className="w-full sm:w-40">
+          <FormField label="Status">
             <Select
               options={STATUS_OPTIONS}
               value={STATUS_OPTIONS.find((o) => o.value === status) ?? null}
@@ -114,118 +135,27 @@ export default function UsersPage() {
                 setPage(1)
               }}
             />
-          </div>
+          </FormField>
         </div>
       </div>
 
-      {isLoading ? (
-        <TableSkeleton columns={columns} rows={LIMIT} />
-      ) : isError ? (
-        <div className="flex flex-col items-center gap-3 rounded-lg border border-gray-200 bg-white py-12 text-center">
-          <p className="text-sm text-gray-600">{error?.message || 'Could not load users.'}</p>
-          <Button variant="secondary" size="sm" onClick={() => refetch()}>
-            Try again
-          </Button>
-        </div>
-      ) : (
-        <>
-          <Table
-            columns={columns}
-            rows={rows}
-            emptyMessage="No users found"
-            renderRow={(row) => {
-              const isSelf = String(row.id) === String(user.id)
-              const canAct = outranks(user, row.role)
-              const pendingThisRow =
-                statusMutation.isPending && statusMutation.variables?.id === row.id
-              return (
-                <tr
-                  key={row.id}
-                  className="border-b border-gray-100 last:border-0 hover:bg-gray-50"
-                >
-                  <td className="px-4 py-3 text-text">{row.email}</td>
-                  <td className="px-4 py-3 text-text">{row.role?.name ?? '—'}</td>
-                  <td className="px-4 py-3">
-                    <Badge tone={row.isActive ? 'success' : 'neutral'}>
-                      {row.isActive ? 'Active' : 'Inactive'}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      {isSelf ? (
-                        <span
-                          className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-500"
-                          title="You can't deactivate your own account"
-                        >
-                          <Icon icon="lucide:lock" width="12" height="12" aria-hidden />
-                          Your account
-                        </span>
-                      ) : !canAct ? (
-                        <span
-                          className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-500"
-                          title="Requires a higher role than this user's"
-                        >
-                          <Icon icon="lucide:lock" width="12" height="12" aria-hidden />
-                          Protected
-                        </span>
-                      ) : can('users', 'update_status') && (
-                        <StatusToggle
-                          checked={row.isActive}
-                          disabled={pendingThisRow}
-                          label={`${row.isActive ? 'Deactivate' : 'Activate'} ${row.email}`}
-                          onChange={(next) =>
-                            statusMutation.mutate({ id: row.id, isActive: next })
-                          }
-                        />
-                      )}
-                      {canAct && can('users', 'reset_password') && (
-                        <IconButton
-                          icon="lucide:key-round"
-                          label="Reset password"
-                          variant="secondary"
-                          size="sm"
-                          onClick={() => setResetTarget(row)}
-                        />
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              )
-            }}
-          />
+      <Table
+        caption="Users"
+        columns={columns}
+        rows={data?.rows ?? []}
+        meta={data?.meta}
+        onPageChange={setPage}
+        isLoading={isLoading}
+        isFetching={isFetching}
+        loadingRows={LIMIT}
+        error={isError ? error?.message || 'Could not load users.' : null}
+        onRetry={() => refetch()}
+        emptyIcon="lucide:user-round-x"
+        emptyMessage="No users found"
+        rowActions={rowActions}
+      />
 
-          {meta && totalPages > 1 && (
-            <div className="flex items-center justify-between">
-              <Button
-                variant="secondary"
-                size="sm"
-                disabled={page <= 1}
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-              >
-                Previous
-              </Button>
-              <span className="text-sm text-gray-500">
-                Page {meta.page} of {totalPages}
-              </span>
-              <Button
-                variant="secondary"
-                size="sm"
-                disabled={page >= totalPages}
-                onClick={() => setPage((p) => p + 1)}
-              >
-                Next
-              </Button>
-            </div>
-          )}
-        </>
-      )}
-
-      {resetTarget && (
-        <ResetPasswordModal
-          user={resetTarget}
-          onClose={() => setResetTarget(null)}
-        />
-      )}
+      {resetTarget && <ResetPasswordModal user={resetTarget} onClose={() => setResetTarget(null)} />}
     </div>
   )
 }

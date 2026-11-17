@@ -50,7 +50,7 @@ export default function ResetPasswordModal({ user, onClose }) {
           <Button
             type="submit"
             form="reset-password-form"
-            variant="accent"
+            variant="primary"
             isLoading={mutation.isPending}
           >
             Reset password
@@ -64,8 +64,8 @@ export default function ResetPasswordModal({ user, onClose }) {
         className="flex flex-col gap-4"
         noValidate
       >
-        <p className="text-sm text-gray-500">
-          Set a new password for <span className="font-medium text-text">{user.email}</span>.
+        <p className="text-sm text-fg-muted">
+          Set a new password for <span className="font-medium text-fg">{user.email}</span>.
           You&rsquo;ll need to share it with them yourself.
         </p>
         <FormField label="New Password" required error={errors.newPassword?.message}>
