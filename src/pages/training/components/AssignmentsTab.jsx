@@ -68,7 +68,7 @@ export default function AssignmentsTab() {
               >
                 <td className="px-4 py-3 text-text">{a.document?.title ?? '—'}</td>
                 <td className="px-4 py-3 text-text">{renderTarget(a)}</td>
-                <td className="px-4 py-3 text-text">{a.assignedBy?.fullName ?? '—'}</td>
+                <td className="px-4 py-3 text-text">{a.assignedByUser?.employee?.fullName ?? '—'}</td>
                 <td className="px-4 py-3 text-text">
                   {fmtDate(a.assignedDate ?? a.createdAt)}
                 </td>
