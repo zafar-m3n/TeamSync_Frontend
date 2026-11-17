@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { Icon } from '@iconify/react'
 import clsx from 'clsx'
 import Skeleton, { LoadingRegion } from '@/components/ui/Skeleton'
+import ProgressBar from '@/components/ui/ProgressBar'
 
 // Whole-card link around a StatCard.
 export function CardLink({ to, children }) {
@@ -88,4 +89,10 @@ export function DashboardSkeleton() {
       </div>
     </LoadingRegion>
   )
+}
+
+// Goal progress cell; matches the progress bar on the Goals pages.
+export function GoalProgress({ goal }) {
+  const pct = Number(goal.percentComplete) || 0
+  return <ProgressBar value={pct} label={`${Math.round(pct)}%`} />
 }

@@ -3,13 +3,13 @@ import Table from '@/components/ui/Table'
 import { CountUp } from '@/hooks/useMotion'
 import { useAuth } from '@/store/useAuth'
 import ClockPanel from '@/pages/attendance/components/ClockPanel'
-import { CardLink, Panel } from '@/pages/dashboard/components/DashboardParts'
-import { fmt, goalProgressText } from '@/pages/dashboard/utils/dashboardFormat'
+import { CardLink, GoalProgress, Panel } from '@/pages/dashboard/components/DashboardParts'
+import { fmt } from '@/pages/dashboard/utils/dashboardFormat'
 
 const goalColumns = [
   { key: 'title', header: 'Goal', className: 'font-medium', render: (g) => g.title || '—' },
   { key: 'targetDate', header: 'Target date', className: 'whitespace-nowrap tabular-nums', render: (g) => fmt(g.targetDate, 'PP') },
-  { key: 'progress', header: 'Progress', render: goalProgressText },
+  { key: 'progress', header: 'Progress', render: (g) => <GoalProgress goal={g} />, className: 'min-w-36' },
 ]
 
 export default function EmployeeDashboardView({ data }) {
