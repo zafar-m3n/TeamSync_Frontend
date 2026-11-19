@@ -60,7 +60,7 @@ export default function HolidayFormModal({ holiday, onClose }) {
         noValidate
       >
         <FormField label="Name" required error={errors.name?.message}>
-          <Input autoFocus placeholder="Independence Day" {...register('name')} />
+          <Input autoFocus placeholder="Enter holiday name" {...register('name')} />
         </FormField>
         <FormField label="Date" required error={errors.date?.message}>
           <Controller
@@ -70,7 +70,7 @@ export default function HolidayFormModal({ holiday, onClose }) {
               <DateField
                 value={field.value}
                 onChange={(ymd) => field.onChange(ymd ?? '')}
-                placeholder="Pick a date"
+                placeholder="Select a date"
                 withDropdownNav
               />
             )}

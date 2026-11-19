@@ -5,6 +5,7 @@ import OverlayHeader from '@/components/ui/overlay/OverlayHeader'
 import { useOverlay } from '@/components/ui/overlay/useOverlay'
 import { usePresence } from '@/hooks/useMotion'
 import { overlayEnter, overlayExit } from '@/lib/motion'
+import { useScrollFade } from '@/hooks/useScrollFade'
 
 const SIZES = {
   sm: 'max-w-md',
@@ -39,6 +40,7 @@ export default function Modal({
   )
 
   useOverlay({ isOpen, onClose, panelRef, bodyRef, titleRef, initialFocusRef })
+  const { style: fadeStyle } = useScrollFade(bodyRef, { enabled: present })
 
   if (!present) return null
 
@@ -77,7 +79,7 @@ export default function Modal({
           description={description}
           onClose={onClose}
         />
-        <div ref={bodyRef} className="overflow-y-auto px-5 py-4 text-sm text-fg">
+        <div ref={bodyRef} style={fadeStyle} className="overflow-y-auto px-5 py-4 text-sm text-fg">
           {children}
         </div>
         {footer && (

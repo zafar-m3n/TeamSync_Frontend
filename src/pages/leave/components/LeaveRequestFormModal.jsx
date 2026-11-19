@@ -162,7 +162,7 @@ export default function LeaveRequestFormModal({ onClose }) {
           <FormField label="Date" required error={errors.startDate?.message || errors.endDate?.message}>
             <DateField
               value={startDate}
-              placeholder="Pick a date"
+              placeholder="Select a date"
               onChange={(ymd) => {
                 setValue('startDate', ymd, { shouldValidate: true })
                 setValue('endDate', ymd, { shouldValidate: true })
@@ -178,7 +178,7 @@ export default function LeaveRequestFormModal({ onClose }) {
             <DateRangeField
               value={{ from: parseYmd(startDate), to: parseYmd(endDate) }}
               clearable={false}
-              placeholder="Pick a date range"
+              placeholder="Select a date range"
               onChange={(range) => {
                 setValue('startDate', range?.from ? toYmd(range.from) : '', {
                   shouldValidate: true,

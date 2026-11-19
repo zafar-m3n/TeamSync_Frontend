@@ -39,7 +39,7 @@ export default function EmploymentStep({ form, departmentOptions, manager, onMan
           />
         </FormField>
         <FormField label="Designation" error={errors.designation?.message}>
-          <Input placeholder="Senior Software Engineer" {...register('designation')} />
+          <Input placeholder="Enter job title" {...register('designation')} />
         </FormField>
         <FormField
           label="Date of Joining"
@@ -126,7 +126,7 @@ export default function EmploymentStep({ form, departmentOptions, manager, onMan
             name="managerId"
             render={({ field }) => (
               <EmployeeSearchSelect
-                placeholder="Search employees…"
+                placeholder="Search for a manager…"
                 value={manager}
                 onChange={(opt) => {
                   onManagerChange(opt ?? null)

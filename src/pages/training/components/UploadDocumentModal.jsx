@@ -109,7 +109,7 @@ export default function UploadDocumentModal({ onClose }) {
         <FormField label="Title" required error={errors.title?.message}>
           <Input
             autoFocus
-            placeholder="Workplace Safety Handbook 2024"
+            placeholder="Enter document title"
             {...register('title')}
           />
         </FormField>
@@ -118,7 +118,7 @@ export default function UploadDocumentModal({ onClose }) {
           <Input
             multiline
             rows={3}
-            placeholder="Mandatory reading covering emergency procedures and reporting"
+            placeholder="Describe what this document covers"
             {...register('description')}
           />
         </FormField>

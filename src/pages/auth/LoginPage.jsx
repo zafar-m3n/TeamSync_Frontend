@@ -72,14 +72,14 @@ export default function LoginPage() {
           {formError && <FormBanner error={formError} />}
 
           <FormField label="Work email" required error={errors.email?.message}>
-            <Input type="email" autoComplete="email" placeholder="you@company.com" className="h-11" {...register('email')} />
+            <Input type="email" autoComplete="email" placeholder="name@company.com" className="h-11" {...register('email')} />
           </FormField>
 
           <FormField label="Password" required error={errors.password?.message}>
             <Input
               type="password"
               autoComplete="current-password"
-              placeholder="••••••••"
+              placeholder="Enter your password"
               className="h-11"
               {...register('password')}
             />

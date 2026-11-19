@@ -80,7 +80,7 @@ export default function RoleFormModal({ role, onClose }) {
             <Input
               autoFocus={!nameLocked}
               disabled={nameLocked}
-              placeholder="Auditor"
+              placeholder="Enter role name"
               {...register('name')}
             />
           </FormField>
@@ -96,7 +96,7 @@ export default function RoleFormModal({ role, onClose }) {
             multiline
             rows={3}
             autoFocus={nameLocked}
-            placeholder="Read-only access to audit logs and compliance reports"
+            placeholder="Describe what people with this role do"
             {...register('description')}
           />
         </FormField>

@@ -6,7 +6,8 @@ import clsx from 'clsx'
 import 'react-day-picker/style.css'
 import Popover from '@/components/ui/Popover'
 import { controlClass } from '@/components/form/controlStyles'
-import { useFieldProps } from '@/components/form/fieldContext'
+import { FieldContext, useFieldProps } from '@/components/form/fieldContext'
+import Select from '@/components/ui/Select'
 
 const YEAR_NOW = new Date().getFullYear()
 
@@ -26,6 +27,42 @@ function Chevron({ orientation, className }) {
     { left: 'lucide:chevron-left', right: 'lucide:chevron-right', up: 'lucide:chevron-up' }[orientation] ??
     'lucide:chevron-down'
   return <Icon icon={icon} width="18" height="18" className={className} />
+}
+
+// Month / year pickers in the calendar caption, using the app's own Select so they
+// match every other dropdown. react-day-picker expects a <select>-style change event.
+// Compact: no separator, tighter arrow, so "September" and "2008" fit.
+const CALENDAR_SELECT_CLASSES = {
+  indicatorSeparator: () => 'hidden',
+  dropdownIndicator: () => 'px-1 text-fg-subtle',
+  valueContainer: () => 'flex items-center px-1 py-0.5',
+}
+
+function CalendarDropdown({ options = [], value, onChange, disabled, className, 'aria-label': ariaLabel }) {
+  const isYear = className?.includes('years')
+  const opts = options.map((o) => ({ value: o.value, label: o.label, disabled: o.disabled }))
+  const current = opts.find((o) => o.value === Number(value)) ?? null
+  return (
+    // Reset the field context: these selects belong to the calendar, not the form
+    // field the date picker sits in, so they must not take its id or error state.
+    <FieldContext.Provider value={null}>
+      <div className={isYear ? 'w-[5.5rem]' : 'w-[8.5rem]'}>
+        <Select
+          aria-label={ariaLabel}
+          isDisabled={disabled}
+          options={opts}
+          value={current}
+          isOptionDisabled={(o) => o.disabled}
+          onChange={(opt) => opt && onChange?.({ target: { value: String(opt.value) } })}
+          // Rendered inside the popover (not portalled) so picking an option counts
+          // as a click inside the calendar and doesn't close it.
+          menuPortalTarget={null}
+          classNames={CALENDAR_SELECT_CLASSES}
+          maxMenuHeight={224}
+        />
+      </div>
+    </FieldContext.Provider>
+  )
 }
 
 // Trigger + clear button + calendar popover shared by both fields. The popover hands
@@ -83,18 +120,31 @@ function PickerShell({ fieldProps, label, hasValue, placeholder, clearable, onCl
 }
 
 // Single date. value / onChange are YYYY-MM-DD strings ('' when empty).
+// `withDropdownNav` adds month/year selects; `fromYear` / `toYear` bound them
+// (defaults 1950 to next year).
 export function DateField({
   value,
   onChange,
   placeholder = 'Select a date',
   clearable = false,
   withDropdownNav = false,
+  fromYear,
+  toYear,
   disabled = false,
   className,
   ...fieldProps
 }) {
   const [open, setOpen] = useState(false)
   const selected = parseYmd(value)
+  const firstYear = fromYear ?? 1950
+  const lastYear = toYear ?? YEAR_NOW + 1
+  const bounded = fromYear != null || toYear != null
+  // Open on a month inside the allowed range (e.g. date of birth opens in the
+  // latest allowed year, not this month).
+  const today = new Date()
+  const openMonth =
+    selected ??
+    (today.getFullYear() > lastYear ? new Date(lastYear, 11) : today.getFullYear() < firstYear ? new Date(firstYear, 0) : undefined)
 
   return (
     <PickerShell
@@ -112,11 +162,13 @@ export function DateField({
       <DayPicker
         mode="single"
         autoFocus
-        components={{ Chevron }}
+        components={{ Chevron, Dropdown: CalendarDropdown }}
         captionLayout={withDropdownNav ? 'dropdown' : undefined}
-        startMonth={withDropdownNav ? new Date(1950, 0) : undefined}
-        endMonth={withDropdownNav ? new Date(YEAR_NOW + 1, 11) : undefined}
-        defaultMonth={selected}
+        reverseYears
+        startMonth={withDropdownNav || bounded ? new Date(firstYear, 0) : undefined}
+        endMonth={withDropdownNav || bounded ? new Date(lastYear, 11) : undefined}
+        disabled={bounded ? [{ before: new Date(firstYear, 0, 1) }, { after: new Date(lastYear, 11, 31) }] : undefined}
+        defaultMonth={openMonth}
         selected={selected}
         onSelect={(d) => {
           if (d) {

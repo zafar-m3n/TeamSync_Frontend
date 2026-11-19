@@ -76,7 +76,7 @@ export default function RecordActualModal({ goal, onClose }) {
             min="0"
             step="any"
             autoFocus
-            placeholder="35"
+            placeholder="Enter value achieved"
             {...register('actualValue')}
           />
         </FormField>

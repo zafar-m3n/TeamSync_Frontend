@@ -3,7 +3,7 @@ import Select from '@/components/ui/Select'
 import FormField from '@/components/form/FormField'
 import Input from '@/components/form/Input'
 import { DateField } from '@/components/form/DatePicker'
-import { GENDER_OPTIONS } from '@/pages/employees/form/employeeFormSchema'
+import { DOB_FROM_YEAR, DOB_TO_YEAR, GENDER_OPTIONS } from '@/pages/employees/form/employeeFormSchema'
 import Subheading from '@/pages/employees/form/Subheading'
 
 export default function AccountStep({ form, mode, roleOptions, roleLocked }) {
@@ -22,7 +22,7 @@ export default function AccountStep({ form, mode, roleOptions, roleLocked }) {
             <Input
               type="email"
               autoComplete="off"
-              placeholder="jordan.rivera@company.com"
+              placeholder="name@company.com"
               {...register('email')}
             />
           </FormField>
@@ -35,7 +35,7 @@ export default function AccountStep({ form, mode, roleOptions, roleLocked }) {
               <Input
                 type="password"
                 autoComplete="new-password"
-                placeholder="••••••••"
+                placeholder="At least 8 characters"
                 {...register('initialPassword')}
               />
             </FormField>
@@ -69,14 +69,14 @@ export default function AccountStep({ form, mode, roleOptions, roleLocked }) {
             required
             error={errors.fullName?.message}
           >
-            <Input placeholder="Jordan Rivera" {...register('fullName')} />
+            <Input placeholder="Enter full name" {...register('fullName')} />
           </FormField>
           <FormField
             label="Employee Code"
             required
             error={errors.employeeCode?.message}
           >
-            <Input placeholder="ENG-2024-014" {...register('employeeCode')} />
+            <Input placeholder="Enter employee code, e.g. EMP-001" {...register('employeeCode')} />
           </FormField>
           <FormField
             label="Date of Birth"
@@ -92,6 +92,8 @@ export default function AccountStep({ form, mode, roleOptions, roleLocked }) {
                   onChange={field.onChange}
                   clearable
                   withDropdownNav
+                  fromYear={DOB_FROM_YEAR}
+                  toYear={DOB_TO_YEAR}
                 />
               )}
             />
@@ -115,7 +117,7 @@ export default function AccountStep({ form, mode, roleOptions, roleLocked }) {
             />
           </FormField>
           <FormField label="Phone" error={errors.phone?.message}>
-            <Input placeholder="+1 415 555 0142" {...register('phone')} />
+            <Input placeholder="Enter phone number, e.g. +94 77 123 4567" {...register('phone')} />
           </FormField>
         </div>
       </div>

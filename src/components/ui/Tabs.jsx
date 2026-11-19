@@ -1,5 +1,6 @@
 import { useId, useRef } from 'react'
 import clsx from 'clsx'
+import { useScrollFade } from '@/hooks/useScrollFade'
 
 const tabId = (base, key) => `${base}-tab-${key}`
 const panelId = (base, key) => `${base}-panel-${key}`
@@ -12,6 +13,7 @@ export default function Tabs({ tabs, activeKey, onChange, id, className }) {
   const autoId = useId()
   const base = id ?? autoId
   const listRef = useRef(null)
+  const { style: fadeStyle } = useScrollFade(listRef, { axis: 'x' })
 
   const onKeyDown = (event) => {
     const i = tabs.findIndex((t) => t.key === activeKey)
@@ -32,6 +34,7 @@ export default function Tabs({ tabs, activeKey, onChange, id, className }) {
       ref={listRef}
       role="tablist"
       onKeyDown={onKeyDown}
+      style={fadeStyle}
       className={clsx('flex gap-1 overflow-x-auto overflow-y-hidden shadow-[inset_0_-1px_0_var(--color-line)]', className)}
     >
       {tabs.map((tab) => {

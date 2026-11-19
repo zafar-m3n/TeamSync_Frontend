@@ -11,6 +11,11 @@ export const GENDER_OPTIONS = [
   { value: 'Female', label: 'Female' },
 ]
 
+// Date of birth: only years that make the person 18 to 70 this year.
+const THIS_YEAR = new Date().getFullYear()
+export const DOB_FROM_YEAR = THIS_YEAR - 70
+export const DOB_TO_YEAR = THIS_YEAR - 18
+
 // Single source of truth for the wizard length. Every "is this the last step"
 // and "how many steps" decision derives from this — nothing hardcoded elsewhere.
 export const TOTAL_STEPS = 4
@@ -58,7 +63,10 @@ export function buildSchema(mode) {
       .positive('Role is required'),
     fullName: z.string().trim().min(1, 'Full name is required'),
     employeeCode: z.string().trim().min(1, 'Employee code is required'),
-    dob: optionalStr,
+    dob: optionalStr.refine(
+      (d) => !d || (Number(d.slice(0, 4)) >= DOB_FROM_YEAR && Number(d.slice(0, 4)) <= DOB_TO_YEAR),
+      `Year must be between ${DOB_FROM_YEAR} and ${DOB_TO_YEAR}`,
+    ),
     gender: optionalStr,
     phone: optionalStr,
     departmentId: z.number().int().positive().nullable().optional(),

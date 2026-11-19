@@ -39,7 +39,7 @@ export default function TeamAttendancePage() {
               setDate(value)
               setPage(1)
             }}
-            placeholder="Pick a date"
+            placeholder="Select a date"
           />
         </FormField>
       </div>

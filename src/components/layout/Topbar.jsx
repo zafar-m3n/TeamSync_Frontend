@@ -7,6 +7,7 @@ import { moduleRoutes, canAccessRoute } from '@/routes/routeConfig'
 import { selectSetMobileNavOpen, useLayoutStore } from '@/store/ui/layoutStore'
 import Menu from '@/components/ui/Menu'
 import ClockStatusPill from '@/components/layout/ClockStatusPill'
+import ThemeToggle from '@/components/layout/ThemeToggle'
 
 function getInitials(source) {
   const parts = String(source || '')
@@ -81,13 +82,14 @@ export default function Topbar() {
 
       <div className="flex shrink-0 items-center gap-2">
         <ClockStatusPill enabled={showClock} to={clockLink} />
+        <ThemeToggle />
         <Menu
           label="Account menu"
           items={menuItems}
           triggerClassName="flex items-center gap-2 rounded-full py-1 pl-1 pr-2 transition-colors hover:bg-surface-hover"
           trigger={
             <>
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-ink text-xs font-semibold text-white">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-fg text-xs font-semibold text-surface">
                 {initials}
               </span>
               <span className="hidden max-w-48 truncate text-sm font-medium text-fg sm:block">{displayName}</span>

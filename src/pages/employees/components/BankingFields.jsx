@@ -6,16 +6,16 @@ export default function BankingFields({ register }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2">
       <FormField label="Bank Name">
-        <Input placeholder="First National Bank" {...register('banking.bankName')} />
+        <Input placeholder="Enter bank name" {...register('banking.bankName')} />
       </FormField>
       <FormField label="Account Holder Name">
-        <Input placeholder="Jordan Rivera" {...register('banking.accountHolderName')} />
+        <Input placeholder="Name as shown on the account" {...register('banking.accountHolderName')} />
       </FormField>
       <FormField label="Account Number">
-        <Input placeholder="0123456789" {...register('banking.accountNumber')} />
+        <Input placeholder="Enter account number" {...register('banking.accountNumber')} />
       </FormField>
       <FormField label="Bank Branch">
-        <Input placeholder="Downtown Branch" {...register('banking.bankBranch')} />
+        <Input placeholder="Enter branch name" {...register('banking.bankBranch')} />
       </FormField>
     </div>
   )

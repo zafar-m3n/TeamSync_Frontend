@@ -76,7 +76,7 @@ export const moduleRoutes = [
     anyOf: ['employees.view_team'],
     element: <EmployeeListPage scope="team" />,
     navLabel: 'My Team',
-    navIcon: 'lucide:users',
+    navIcon: 'lucide:network',
     navOrder: 2,
   },
   {
@@ -111,7 +111,7 @@ export const moduleRoutes = [
     employee: true,
     element: <MyAttendancePage />,
     navLabel: 'My Attendance',
-    navIcon: 'lucide:calendar-check',
+    navIcon: 'lucide:clock',
     navOrder: 5,
   },
   {
@@ -120,7 +120,7 @@ export const moduleRoutes = [
     anyOf: ['attendance.view_team'],
     element: <TeamAttendancePage />,
     navLabel: 'Team Attendance',
-    navIcon: 'lucide:calendar-check',
+    navIcon: 'lucide:user-round-check',
     navOrder: 5,
   },
   {
@@ -139,7 +139,7 @@ export const moduleRoutes = [
     employee: true,
     element: <MyLeavePage />,
     navLabel: 'My Leave',
-    navIcon: 'lucide:calendar-days',
+    navIcon: 'lucide:plane',
     navOrder: 6,
   },
   {
@@ -148,7 +148,7 @@ export const moduleRoutes = [
     anyOf: ['leave.view_team'],
     element: <TeamLeavePage />,
     navLabel: 'Team Leave',
-    navIcon: 'lucide:calendar-days',
+    navIcon: 'lucide:calendar-range',
     navOrder: 6,
   },
   {
@@ -166,7 +166,7 @@ export const moduleRoutes = [
     anyOf: ['holidays.manage'],
     element: <HolidaysPage />,
     navLabel: 'Holidays',
-    navIcon: 'lucide:calendar-heart',
+    navIcon: 'lucide:party-popper',
     navOrder: 6.5,
   },
   {
@@ -185,7 +185,7 @@ export const moduleRoutes = [
     anyOf: ['goals.view_team'],
     element: <TeamGoalsPage />,
     navLabel: 'Team Goals',
-    navIcon: 'lucide:target',
+    navIcon: 'lucide:goal',
     navOrder: 7,
   },
   {
@@ -194,7 +194,7 @@ export const moduleRoutes = [
     anyOf: ['goals.view_all'],
     element: <AllGoalsPage />,
     navLabel: 'Goals',
-    navIcon: 'lucide:target',
+    navIcon: 'lucide:trending-up',
     navOrder: 7,
   },
   {
@@ -213,7 +213,7 @@ export const moduleRoutes = [
     anyOf: ['training.upload', 'training.assign', 'training.view_own_uploads'],
     element: <ManageTrainingPage />,
     navLabel: 'Manage Training',
-    navIcon: 'lucide:graduation-cap',
+    navIcon: 'lucide:folder-cog',
     navOrder: 9,
   },
   {
@@ -222,7 +222,7 @@ export const moduleRoutes = [
     anyOf: ['training.view_all'],
     element: <TrainingPage />,
     navLabel: 'Training',
-    navIcon: 'lucide:graduation-cap',
+    navIcon: 'lucide:library',
     navOrder: 8,
   },
   {

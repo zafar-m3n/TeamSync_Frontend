@@ -75,7 +75,12 @@ function SidebarShift({ data, canEdit }) {
       </div>
       {canEdit && changing && (
         <div className="mt-2">
-          <ShiftAssignControl employeeId={data.id} currentShiftId={data.shift?.id ?? null} />
+          <ShiftAssignControl
+            employeeId={data.id}
+            employeeName={data.fullName}
+            currentShift={data.shift ?? null}
+            onDone={() => setChanging(false)}
+          />
         </div>
       )}
     </div>

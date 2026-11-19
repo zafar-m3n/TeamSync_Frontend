@@ -18,7 +18,7 @@ function Marker({ index, status }) {
       {status === 'complete' ? (
         <Icon icon="lucide:check" width="14" height="14" aria-hidden />
       ) : status === 'error' ? (
-        <Icon icon="lucide:alert-circle" width="14" height="14" aria-hidden />
+        <Icon icon="lucide:circle-alert" width="14" height="14" aria-hidden />
       ) : (
         index + 1
       )}

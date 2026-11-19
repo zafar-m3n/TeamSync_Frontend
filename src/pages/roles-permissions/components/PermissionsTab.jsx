@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useState } from 'react'
+import { Fragment, useMemo, useRef, useState } from 'react'
 import clsx from 'clsx'
 import { Icon } from '@iconify/react'
 import Card from '@/components/ui/Card'
@@ -10,6 +10,7 @@ import Checkbox from '@/components/ui/Checkbox'
 import { useRoles } from '@/hooks/useRoles'
 import { usePermissions } from '@/hooks/usePermissions'
 import { useBulkUpdatePermissions } from '@/hooks/useBulkUpdatePermissions'
+import { useScrollFade } from '@/hooks/useScrollFade'
 
 const ACTION_LABELS = {
   create: 'Create',
@@ -51,13 +52,13 @@ const MODULE_ICONS = {
   shifts: 'lucide:clock',
   attendance: 'lucide:calendar-check',
   leave: 'lucide:calendar-days',
-  leave_types: 'lucide:calendar-days',
-  holidays: 'lucide:calendar-heart',
+  leave_types: 'lucide:tags',
+  holidays: 'lucide:party-popper',
   goals: 'lucide:target',
-  training: 'lucide:graduation-cap',
-  training_categories: 'lucide:graduation-cap',
+  training: 'lucide:library',
+  training_categories: 'lucide:folder-tree',
   roles: 'lucide:shield',
-  permissions: 'lucide:shield',
+  permissions: 'lucide:key-round',
 }
 const moduleIcon = (m) => MODULE_ICONS[m] ?? 'lucide:folder'
 
@@ -68,6 +69,9 @@ export default function PermissionsTab() {
   const rolesQuery = useRoles()
   const permsQuery = usePermissions()
   const bulkUpdate = useBulkUpdatePermissions()
+  const scrollRef = useRef(null)
+  const matrixReady = !rolesQuery.isLoading && !permsQuery.isLoading && !rolesQuery.isError && !permsQuery.isError
+  const { style: fadeStyle } = useScrollFade(scrollRef, { axis: 'both', enabled: matrixReady })
 
   const roles = rolesQuery.data ?? []
   const permissions = permsQuery.data ?? []
@@ -174,7 +178,8 @@ export default function PermissionsTab() {
       <p className="text-cell text-fg-muted">
         Tick what each role can do, then save. Changes are staged until you save them.
       </p>
-      <div className="relative max-h-[calc(100vh-15rem)] overflow-auto rounded-lg border border-line bg-surface shadow-sm">
+      <div className="overflow-hidden rounded-lg border border-line bg-surface shadow-sm">
+        <div ref={scrollRef} style={fadeStyle} className="relative max-h-[calc(100vh-15rem)] overflow-auto">
         <table className="min-w-full border-separate border-spacing-0 text-sm">
           <caption className="sr-only">Permissions by role</caption>
           <thead>
@@ -255,6 +260,7 @@ export default function PermissionsTab() {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
 
       <div

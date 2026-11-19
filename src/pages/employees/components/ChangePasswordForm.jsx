@@ -76,7 +76,7 @@ export default function ChangePasswordForm() {
           <Input
             type="password"
             autoComplete="current-password"
-            placeholder="••••••••"
+            placeholder="Enter your current password"
             {...register('currentPassword')}
           />
         </FormField>
@@ -84,7 +84,7 @@ export default function ChangePasswordForm() {
           <Input
             type="password"
             autoComplete="new-password"
-            placeholder="••••••••"
+            placeholder="At least 8 characters"
             {...register('newPassword')}
           />
         </FormField>
@@ -92,7 +92,7 @@ export default function ChangePasswordForm() {
           <Input
             type="password"
             autoComplete="new-password"
-            placeholder="••••••••"
+            placeholder="Re-enter the new password"
             {...register('confirmPassword')}
           />
         </FormField>

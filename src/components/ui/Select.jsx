@@ -1,6 +1,8 @@
-import ReactSelect from 'react-select'
+import { useRef } from 'react'
+import ReactSelect, { components as selectParts } from 'react-select'
 import clsx from 'clsx'
 import { useFieldProps } from '@/components/form/fieldContext'
+import { useScrollFade } from '@/hooks/useScrollFade'
 
 const menuPortalStyles = { menuPortal: (base) => ({ ...base, zIndex: 70 }) }
 
@@ -45,12 +47,30 @@ const buildSelectClassNames = (invalid) => ({
   groupHeading: () => 'px-3 pb-1 pt-2 text-xs font-semibold uppercase text-fg-muted',
 })
 
+// Scrollbars are hidden app-wide; long option lists fade at the edge with more options.
+function FadingMenuList(props) {
+  const ref = useRef(null)
+  const { style } = useScrollFade(ref, { size: 20 })
+  const { innerRef, innerProps } = props
+  return (
+    <selectParts.MenuList
+      {...props}
+      // react-select passes MenuList a callback ref; call it as well as keeping our own.
+      innerRef={(el) => {
+        ref.current = el
+        innerRef?.(el)
+      }}
+      innerProps={{ ...innerProps, style: { ...innerProps?.style, ...style } }}
+    />
+  )
+}
+
 /**
  * App-wide single-select built on react-select.
  * `error`/`invalid` show the invalid state; inside a FormField the label, id and
  * error message are wired automatically. Any other react-select prop is forwarded.
  */
-export default function Select({ error, invalid, id, inputId, styles, classNames, ...props }) {
+export default function Select({ error, invalid, id, inputId, styles, classNames, components, ...props }) {
   const field = useFieldProps({ id: inputId ?? id, invalid: error || invalid || undefined, ...props })
   return (
     <ReactSelect
@@ -61,6 +81,7 @@ export default function Select({ error, invalid, id, inputId, styles, classNames
       menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
       styles={{ ...menuPortalStyles, ...styles }}
       classNames={{ ...buildSelectClassNames(field.invalid), ...classNames }}
+      components={{ MenuList: FadingMenuList, ...components }}
       {...props}
     />
   )

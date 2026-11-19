@@ -8,6 +8,7 @@ import Input from '@/components/form/Input'
 import Button from '@/components/ui/Button'
 import { useCreateDepartment, useUpdateDepartment } from '@/hooks/useDepartments'
 import { useEmployees } from '@/hooks/useEmployees'
+import { formatEmployeeOption, toEmployeeOption } from '@/components/form/employeeOption'
 
 const schema = z.object({
   name: z
@@ -24,10 +25,7 @@ export default function DepartmentFormModal({ department, onClose }) {
   const mutation = isEdit ? updateMutation : createMutation
 
   const { data: empData } = useEmployees({ page: 1, limit: 200 })
-  const headOptions = (empData?.rows ?? []).map((e) => ({
-    value: e.id,
-    label: e.fullName,
-  }))
+  const headOptions = (empData?.rows ?? []).map(toEmployeeOption)
 
   const {
     register,
@@ -78,7 +76,7 @@ export default function DepartmentFormModal({ department, onClose }) {
         noValidate
       >
         <FormField label="Name" required error={errors.name?.message}>
-          <Input autoFocus placeholder="Engineering" {...register('name')} />
+          <Input autoFocus placeholder="Enter department name" {...register('name')} />
         </FormField>
 
         <FormField label="Department Head" error={errors.departmentHeadId?.message}>
@@ -89,7 +87,8 @@ export default function DepartmentFormModal({ department, onClose }) {
               <Select
                 isClearable
                 options={headOptions}
-                placeholder="No department head"
+                formatOptionLabel={formatEmployeeOption}
+                placeholder="Select a department head…"
                 value={headOptions.find((o) => o.value === field.value) ?? null}
                 onChange={(opt) => field.onChange(opt?.value ?? null)}
                 onBlur={field.onBlur}

@@ -5,6 +5,7 @@ import OverlayHeader from '@/components/ui/overlay/OverlayHeader'
 import { useOverlay } from '@/components/ui/overlay/useOverlay'
 import { usePresence } from '@/hooks/useMotion'
 import { overlayEnter, overlayExit } from '@/lib/motion'
+import { useScrollFade } from '@/hooks/useScrollFade'
 
 const SIZES = {
   sm: 'max-w-xs',
@@ -42,6 +43,7 @@ export default function Drawer({
   )
 
   useOverlay({ isOpen, onClose, panelRef, bodyRef, titleRef, initialFocusRef })
+  const { style: fadeStyle } = useScrollFade(bodyRef, { enabled: present && !hideHeader })
 
   if (!present) return null
 
@@ -81,7 +83,7 @@ export default function Drawer({
             onClose={onClose}
           />
         )}
-        <div ref={bodyRef} className={clsx('flex-1 overflow-y-auto', !hideHeader && 'px-5 py-4 text-sm text-fg')}>
+        <div ref={bodyRef} style={hideHeader ? undefined : fadeStyle} className={clsx('flex-1 overflow-y-auto', !hideHeader && 'px-5 py-4 text-sm text-fg')}>
           {children}
         </div>
         {footer && (

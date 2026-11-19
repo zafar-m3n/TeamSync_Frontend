@@ -120,7 +120,7 @@ function UploadDocumentModal({ employeeId, onClose }) {
         <FormField label="Document Name" required>
           <Input
             autoFocus
-            placeholder="Offer Letter"
+            placeholder="Enter document name, e.g. Offer letter"
             value={docName}
             onChange={(e) => setDocName(e.target.value)}
           />

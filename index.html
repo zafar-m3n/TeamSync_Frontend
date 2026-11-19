@@ -9,6 +9,12 @@
       content="TeamSync is a self-hosted internal system for managing employees, attendance, leaves, and other HR records."
     />
     <title>TeamSync</title>
+    <script>
+      // Apply the saved theme before first paint (see src/lib/theme.js).
+      try {
+        document.documentElement.dataset.theme = localStorage.getItem('teamsync.theme') === 'dark' ? 'dark' : 'light'
+      } catch (e) {}
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

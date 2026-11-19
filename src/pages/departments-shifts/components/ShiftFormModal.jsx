@@ -96,7 +96,7 @@ export default function ShiftFormModal({ shift, onClose }) {
         noValidate
       >
         <FormField label="Name" required error={errors.name?.message}>
-          <Input autoFocus placeholder="Morning Shift" {...register('name')} />
+          <Input autoFocus placeholder="Enter shift name" {...register('name')} />
         </FormField>
 
         <div className="grid grid-cols-2 gap-4">
@@ -117,7 +117,7 @@ export default function ShiftFormModal({ shift, onClose }) {
             type="number"
             min="0"
             step="1"
-            placeholder="10"
+            placeholder="Enter minutes, e.g. 15"
             {...register('gracePeriodMinutes')}
           />
         </FormField>
@@ -135,7 +135,7 @@ export default function ShiftFormModal({ shift, onClose }) {
                   field.onChange(selected.map((option) => option.value))
                 }
                 onBlur={field.onBlur}
-                placeholder="Select days…"
+                placeholder="Select working days…"
               />
             )}
           />

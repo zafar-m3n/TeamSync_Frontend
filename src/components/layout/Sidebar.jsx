@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import { NavLink } from 'react-router-dom'
 import { Icon } from '@iconify/react'
 import clsx from 'clsx'
@@ -13,6 +14,7 @@ import {
 import Drawer from '@/components/ui/Drawer'
 import IconButton from '@/components/ui/IconButton'
 import favicon from '@/assets/favicon.png'
+import { useScrollFade } from '@/hooks/useScrollFade'
 
 function Brand({ collapsed }) {
   return (
@@ -25,58 +27,94 @@ function Brand({ collapsed }) {
   )
 }
 
-function NavSections({ sections, collapsed = false, onNavigate }) {
+const reducedMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+
+// Scroll hint for a nav that overflows (HR/Admin have many items): edge fades plus a
+// small arrow. It points down while more items are below, and up (back to the top)
+// once the end is reached. Mouse-only; keyboard users reach every link by Tab.
+function ScrollHintButton({ direction, onClick }) {
+  const down = direction === 'down'
   return (
-    <nav aria-label="Main" className="flex flex-1 flex-col gap-5 overflow-y-auto px-3 py-3">
-      {sections.map((section) => (
-        <div key={section.key} className="flex flex-col gap-0.5">
-          {section.label &&
-            (collapsed ? (
-              <span aria-hidden className="mx-3 mb-1 h-px bg-white/10" />
-            ) : (
-              <p className="px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-ink-fg/60">{section.label}</p>
-            ))}
-          <ul className="flex flex-col gap-0.5">
-            {section.items.map((item) => (
-              <li key={item.path}>
-                <NavLink
-                  to={item.path}
-                  onClick={onNavigate}
-                  title={collapsed ? item.label : undefined}
-                  className={({ isActive }) =>
-                    clsx(
-                      'group relative flex h-9 items-center gap-3 rounded-md text-sm font-medium transition-colors duration-(--duration-fast) focus-visible:focus-ring',
-                      collapsed ? 'justify-center px-0' : 'px-3',
-                      isActive ? 'bg-white/[0.08] text-white' : 'text-ink-fg hover:bg-white/[0.05] hover:text-white',
-                    )
-                  }
-                >
-                  {({ isActive }) => (
-                    <>
-                      <span
-                        aria-hidden
-                        className={clsx(
-                          'absolute inset-y-1.5 left-0 w-[3px] rounded-r-full bg-ink-active transition-opacity duration-(--duration-fast)',
-                          isActive ? 'opacity-100' : 'opacity-0',
-                        )}
-                      />
-                      <Icon
-                        icon={item.icon}
-                        width="18"
-                        height="18"
-                        aria-hidden
-                        className={clsx('shrink-0', isActive ? 'text-ink-active' : 'opacity-80 group-hover:opacity-100')}
-                      />
-                      <span className={clsx('truncate', collapsed && 'sr-only')}>{item.label}</span>
-                    </>
-                  )}
-                </NavLink>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
-    </nav>
+    <button
+      type="button"
+      tabIndex={-1}
+      aria-hidden
+      onClick={onClick}
+      title={down ? 'Scroll down' : 'Back to top'}
+      className="absolute bottom-2 left-1/2 flex h-6 w-6 -translate-x-1/2 items-center justify-center rounded-full bg-ink-hover text-ink-fg shadow-md ring-1 ring-white/15 transition-colors duration-(--duration-fast) hover:bg-white/[0.12] hover:text-white"
+    >
+      <Icon icon={down ? 'lucide:chevron-down' : 'lucide:chevron-up'} width="14" height="14" />
+    </button>
+  )
+}
+
+function NavSections({ sections, collapsed = false, onNavigate }) {
+  const navRef = useRef(null)
+  const { style: fadeStyle, edges } = useScrollFade(navRef, { size: 40 })
+  const hint = edges.bottom ? 'down' : edges.top ? 'up' : null
+
+  const onHint = () => {
+    const el = navRef.current
+    if (!el) return
+    const behavior = reducedMotion() ? 'auto' : 'smooth'
+    if (hint === 'down') el.scrollBy({ top: el.clientHeight * 0.7, behavior })
+    else el.scrollTo({ top: 0, behavior })
+  }
+
+  return (
+    <div className="relative flex min-h-0 flex-1 flex-col">
+      <nav ref={navRef} style={fadeStyle} aria-label="Main" className="flex flex-1 flex-col gap-5 overflow-y-auto px-3 pb-10 pt-3">
+        {sections.map((section) => (
+          <div key={section.key} className="flex flex-col gap-0.5">
+            {section.label &&
+              (collapsed ? (
+                <span aria-hidden className="mx-3 mb-1 h-px bg-white/10" />
+              ) : (
+                <p className="px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-ink-fg/60">{section.label}</p>
+              ))}
+            <ul className="flex flex-col gap-0.5">
+              {section.items.map((item) => (
+                <li key={item.path}>
+                  <NavLink
+                    to={item.path}
+                    onClick={onNavigate}
+                    title={collapsed ? item.label : undefined}
+                    className={({ isActive }) =>
+                      clsx(
+                        'group relative flex h-9 items-center gap-3 rounded-md text-sm font-medium transition-colors duration-(--duration-fast) focus-visible:focus-ring',
+                        collapsed ? 'justify-center px-0' : 'px-3',
+                        isActive ? 'bg-white/[0.08] text-white' : 'text-ink-fg hover:bg-white/[0.05] hover:text-white',
+                      )
+                    }
+                  >
+                    {({ isActive }) => (
+                      <>
+                        <span
+                          aria-hidden
+                          className={clsx(
+                            'absolute inset-y-1.5 left-0 w-[3px] rounded-r-full bg-ink-active transition-opacity duration-(--duration-fast)',
+                            isActive ? 'opacity-100' : 'opacity-0',
+                          )}
+                        />
+                        <Icon
+                          icon={item.icon}
+                          width="18"
+                          height="18"
+                          aria-hidden
+                          className={clsx('shrink-0', isActive ? 'text-ink-active' : 'opacity-80 group-hover:opacity-100')}
+                        />
+                        <span className={clsx('truncate', collapsed && 'sr-only')}>{item.label}</span>
+                      </>
+                    )}
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </nav>
+      {hint && <ScrollHintButton direction={hint} onClick={onHint} />}
+    </div>
   )
 }
 

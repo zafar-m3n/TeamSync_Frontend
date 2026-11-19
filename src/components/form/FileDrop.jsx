@@ -28,7 +28,7 @@ export default function FileDrop({ file, onChange, accept, hint, invalid, inputR
           file && !bad ? 'bg-brand-100 text-brand-700' : 'bg-surface text-fg-muted ring-1 ring-line',
         )}
       >
-        <Icon icon={file ? 'lucide:file-check-2' : 'lucide:upload-cloud'} width="20" height="20" aria-hidden />
+        <Icon icon={file ? 'lucide:file-check-2' : 'lucide:cloud-upload'} width="20" height="20" aria-hidden />
       </span>
       <span className="max-w-full truncate text-sm font-medium text-fg">{file ? file.name : 'Click to choose a file'}</span>
       {hint && <span className="text-xs text-fg-muted">{hint}</span>}

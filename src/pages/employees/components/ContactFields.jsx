@@ -22,19 +22,19 @@ export default function ContactFields({ register, control }) {
         <GroupLabel>Address</GroupLabel>
         <div className="grid gap-4 sm:grid-cols-2">
           <FormField label="Address Line 1">
-            <Input placeholder="1240 Larkspur Avenue" {...register('contact.addressLine1')} />
+            <Input placeholder="Enter street address" {...register('contact.addressLine1')} />
           </FormField>
           <FormField label="Address Line 2">
-            <Input placeholder="Apt 4B" {...register('contact.addressLine2')} />
+            <Input placeholder="Apartment, suite or floor" {...register('contact.addressLine2')} />
           </FormField>
           <FormField label="State">
-            <Input placeholder="California" {...register('contact.state')} />
+            <Input placeholder="Enter state or province" {...register('contact.state')} />
           </FormField>
           <FormField label="Country">
-            <Input placeholder="United States" {...register('contact.country')} />
+            <Input placeholder="Enter country" {...register('contact.country')} />
           </FormField>
           <FormField label="Postal Code">
-            <Input placeholder="94103" {...register('contact.postalCode')} />
+            <Input placeholder="Enter postal code" {...register('contact.postalCode')} />
           </FormField>
         </div>
       </div>
@@ -43,7 +43,7 @@ export default function ContactFields({ register, control }) {
         <GroupLabel>Emergency contact</GroupLabel>
         <div className="grid gap-4 sm:grid-cols-2">
           <FormField label="Emergency Contact Name">
-            <Input placeholder="Morgan Rivera" {...register('contact.emergencyContactName')} />
+            <Input placeholder="Enter contact's full name" {...register('contact.emergencyContactName')} />
           </FormField>
           <FormField label="Emergency Contact Relationship">
             <Controller
@@ -64,7 +64,7 @@ export default function ContactFields({ register, control }) {
             />
           </FormField>
           <FormField label="Emergency Contact Phone">
-            <Input placeholder="+1 415 555 0188" {...register('contact.emergencyContactPhone')} />
+            <Input placeholder="Enter phone number, e.g. +94 77 123 4567" {...register('contact.emergencyContactPhone')} />
           </FormField>
         </div>
       </div>

@@ -131,7 +131,7 @@ export default function GoalFormModal({ goal, onClose }) {
         <FormField label="Title" required error={errors.title?.message}>
           <Input
             autoFocus
-            placeholder="Close 50 enterprise deals this quarter"
+            placeholder="Enter goal title"
             {...register('title')}
           />
         </FormField>
@@ -140,7 +140,7 @@ export default function GoalFormModal({ goal, onClose }) {
           <Input
             multiline
             rows={3}
-            placeholder="Focus on accounts above $25k ARR in the west region"
+            placeholder="Describe what the goal covers and how it is measured"
             {...register('description')}
           />
         </FormField>
@@ -151,7 +151,7 @@ export default function GoalFormModal({ goal, onClose }) {
               type="number"
               min="0"
               step="any"
-              placeholder="50"
+              placeholder="Enter target number"
               {...register('numericTarget')}
             />
           </FormField>
@@ -164,7 +164,7 @@ export default function GoalFormModal({ goal, onClose }) {
                 <DateField
                   value={field.value}
                   onChange={field.onChange}
-                  placeholder="Pick a date"
+                  placeholder="Select a date"
                 />
               )}
             />

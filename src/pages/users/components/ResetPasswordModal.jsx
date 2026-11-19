@@ -73,7 +73,7 @@ export default function ResetPasswordModal({ user, onClose }) {
             type="password"
             autoComplete="new-password"
             autoFocus
-            placeholder="••••••••"
+            placeholder="At least 8 characters"
             {...register('newPassword')}
           />
         </FormField>
@@ -85,7 +85,7 @@ export default function ResetPasswordModal({ user, onClose }) {
           <Input
             type="password"
             autoComplete="new-password"
-            placeholder="••••••••"
+            placeholder="Re-enter the new password"
             {...register('confirmPassword')}
           />
         </FormField>

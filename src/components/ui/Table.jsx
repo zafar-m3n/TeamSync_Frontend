@@ -7,6 +7,7 @@ import Pagination from '@/components/ui/Pagination'
 import { SkeletonRows } from '@/components/ui/TableSkeleton'
 import { useStaggerIn } from '@/hooks/useMotion'
 import { describeError } from '@/lib/errors'
+import { useScrollFade } from '@/hooks/useScrollFade'
 
 const ALIGN = { left: 'text-left', center: 'text-center', right: 'text-right' }
 
@@ -73,6 +74,8 @@ export default function Table({
   className,
 }) {
   const tbodyRef = useRef(null)
+  const scrollRef = useRef(null)
+  const { style: fadeStyle } = useScrollFade(scrollRef, { axis: 'x' })
   const [localSort, setLocalSort] = useState(null)
   const controlled = typeof onSort === 'function'
   const sort = controlled ? sortState : localSort
@@ -141,7 +144,8 @@ export default function Table({
 
   return (
     <div className={clsx('flex flex-col gap-3', className)}>
-      <div className="relative overflow-x-auto overflow-y-hidden rounded-lg border border-line bg-surface shadow-sm">
+      <div className="overflow-hidden rounded-lg border border-line bg-surface shadow-sm">
+        <div ref={scrollRef} style={fadeStyle} className="relative overflow-x-auto overflow-y-hidden">
         <table className="w-full border-collapse text-left text-cell" aria-busy={isLoading || isFetching || undefined}>
           {caption && <caption className="sr-only">{caption}</caption>}
           <thead>
@@ -184,6 +188,7 @@ export default function Table({
             {body()}
           </tbody>
         </table>
+        </div>
       </div>
       {showPager && (
         <Pagination

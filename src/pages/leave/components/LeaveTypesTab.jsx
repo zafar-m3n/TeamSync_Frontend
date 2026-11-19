@@ -93,13 +93,13 @@ function LeaveTypeFormModal({ leaveType, onClose }) {
         noValidate
       >
         <FormField label="Name" required error={errors.name?.message}>
-          <Input autoFocus placeholder="Annual Leave" {...register('name')} />
+          <Input autoFocus placeholder="Enter leave type name" {...register('name')} />
         </FormField>
         <FormField label="Description" error={errors.description?.message}>
           <Input
             multiline
             rows={3}
-            placeholder="Paid time off for planned personal leave"
+            placeholder="Describe when this leave type is used"
             {...register('description')}
           />
         </FormField>

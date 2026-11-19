@@ -68,7 +68,7 @@
   --control-lg: 2.75rem;
 }
 
-/* Dark values only; no toggle yet. */
+/* Dark theme: applied via <html data-theme="dark"> (src/lib/theme.js). */
 [data-theme="dark"] {
   color-scheme: dark;
   --color-canvas: #0f1315;
@@ -98,6 +98,13 @@
   --color-danger-strong: #f8a7a1;
   --color-info: #7aa7f7;
   --color-info-soft: #142036;
+  /* Sidebar stays darker than the dark canvas so it still reads as a separate rail. */
+  --color-ink: #0a0d0f;
+  --color-ink-hover: #1a2024;
+  --shadow-xs: 0 1px 1px rgb(0 0 0 / 0.3);
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.35), 0 1px 3px rgb(0 0 0 / 0.25);
+  --shadow-md: 0 4px 8px -2px rgb(0 0 0 / 0.45), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+  --shadow-lg: 0 16px 32px -8px rgb(0 0 0 / 0.6), 0 6px 12px -6px rgb(0 0 0 / 0.4);
   --focus-ring: 0 0 0 3px rgb(45 184 175 / 0.45);
 }
 
@@ -115,6 +122,16 @@
   html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* No visible scrollbars anywhere. Scrolling still works by wheel, touch and
+     keyboard; scroll containers show a fade at edges with more content
+     (hooks/useScrollFade.js). */
+  * {
+    scrollbar-width: none;
+  }
+  *::-webkit-scrollbar {
+    display: none;
   }
 
   body {
@@ -226,22 +243,6 @@
   display: inline-flex;
   gap: 0.5rem;
 }
-.ts-datepicker .rdp-dropdown_root {
-  position: relative;
-  display: inline-flex;
+.ts-datepicker .rdp-month_caption {
   align-items: center;
-  gap: 0.25rem;
-  border: 1px solid var(--color-line-strong);
-  border-radius: var(--radius-md);
-  padding: 0.2rem 0.5rem;
-  background-color: var(--color-surface);
-}
-.ts-datepicker .rdp-dropdown_root:focus-within {
-  border-color: var(--color-brand-600);
-  box-shadow: var(--focus-ring);
-}
-.ts-datepicker .rdp-dropdown {
-  cursor: pointer;
-  font-size: 0.8125rem;
-  color: var(--color-fg);
 }

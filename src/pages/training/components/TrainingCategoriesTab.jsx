@@ -77,7 +77,7 @@ function CategoryFormModal({ category, onClose }) {
         noValidate
       >
         <FormField label="Name" required error={errors.name?.message}>
-          <Input autoFocus placeholder="Compliance" {...register('name')} />
+          <Input autoFocus placeholder="Enter category name" {...register('name')} />
         </FormField>
       </form>
     </Modal>
