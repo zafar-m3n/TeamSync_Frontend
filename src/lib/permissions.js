@@ -15,7 +15,9 @@ export const outranks = (user, targetRole) =>
 export const canAssignRole = (user, role) =>
   hasPermission(user, 'roles', 'manage') || user.roleRank > role.rank
 
-// Managers delete goals they set (managerId is the setter's user id); goals.view_all deletes any.
+// A manager deletes goals of their current direct reports (matching the backend, where
+// every goal action follows the employee's current manager); goals.view_all deletes any.
 export const canDeleteGoal = (user, goal) =>
   hasPermission(user, 'goals', 'delete') &&
-  (hasPermission(user, 'goals', 'view_all') || goal.managerId === user.id)
+  (hasPermission(user, 'goals', 'view_all') ||
+    (user.employeeId != null && goal.employee?.managerId === user.employeeId))
